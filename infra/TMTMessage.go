@@ -10,13 +10,3 @@ type TMTMessage struct {
 	// add additional fields
 	amountInMessage int
 }
-
-// getter for private field
-func (cm *TMTMessage) GetAmountInMessage() int {
-	return cm.amountInMessage
-}
-
-// override of InvokeHandler (visitor pattern)
-func (cm *TMTMessage) InvokeMessageHandler(agent ITMTAgent) {
-	agent.HandleCounterMessage(cm)
-}

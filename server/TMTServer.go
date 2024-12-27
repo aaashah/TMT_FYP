@@ -1,17 +1,24 @@
-package counterServer
+package server
 
 import (
-	//"TMT/agents"
-	"TMT_Attachment/infra"
+	"math/rand"
+	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
-)
+
+	infra "github.com/aaashah/TMT_Attachment/infra"
+) 
 
 type TMTServer struct {
-	// embed functionality from package...
-	// ...and tell BaseServer we're using ICounterAgents
-	*server.BaseServer[infra.ITMTAgent]
+	*server.BaseServer[infra.IExtendedAgent]
+
+	agentInfoList []infra.IExtendedAgent
+
+	//server internal state
+	//turn int
+	//iteration int
 }
 
-// RunTurn implementation - Count, and then Message
-
+func int() {
+	rand.Seed(time.Now().UnixNano())
+}
