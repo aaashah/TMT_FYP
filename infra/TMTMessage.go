@@ -8,5 +8,5 @@ type TMTMessage struct {
 	// embed functionality from package
 	message.BaseMessage
 	// add additional fields
-	amountInMessage int
+	//amountInMessage int
 }
