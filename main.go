@@ -4,7 +4,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"time"
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
@@ -15,31 +17,61 @@ import (
 
 // "go run ."
 func main() {
-	//TMTServer.StartServer()
+	// Create logs directory if it doesn't exist
+	if err := os.MkdirAll("logs", 0755); err != nil {
+		log.Fatalf("Failed to create logs directory: %v", err)
+	}
+
+	// Create log file with timestamp in name
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	logFile, err := os.OpenFile("logs/log_"+timestamp+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	defer logFile.Close()
+
+	// Create a MultiWriter to write to both the log file and stdout
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	// Set log output to multiWriter
+	log.SetOutput(multiWriter)
+
+	// Remove date and time prefix from log entries
+	log.SetFlags(0)
+
 	log.Println("main function started.")
 
+	//BEGIN
+	// agent configuration:
+	agentConfig := agents.AgentConfig{
+		InitSacrificeChoice: false,
+	}
+
 	serv := &tmtServer.TMTServer{
-		// note: the zero turn is used for team forming
 		BaseServer: baseServer.CreateBaseServer[infra.IExtendedAgent](
-			3,                   //  iterations
-			120,                 //  turns per iteration
-			50*time.Millisecond, //  max duration
-			10),                 //  message bandwidth
+			3, //iterations
+			2, //turns per iteration
+			50*time.Millisecond, //max duration
+			0, //message bandwidth
+		),
 	}
 	
-	// Create agents
-	const numAgents int = 10
-	agentPopulation := []infra.IExtendedAgent{}
-	for i := 0; i < numAgents; i++ {
-		//agentPopulation = append(agentPopulation, agents.Team4_CreateAgent(serv, agentConfig))
-		agentPopulation = append(agentPopulation, agents.CreateExtendedAgent(serv))
-		// Add other teams' agents here
-	}
-
-	
-
 	// Set game runner
 	serv.SetGameRunner(serv)
+
+	const numAgents int = 5
+
+	// create and initialise agents
+	agentPopulation := []infra.IExtendedAgent{}
+
+	for i := 0; i < numAgents; i++ {
+		agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig))
+	}
+
+	for i, agent := range agentPopulation {
+		agent.SetName(i)
+		serv.AddAgent(agent)
+	}
 
 	// Start server
 	fmt.Println("Starting server")

@@ -23,7 +23,6 @@ type IExtendedAgent interface {
 	SetKins(kins uuid.UUID)
 	SetHeroism(heroism float64)
 	SetMortalitySalience(ms bool)
-	SetSacrificeChoice(choice bool)
 	SetContextSacrifice(context string)
 	
 	DecideSacrifice(context string) bool // Logic for making a self-sacrifice decision.
@@ -31,6 +30,6 @@ type IExtendedAgent interface {
 	//Message functions
 
 	//Info
-	//GetExposedInfo() ExposedAgentInfo
+	GetExposedInfo() ExposedAgentInfo
 
 }

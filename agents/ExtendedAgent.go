@@ -11,32 +11,38 @@ type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
 	NameID int
+
+	//private
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 	Kins uuid.UUID
 	Heroism float64
 	MortalitySalience bool
+
+	// dynamic
 	SacrificeChoice bool
 	ContextSacrifice string
 }
 
-type Attachment struct {
-	Anxiety float32
-	Avoidance float32
+
+type AgentConfig struct {
+	InitSacrificeChoice bool
 }
 
-func CreateExtendedAgent(server infra.IServer) *ExtendedAgent {
+func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig) *ExtendedAgent {
 	return &ExtendedAgent{
-		BaseAgent: agent.CreateBaseAgent[infra.IExtendedAgent](server),
-		Server: server,
+		BaseAgent: agent.CreateBaseAgent(funcs),
+		Server: funcs.(infra.IServer),
 		NameID: 0,
-		Attachment: []float32{0.5, 0.5},
-		Kins: uuid.New(),
-		Heroism: 0.5,
+		Attachment: []float32{0.0, 0.0},
+		Kins: uuid.Nil,
+		Heroism: 0.0,
 		MortalitySalience: false,
-		SacrificeChoice: false,
+		SacrificeChoice: configParam.InitSacrificeChoice,
 		ContextSacrifice: "",
 	}
 }
+
+
 
 func (ea *ExtendedAgent) GetName() int {
     return ea.NameID
@@ -85,9 +91,6 @@ func (ea *ExtendedAgent) GetSacrificeChoice() bool {
     return ea.SacrificeChoice
 }
 
-func (ea *ExtendedAgent) SetSacrificeChoice(choice bool) {
-    ea.SacrificeChoice = choice
-}
 
 func (ea *ExtendedAgent) GetContextSacrifice() string {
     return ea.ContextSacrifice
@@ -97,14 +100,29 @@ func (ea *ExtendedAgent) SetContextSacrifice(context string) {
     ea.ContextSacrifice = context
 }
 
+
 // Decision-making logic
 func (ea *ExtendedAgent) DecideSacrifice(context string) bool {
-    // Example logic based on attachment and context
-    if context == "cause" && ea.MortalitySalience && ea.Attachment[0] > 0.7 {
-        return true
-    }
-    if context == "companion" && ea.MortalitySalience && ea.Attachment[1] < 0.3 {
-        return true
-    }
-    return false
+    //example will change
+
+	//anxiety and avoidance influence
+	anxietyInfluence := 0.4
+	avoidanceInfluence := -0.3
+
+	//combined influence
+	attachmentScore := float64(ea.Attachment[0])*anxietyInfluence + float64(ea.Attachment[1])*avoidanceInfluence
+
+	//decision logic
+	if ea.MortalitySalience && (ea.Heroism + attachmentScore) > 0.5 {
+		ea.SacrificeChoice = true
+	} else {
+		ea.SacrificeChoice = false
+	}
+	return ea.SacrificeChoice
+}
+
+func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
+	return infra.ExposedAgentInfo{
+		AgentUUID: ea.GetID(),
+	}
 }
