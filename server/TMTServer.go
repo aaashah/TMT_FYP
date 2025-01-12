@@ -25,13 +25,25 @@ type TMTServer struct {
 
 	//server internal state
 	turn int
-	//iteration int
+	iteration int
 	//allAgentsDead bool
 	//gameRunner infra.GameRunner
 }
 
 func init () {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func (tserv *TMTServer) RunStartOfIteration(iteration int) {
+	log.Printf("--------Start of iteration %v---------\n", iteration)
+
+	//update context
+	contexts := []string{"cause", "kin"} // Define possible contexts
+    tserv.context = contexts[iteration%len(contexts)] // Assign context based on iteration
+	fmt.Printf("--------Start of iteration %d with context '%s'---------\n", iteration, tserv.context)
+	//tserv.iteration = iteration
+	//tserv.turn = 0
+
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
@@ -58,4 +70,8 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	tserv.activeAgents = newActiveAgents
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.activeAgents))
 	tserv.turn++
+}
+
+func (tserv *TMTServer) RunEndOfIteration(int) {
+	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
 }
