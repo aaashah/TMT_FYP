@@ -1,6 +1,9 @@
 package agents
 
 import (
+	"fmt"
+	"math/rand"
+
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
@@ -33,9 +36,9 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		BaseAgent: agent.CreateBaseAgent(funcs),
 		Server: funcs.(infra.IServer),
 		NameID: 0,
-		Attachment: []float32{0.0, 0.0},
-		Kins: uuid.Nil,
-		Heroism: 0.0,
+		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
+		Kins: uuid.New(), // Assign a unique UUID
+		Heroism: rand.Float64(), // Random value between 0 and 1
 		MortalitySalience: false,
 		SacrificeChoice: configParam.InitSacrificeChoice,
 		ContextSacrifice: "",
@@ -105,20 +108,18 @@ func (ea *ExtendedAgent) SetContextSacrifice(context string) {
 func (ea *ExtendedAgent) DecideSacrifice(context string) bool {
     //example will change
 
-	//anxiety and avoidance influence
-	anxietyInfluence := 0.4
-	avoidanceInfluence := -0.3
-
-	//combined influence
-	attachmentScore := float64(ea.Attachment[0])*anxietyInfluence + float64(ea.Attachment[1])*avoidanceInfluence
-
-	//decision logic
-	if ea.MortalitySalience && (ea.Heroism + attachmentScore) > 0.5 {
-		ea.SacrificeChoice = true
-	} else {
-		ea.SacrificeChoice = false
-	}
-	return ea.SacrificeChoice
+	if context == "cause" && ea.Heroism > 0.5 {
+        ea.SacrificeChoice = true
+    } else {
+        ea.SacrificeChoice = false
+    }
+    //fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
+    ea.ContextSacrifice = context
+	fmt.Printf("Agent %d decided to %s for context '%s'\n",
+        ea.NameID,
+        map[bool]string{true: "sacrifice", false: "not sacrifice"}[ea.SacrificeChoice],
+        context)
+    return ea.SacrificeChoice
 }
 
 func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {

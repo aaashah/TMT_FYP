@@ -49,9 +49,10 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
-	//1. Agents choose
+	//1. Agents choose 0 or 1
 	for _, agentID := range tserv.activeAgents {
-		agentID.DecideSacrifice(tserv.context)
+		decision := agentID.DecideSacrifice(tserv.context)
+        fmt.Printf("Agent %v made the decision: %v (Context: %s)\n", agentID.NameID, decision, agentID.ContextSacrifice)
 	}
 
 	//2. Eliminate Agents
@@ -60,7 +61,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 		if !agentID.SacrificeChoice {
 			remainingAgents = append(remainingAgents, agentID)
 		} else {
-			log.Printf("Agent %d has chosen to sacrifice\n", agentID.GetName())
+			fmt.Printf("Agent %v has been eliminated\n", agentID.NameID)
 		}
 	}
 	newActiveAgents := make(map[uuid.UUID]*agents.ExtendedAgent)

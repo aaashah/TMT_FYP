@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	//"math/rand"
+
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 	agents "github.com/aaashah/TMT_Attachment/agents"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -40,6 +42,8 @@ func main() {
 	log.SetFlags(0)
 
 	log.Println("main function started.")
+	//rand.Seed(time.Now().UnixNano()) // Seed random number generator
+    // Other initialization
 
 	//BEGIN
 	// agent configuration:
@@ -63,15 +67,18 @@ func main() {
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}
-
 	for i := 0; i < numAgents; i++ {
-		agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig))
-	}
+        agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig))
+    }
 
 	for i, agent := range agentPopulation {
 		agent.SetName(i)
 		serv.AddAgent(agent)
+		fmt.Printf("Agent %d added with with Heroism: %.2f, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetHeroism(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
+    
+
+	
 
 	// Start server
 	fmt.Println("Starting server")
