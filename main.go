@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+
 	//"math/rand"
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
@@ -58,6 +60,7 @@ func main() {
 			50*time.Millisecond, //max duration
 			0, //message bandwidth
 		),
+		ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
 	}
 	
 	// Set game runner
@@ -74,11 +77,16 @@ func main() {
 	for i, agent := range agentPopulation {
 		agent.SetName(i)
 		serv.AddAgent(agent)
+		extendedAgent, ok := agent.(*agents.ExtendedAgent)
+		if !ok {
+			fmt.Printf("Error: agent is not of type *agents.ExtendedAgent\n")
+			continue // Skip if type assertion fails
+		}
+
+		serv.ActiveAgents[extendedAgent.GetID()] = extendedAgent
 		fmt.Printf("Agent %d added with with Heroism: %.2f, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetHeroism(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
     
-
-	
 
 	// Start server
 	fmt.Println("Starting server")

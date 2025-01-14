@@ -19,7 +19,7 @@ type TMTServer struct {
 	//agentInfoList []infra.IExtendedAgent
 	//mu     sync.Mutex
 	context string
-	activeAgents map[uuid.UUID]*agents.ExtendedAgent
+	ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
 	// data recorder
 	//DataRecorder *gameRecorder.ServerDataRecorder
 
@@ -50,14 +50,14 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
 	//1. Agents choose 0 or 1
-	for _, agentID := range tserv.activeAgents {
-		decision := agentID.DecideSacrifice(tserv.context)
-        fmt.Printf("Agent %v made the decision: %v (Context: %s)\n", agentID.NameID, decision, agentID.ContextSacrifice)
+	for _, agent := range tserv.ActiveAgents {
+		decision := agent.DecideSacrifice(tserv.context)
+        fmt.Printf("Agent %v made the decision: %v (Context: %s)\n", agent.NameID, decision, agent.ContextSacrifice)
 	}
 
 	//2. Eliminate Agents
 	remainingAgents := []*agents.ExtendedAgent{}
-	for _, agentID := range tserv.activeAgents {
+	for _, agentID := range tserv.ActiveAgents {
 		if !agentID.SacrificeChoice {
 			remainingAgents = append(remainingAgents, agentID)
 		} else {
@@ -68,8 +68,8 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	for _, agent := range remainingAgents {
 		newActiveAgents[agent.GetID()] = agent
 	}
-	tserv.activeAgents = newActiveAgents
-	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.activeAgents))
+	tserv.ActiveAgents = newActiveAgents
+	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.ActiveAgents))
 	tserv.turn++
 }
 
