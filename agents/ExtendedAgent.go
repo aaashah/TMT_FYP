@@ -16,9 +16,9 @@ type ExtendedAgent struct {
 	NameID int
 
 	//private
+	Network map[uuid.UUID]int
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
-	Kins uuid.UUID
-	Heroism float64
+	Age int
 	MortalitySalience bool
 
 	// dynamic
@@ -36,9 +36,9 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		BaseAgent: agent.CreateBaseAgent(funcs),
 		Server: funcs.(infra.IServer),
 		NameID: 0,
-		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
-		Kins: uuid.New(), // Assign a unique UUID
-		Heroism: rand.Float64(), // Random value between 0 and 1
+		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
+		Network: make(map[uuid.UUID]int), // Assign a unique UUID
+		Age: rand.Intn(100), // Randomised age between 0 and 100
 		MortalitySalience: false,
 		SacrificeChoice: configParam.InitSacrificeChoice,
 		ContextSacrifice: "",
@@ -66,20 +66,20 @@ func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
     ea.Attachment = attachment
 }
 
-func (ea *ExtendedAgent) GetKins() uuid.UUID {
-    return ea.Kins
+func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]int {
+	return ea.Network
 }
 
-func (ea *ExtendedAgent) SetKins(kins uuid.UUID) {
-    ea.Kins = kins
+func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]int) {
+	ea.Network = network
 }
 
-func (ea *ExtendedAgent) GetHeroism() float64 {
-    return ea.Heroism
+func (ea *ExtendedAgent) GetAge() int{
+    return ea.Age
 }
 
-func (ea *ExtendedAgent) SetHeroism(heroism float64) {
-    ea.Heroism = heroism
+func (ea *ExtendedAgent) SetAge(age int) {
+    ea.Age = age
 }
 
 func (ea *ExtendedAgent) IsMortalitySalient() bool {
@@ -108,7 +108,7 @@ func (ea *ExtendedAgent) SetContextSacrifice(context string) {
 func (ea *ExtendedAgent) DecideSacrifice(context string) bool {
     //example will change
 
-	if context == "cause" && ea.Heroism > 0.5 {
+	if context == "cause" {
         ea.SacrificeChoice = true
     } else {
         ea.SacrificeChoice = false

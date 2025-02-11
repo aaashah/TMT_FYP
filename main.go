@@ -84,7 +84,7 @@ func main() {
 		}
 
 		serv.ActiveAgents[extendedAgent.GetID()] = extendedAgent
-		fmt.Printf("Agent %d added with with Heroism: %.2f, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetHeroism(), agent.GetAttachment()[0], agent.GetAttachment()[1])
+		fmt.Printf("Agent %d added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
     
 
