@@ -16,7 +16,7 @@ type ExtendedAgent struct {
 	NameID int
 
 	//private
-	Network map[uuid.UUID]int
+	Network map[uuid.UUID]float32 // stores relationship strengths
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 	Age int
 	MortalitySalience bool
@@ -37,7 +37,7 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		Server: funcs.(infra.IServer),
 		NameID: 0,
 		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
-		Network: make(map[uuid.UUID]int), // Assign a unique UUID
+		Network: make(map[uuid.UUID]float32), // Assign a unique UUID
 		Age: rand.Intn(100), // Randomised age between 0 and 100
 		MortalitySalience: false,
 		SacrificeChoice: configParam.InitSacrificeChoice,
@@ -66,12 +66,46 @@ func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
     ea.Attachment = attachment
 }
 
-func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]int {
+
+func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 	return ea.Network
 }
 
-func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]int) {
+func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
 	ea.Network = network
+}
+
+func (a *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
+	if _, exists := a.Network[otherID]; !exists {
+		a.Network[otherID] = strength
+	}
+}
+
+func (a *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
+	if _, exists := a.Network[otherID]; exists {
+		a.Network[otherID] += change
+
+		// Keep values between 0 and 1
+		if a.Network[otherID] > 1 {
+			a.Network[otherID] = 1
+		} else if a.Network[otherID] < 0 {
+			a.Network[otherID] = 0
+		}
+	}
+}
+
+func (a *ExtendedAgent) DecayRelationships() {
+	for id := range a.Network {
+		a.Network[id] -= 0.05 // Reduce strength over time
+		if a.Network[id] < 0 {
+			delete(a.Network, id) // Remove weak relationships
+		}
+	}
+}
+
+func (a *ExtendedAgent) Interact(other *ExtendedAgent) {
+	a.UpdateRelationship(other.GetID(), 0.1)
+	other.UpdateRelationship(a.GetID(), 0.1)
 }
 
 func (ea *ExtendedAgent) GetAge() int{

@@ -30,9 +30,26 @@ type TMTServer struct {
 	//gameRunner infra.GameRunner
 }
 
+type Network struct {
+    Agents map[uuid.UUID]*agents.ExtendedAgent
+}
+
 func init () {
 	rand.Seed(time.Now().UnixNano())
 }
+
+// func (tserv *TMTServer) NewNetwork() {
+
+// 	for _, a := range tserv.ActiveAgents {
+// 		for _, b := range tserv.ActiveAgents {
+// 			if a.GetID() != b.GetID() && rand.Float32() < 0.3 { // 30% chance of connection
+// 				relationshipStrength := rand.Float32() // Strength between 0 and 1
+// 				a.AddRelationship(b.GetID(), relationshipStrength)
+// 				b.AddRelationship(a.GetID(), relationshipStrength) // Ensure bidirectionality
+// 			}
+// 		}
+// 	}
+// }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
