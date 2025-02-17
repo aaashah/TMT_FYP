@@ -21,17 +21,20 @@ type ExtendedAgent struct {
 	Age int
 	MortalitySalience bool
 
+
 	// dynamic
 	SacrificeChoice bool
 	ContextSacrifice string
+	Position [2]int
 }
 
 
 type AgentConfig struct {
 	InitSacrificeChoice bool
 }
+//var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig) *ExtendedAgent {
+func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
 	return &ExtendedAgent{
 		BaseAgent: agent.CreateBaseAgent(funcs),
 		Server: funcs.(infra.IServer),
@@ -42,9 +45,9 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		MortalitySalience: false,
 		SacrificeChoice: configParam.InitSacrificeChoice,
 		ContextSacrifice: "",
+		Position: [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)},
 	}
 }
-
 
 
 func (ea *ExtendedAgent) GetName() int {
@@ -116,6 +119,10 @@ func (ea *ExtendedAgent) SetAge(age int) {
     ea.Age = age
 }
 
+func (a *ExtendedAgent) MoveRandomly(grid *infra.Grid) {
+	a.Position = [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)}
+}
+
 func (ea *ExtendedAgent) IsMortalitySalient() bool {
     return ea.MortalitySalience
 }
@@ -143,7 +150,7 @@ func (ea *ExtendedAgent) DecideSacrifice(context string) bool {
     //example will change
 
 	if context == "cause" {
-        ea.SacrificeChoice = true
+        ea.SacrificeChoice = false
     } else {
         ea.SacrificeChoice = false
     }

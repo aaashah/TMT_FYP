@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+
+	//"sync"
 	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
@@ -20,6 +22,7 @@ type TMTServer struct {
 	//mu     sync.Mutex
 	context string
 	ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
+	grid         *infra.Grid
 	// data recorder
 	//DataRecorder *gameRecorder.ServerDataRecorder
 
@@ -28,28 +31,18 @@ type TMTServer struct {
 	iteration int
 	//allAgentsDead bool
 	//gameRunner infra.GameRunner
+	
 }
 
 type Network struct {
     Agents map[uuid.UUID]*agents.ExtendedAgent
 }
 
+
 func init () {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// func (tserv *TMTServer) NewNetwork() {
-
-// 	for _, a := range tserv.ActiveAgents {
-// 		for _, b := range tserv.ActiveAgents {
-// 			if a.GetID() != b.GetID() && rand.Float32() < 0.3 { // 30% chance of connection
-// 				relationshipStrength := rand.Float32() // Strength between 0 and 1
-// 				a.AddRelationship(b.GetID(), relationshipStrength)
-// 				b.AddRelationship(a.GetID(), relationshipStrength) // Ensure bidirectionality
-// 			}
-// 		}
-// 	}
-// }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
@@ -57,15 +50,24 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	//update context
 	contexts := []string{"cause", "kin"} // Define possible contexts
     tserv.context = contexts[iteration%len(contexts)] // Assign context based on iteration
+	tserv.grid = infra.CreateGrid(10, 10) // Create a 10x10 grid
 	fmt.Printf("--------Start of iteration %d with context '%s'---------\n", iteration, tserv.context)
 	//tserv.iteration = iteration
 	//tserv.turn = 0
+
 
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
+
+	// Print agent positions
+    fmt.Println("Agent positions at turn:", j)
+    for _, agent := range tserv.ActiveAgents {
+        fmt.Printf("Agent %v at Position (%d, %d)\n", agent.NameID, agent.Position[0], agent.Position[1])
+    }
+
 	//1. Agents choose 0 or 1
 	for _, agent := range tserv.ActiveAgents {
 		decision := agent.DecideSacrifice(tserv.context)
@@ -86,6 +88,10 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 		newActiveAgents[agent.GetID()] = agent
 	}
 	tserv.ActiveAgents = newActiveAgents
+
+	for _, agent := range tserv.ActiveAgents {
+		agent.MoveRandomly(tserv.grid)
+	}
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.ActiveAgents))
 	tserv.turn++
 }

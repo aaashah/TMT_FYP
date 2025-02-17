@@ -70,8 +70,10 @@ func main() {
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}
+	grid := infra.CreateGrid(10, 10) // Create a 10x10 grid
+
 	for i := 0; i < numAgents; i++ {
-        agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig))
+        agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
     }
 
 	for i, agent := range agentPopulation {
