@@ -70,8 +70,8 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	//1. Agents choose 0 or 1
 	for _, agent := range tserv.ActiveAgents {
-		decision := agent.DecideSacrifice(tserv.context)
-        fmt.Printf("Agent %v made the decision: %v (Context: %s)\n", agent.NameID, decision, agent.ContextSacrifice)
+		decision := agent.DecideSacrifice()
+        fmt.Printf("Agent %v made the decision: %v \n", agent.NameID, decision)
 	}
 
 	//2. Eliminate Agents

@@ -20,11 +20,13 @@ type ExtendedAgent struct {
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 	Age int
 	MortalitySalience bool
+	WorldviewValidation float32
+	RelationshipValidation float32
 
 
 	// dynamic
 	SacrificeChoice bool
-	ContextSacrifice string
+	//ContextSacrifice string
 	Position [2]int
 }
 
@@ -44,7 +46,7 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		Age: rand.Intn(100), // Randomised age between 0 and 100
 		MortalitySalience: false,
 		SacrificeChoice: configParam.InitSacrificeChoice,
-		ContextSacrifice: "",
+		//ContextSacrifice: "",
 		Position: [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)},
 	}
 }
@@ -136,30 +138,25 @@ func (ea *ExtendedAgent) GetSacrificeChoice() bool {
 }
 
 
-func (ea *ExtendedAgent) GetContextSacrifice() string {
-    return ea.ContextSacrifice
-}
+// func (ea *ExtendedAgent) GetContextSacrifice() string {
+//     return ea.ContextSacrifice
+// }
 
-func (ea *ExtendedAgent) SetContextSacrifice(context string) {
-    ea.ContextSacrifice = context
-}
+// func (ea *ExtendedAgent) SetContextSacrifice(context string) {
+//     ea.ContextSacrifice = context
+// }
 
 
 // Decision-making logic
-func (ea *ExtendedAgent) DecideSacrifice(context string) bool {
-    //example will change
+func (ea *ExtendedAgent) DecideSacrifice() bool {
+    //TO-DO: Fuzzy logic stuff
 
-	if context == "cause" {
-        ea.SacrificeChoice = false
-    } else {
-        ea.SacrificeChoice = false
-    }
+	
     //fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
-    ea.ContextSacrifice = context
-	fmt.Printf("Agent %d decided to %s for context '%s'\n",
+    
+	fmt.Printf("Agent %d decided to %s \n",
         ea.NameID,
-        map[bool]string{true: "sacrifice", false: "not sacrifice"}[ea.SacrificeChoice],
-        context)
+        map[bool]string{true: "sacrifice", false: "not sacrifice"}[ea.SacrificeChoice])
     return ea.SacrificeChoice
 }
 

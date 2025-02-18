@@ -15,7 +15,7 @@ type IExtendedAgent interface {
 	GetAge() int	
 	IsMortalitySalient() bool
 	GetSacrificeChoice() bool
-	GetContextSacrifice() string
+	//GetContextSacrifice() string
 
 	//Setters
 	SetName(name int)
@@ -23,9 +23,9 @@ type IExtendedAgent interface {
 	SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)
 	SetMortalitySalience(ms bool)
-	SetContextSacrifice(context string)
+	//SetContextSacrifice(context string)
 	
-	DecideSacrifice(context string) bool // Logic for making a self-sacrifice decision.
+	DecideSacrifice() bool // Logic for making a self-sacrifice decision.
 
 	//Message functions
 
