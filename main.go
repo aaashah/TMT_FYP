@@ -50,7 +50,7 @@ func main() {
 	//BEGIN
 	// agent configuration:
 	agentConfig := agents.AgentConfig{
-		InitSacrificeChoice: false,
+		InitSacrificeWillingness: 0.2,
 	}
 
 	serv := &tmtServer.TMTServer{
