@@ -77,7 +77,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	//2. Eliminate Agents
 	remainingAgents := []*agents.ExtendedAgent{}
 	for _, agentID := range tserv.ActiveAgents {
-		if !agentID.SacrificeChoice {
+		if agentID.SelfSacrificeWillingness > 0.5 {
 			remainingAgents = append(remainingAgents, agentID)
 		} else {
 			fmt.Printf("Agent %v has been eliminated\n", agentID.NameID)

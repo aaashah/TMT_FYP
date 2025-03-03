@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
 )
@@ -20,19 +21,19 @@ type ExtendedAgent struct {
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 	Age int
 	MortalitySalience bool
-	WorldviewValidation float32
-	RelationshipValidation float32
+	//WorldviewValidation float32
+	//RelationshipValidation float32
 
 
 	// dynamic
-	SacrificeChoice bool
+	SelfSacrificeWillingness float32
 	//ContextSacrifice string
 	Position [2]int
 }
 
 
 type AgentConfig struct {
-	InitSacrificeChoice bool
+	InitSacrificeWillingness float32
 }
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
@@ -45,7 +46,7 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 		Network: make(map[uuid.UUID]float32), // Assign a unique UUID
 		Age: rand.Intn(100), // Randomised age between 0 and 100
 		MortalitySalience: false,
-		SacrificeChoice: configParam.InitSacrificeChoice,
+		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		//ContextSacrifice: "",
 		Position: [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)},
 	}
@@ -58,6 +59,10 @@ func (ea *ExtendedAgent) GetName() int {
 
 func (ea *ExtendedAgent) SetName(name int) {
     ea.NameID = name
+}
+
+func (ea *ExtendedAgent) GetPosition() [2]int {
+	return ea.Position
 }
 
 func (ea *ExtendedAgent) GetAttachment() []float32 {
@@ -78,6 +83,11 @@ func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 
 func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
 	ea.Network = network
+}
+
+// distance between two agents on grid
+func (ea *ExtendedAgent) DistanceTo(other *ExtendedAgent) float64 {
+	return infra.Distance(ea.Position, other.Position)
 }
 
 func (a *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
@@ -133,8 +143,8 @@ func (ea *ExtendedAgent) SetMortalitySalience(ms bool) {
     ea.MortalitySalience = ms
 }
 
-func (ea *ExtendedAgent) GetSacrificeChoice() bool {
-    return ea.SacrificeChoice
+func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
+    return ea.SelfSacrificeWillingness
 }
 
 
@@ -148,7 +158,7 @@ func (ea *ExtendedAgent) GetSacrificeChoice() bool {
 
 
 // Decision-making logic
-func (ea *ExtendedAgent) DecideSacrifice() bool {
+func (ea *ExtendedAgent) DecideSacrifice() float32 {
     //TO-DO: Fuzzy logic stuff
 
 	
@@ -156,8 +166,8 @@ func (ea *ExtendedAgent) DecideSacrifice() bool {
     
 	fmt.Printf("Agent %d decided to %s \n",
         ea.NameID,
-        map[bool]string{true: "sacrifice", false: "not sacrifice"}[ea.SacrificeChoice])
-    return ea.SacrificeChoice
+        map[float32]string{}[ea.SelfSacrificeWillingness])
+    return ea.SelfSacrificeWillingness
 }
 
 func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
@@ -165,3 +175,22 @@ func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 		AgentUUID: ea.GetID(),
 	}
 }
+
+// ----------------------- Data Recording Functions -----------------------
+func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
+	record := gameRecorder.NewAgentRecord(
+		instance.GetID(),
+		instance.GetAge(),
+		instance.GetPosition()[0],
+		instance.GetPosition()[1],
+		instance.GetSelfSacrificeWillingness(),
+		instance.GetAttachment()[0],
+		instance.GetAttachment()[1],
+		"1",
+		//instance.GetWorldviewValidation(),
+		//instance.GetRelationshipValidation(),
+		
+	)
+	return record
+}
+
