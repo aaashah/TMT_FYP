@@ -2,6 +2,7 @@ package infra
 
 import (
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/aaashah/TMT_Attachment/gameRecorder"
 	"github.com/google/uuid"
 )
 
@@ -32,5 +33,8 @@ type IExtendedAgent interface {
 
 	//Info
 	GetExposedInfo() ExposedAgentInfo
+
+	// Data Recording
+	RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
 
 }

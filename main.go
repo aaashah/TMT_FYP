@@ -15,6 +15,7 @@ import (
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 	agents "github.com/aaashah/TMT_Attachment/agents"
+	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	tmtServer "github.com/aaashah/TMT_Attachment/server"
 )
@@ -93,4 +94,11 @@ func main() {
 	// Start server
 	fmt.Println("Starting server")
 	serv.Start()
+
+	// custom function to see agent result
+	//serv.LogAgentStatus()
+
+	// record data
+	// serv.DataRecorder.GamePlaybackSummary()
+	gameRecorder.ExportToCSV(serv.DataRecorder, "visualisation_output/csv_data")
 }

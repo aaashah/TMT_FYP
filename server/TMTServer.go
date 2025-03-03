@@ -11,6 +11,7 @@ import (
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
 	agents "github.com/aaashah/TMT_Attachment/agents"
+	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
 ) 
@@ -24,7 +25,7 @@ type TMTServer struct {
 	ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
 	grid         *infra.Grid
 	// data recorder
-	//DataRecorder *gameRecorder.ServerDataRecorder
+	DataRecorder *gameRecorder.ServerDataRecorder
 
 	//server internal state
 	turn int
@@ -98,4 +99,39 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 func (tserv *TMTServer) RunEndOfIteration(int) {
 	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
+}
+
+
+func (tserv *TMTServer) RecordTurnInfo() {
+	// agent information
+	agentRecords := []gameRecorder.AgentRecord{}
+
+	for _, agent := range tserv.GetAgentMap() {
+		// if agent.GetTeamID() == uuid.Nil {
+		// 	// Skip agents that are not in a team
+		// 	continue
+		// }
+		newAgentRecord := agent.RecordAgentStatus(agent)
+		newAgentRecord.IsAlive = true
+		newAgentRecord.TurnNumber = tserv.turn
+		newAgentRecord.IterationNumber = tserv.iteration
+		agentRecords = append(agentRecords, newAgentRecord)
+	}
+
+	// for _, agent := range tserv.deadAgents {
+	// 	// if agent.GetTeamID() == uuid.Nil {
+	// 	// 	// Skip agents that are not in a team
+	// 	// 	continue
+	// 	// }
+	// 	newAgentRecord := agent.RecordAgentStatus(agent)
+	// 	newAgentRecord.IsAlive = false
+	// 	newAgentRecord.TurnNumber = tserv.turn
+	// 	newAgentRecord.IterationNumber = tserv.iteration
+	// 	agentRecords = append(agentRecords, newAgentRecord)
+	// }
+
+	// common information
+	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
+
+	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
 }

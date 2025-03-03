@@ -12,11 +12,9 @@ type InfraRecord struct {
 	ThresholdAppliedInTurn bool // whether the threshold was applied in the current turn
 }
 
-func NewInfraRecord(turnNumber int, iterationNumber int, threshold int, thresholdAppliedInTurn bool) InfraRecord {
+func NewInfraRecord(turnNumber int, iterationNumber int) InfraRecord {
 	return InfraRecord{
 		TurnNumber:             turnNumber,
 		IterationNumber:        iterationNumber,
-		Threshold:              threshold,
-		ThresholdAppliedInTurn: thresholdAppliedInTurn,
 	}
 }
