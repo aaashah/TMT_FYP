@@ -1,6 +1,6 @@
 package gameRecorder
 
-// "SOMAS_Extended/common"
+// "TMT_Attachment/infra"
 
 // AgentRecord is a record of an agent's state at a given turn
 type InfraRecord struct {

@@ -10,7 +10,7 @@ type IExtendedAgent interface {
 	agent.IAgent[IExtendedAgent]
 
 	//Getters
-	GetName() int
+	GetName() uuid.UUID
 	GetAttachment() []float32
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int	
@@ -20,7 +20,7 @@ type IExtendedAgent interface {
 	//GetContextSacrifice() string
 
 	//Setters
-	SetName(name int)
+	SetName(name uuid.UUID)
 	SetAttachment(attachment []float32)
 	SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)

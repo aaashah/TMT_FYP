@@ -20,6 +20,7 @@ import (
 
 // Add these constants at the top of the file
 const (
+	outputDir      = "visualisation_output"
 	deathSymbol    = "💀"
 	showLegends    = false   // Toggle for showing/hiding legends
 	showAxisLabels = true    // Keep axis labels visible
@@ -27,23 +28,22 @@ const (
 	chartHeight    = "500px" // Increased from 400px
 )
 
-// CreatePlaybackHTML generates visualizations for the recorded game data
+// CreatePlaybackHTML reads recorded data and generates an HTML file with charts
 func CreatePlaybackHTML(recorder *ServerDataRecorder) {
-	// Create output directory if it doesn't exist
-	outputDir := "visualization_output"
+	// Create output directory
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
-		log.Printf("Error creating output directory: %v\n", err)
+		log.Fatalf("Error creating output directory: %v", err)
 		return
 	}
 
 	// Create a single page to hold all charts
 	page := components.NewPage()
-	page.PageTitle = "Game Visualization"
+	page.PageTitle = "TMT Visualisation"
 
 	// Add custom CSS for layout
 	page.PageTitle = `
-		<title>Game Visualization</title>
+		<title>TMT Visualisation</title>
 		<style>
 			.chart-container { 
 				display: flex; 
@@ -76,10 +76,10 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 	// }
 
 	// Create the output file
-	filepath := filepath.Join(outputDir, "game_visualization.html")
+	filepath := filepath.Join(outputDir, "tmt_visualisation.html")
 	f, err := os.Create(filepath)
 	if err != nil {
-		log.Printf("Error creating visualization file: %v\n", err)
+		log.Printf("Error creating visualisation file: %v\n", err)
 		return
 	}
 	defer f.Close()
@@ -399,7 +399,7 @@ func ExportToCSV(recorder *ServerDataRecorder, outputDir string) error {
 		return fmt.Errorf("failed to export agent records: %v", err)
 	}
 
-	// Export common records (flattened from turn records) - with filtering
+	// Export infra records (flattened from turn records) - with filtering
 	var allInfraRecords []InfraRecord
 	for _, turn := range recorder.TurnRecords {
 		// Only include records where either turn or iteration is non-zero
@@ -407,8 +407,8 @@ func ExportToCSV(recorder *ServerDataRecorder, outputDir string) error {
 			allInfraRecords = append(allInfraRecords, turn.InfraRecord)
 		}
 	}
-	if err := exportStructSliceToCSV(allInfraRecords, filepath.Join(outputDir, "common_records.csv")); err != nil {
-		return fmt.Errorf("failed to export common records: %v", err)
+	if err := exportStructSliceToCSV(allInfraRecords, filepath.Join(outputDir, "infra_records.csv")); err != nil {
+		return fmt.Errorf("failed to export infra records: %v", err)
 	}
 
 	return nil

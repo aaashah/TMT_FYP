@@ -43,6 +43,7 @@ func CreateRecorder() *ServerDataRecorder {
 		TurnRecords:      []TurnRecord{},
 		currentIteration: -1, // to start from 0, start from 0 later
 		currentTurn:      -1,
+		
 	}
 }
 

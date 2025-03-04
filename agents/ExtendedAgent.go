@@ -14,7 +14,7 @@ import (
 type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
-	NameID int
+	NameID uuid.UUID
 
 	//private
 	Network map[uuid.UUID]float32 // stores relationship strengths
@@ -41,7 +41,7 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 	return &ExtendedAgent{
 		BaseAgent: agent.CreateBaseAgent(funcs),
 		Server: funcs.(infra.IServer),
-		NameID: 0,
+		NameID: uuid.New(),
 		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
 		Network: make(map[uuid.UUID]float32), // Assign a unique UUID
 		Age: rand.Intn(100), // Randomised age between 0 and 100
@@ -53,11 +53,11 @@ func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAge
 }
 
 
-func (ea *ExtendedAgent) GetName() int {
+func (ea *ExtendedAgent) GetName() uuid.UUID {
     return ea.NameID
 }
 
-func (ea *ExtendedAgent) SetName(name int) {
+func (ea *ExtendedAgent) SetName(name uuid.UUID) {
     ea.NameID = name
 }
 
@@ -164,7 +164,7 @@ func (ea *ExtendedAgent) DecideSacrifice() float32 {
 	
     //fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
     
-	fmt.Printf("Agent %d decided to %s \n",
+	fmt.Printf("Agent %v decided to %s \n",
         ea.NameID,
         map[float32]string{}[ea.SelfSacrificeWillingness])
     return ea.SelfSacrificeWillingness

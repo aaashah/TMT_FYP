@@ -77,8 +77,8 @@ func main() {
         agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
     }
 
-	for i, agent := range agentPopulation {
-		agent.SetName(i)
+	for _, agent := range agentPopulation {
+		//agent.SetName(i)
 		serv.AddAgent(agent)
 		extendedAgent, ok := agent.(*agents.ExtendedAgent)
 		if !ok {
@@ -92,7 +92,7 @@ func main() {
     
 	// Initialize data recorder
 	serv.DataRecorder = gameRecorder.CreateRecorder()
-	
+
 	// Start server
 	fmt.Println("Starting server")
 	serv.Start()
@@ -101,6 +101,6 @@ func main() {
 	//serv.LogAgentStatus()
 
 	// record data
-	// serv.DataRecorder.GamePlaybackSummary()
+	serv.DataRecorder.GamePlaybackSummary()
 	gameRecorder.ExportToCSV(serv.DataRecorder, "visualisation_output/csv_data")
 }
