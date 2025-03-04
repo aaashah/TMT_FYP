@@ -90,7 +90,9 @@ func main() {
 		fmt.Printf("Agent %d added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
     
-
+	// Initialize data recorder
+	serv.DataRecorder = gameRecorder.CreateRecorder()
+	
 	// Start server
 	fmt.Println("Starting server")
 	serv.Start()

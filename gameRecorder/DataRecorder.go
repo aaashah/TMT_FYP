@@ -41,7 +41,7 @@ func (sdr *ServerDataRecorder) GetCurrentTurnRecord() *TurnRecord {
 func CreateRecorder() *ServerDataRecorder {
 	return &ServerDataRecorder{
 		TurnRecords:      []TurnRecord{},
-		currentIteration: -1, // to start from 0
+		currentIteration: -1, // to start from 0, start from 0 later
 		currentTurn:      -1,
 	}
 }

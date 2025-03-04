@@ -1,0 +1,6 @@
+TurnNumber,IterationNumber,Threshold,ThresholdAppliedInTurn
+1,0,0,false
+0,1,0,false
+1,1,0,false
+0,2,0,false
+1,2,0,false
