@@ -41,7 +41,7 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 	page := components.NewPage()
 	page.PageTitle = "TMT Visualisation"
 
-	// Add custom CSS for layout
+	// Add CSS for layout
 	page.PageTitle = `
 		<title>TMT Visualisation</title>
 		<style>
@@ -53,8 +53,8 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 			}
 			.chart { 
 				width: 48%; 
-				min-width: 800px;  // Match chartWidth
-				margin-bottom: 40px;  // Increased spacing between charts
+				min-width: 800px;
+				margin-bottom: 40px;
 			}
 		</style>
 		<div class="chart-container">
@@ -66,14 +66,13 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 		iterationMap[record.IterationNumber] = append(iterationMap[record.IterationNumber], record)
 	}
 
-	// // For each iteration, create side-by-side charts
-	// for iteration, turns := range iterationMap {
-	// 	scoreChart := createScoreChart(iteration, turns)
-	// 	contributionChart := createContributionChart(iteration, turns)
-
-	// 	// Add both charts to the page
-	// 	page.AddCharts(scoreChart, contributionChart)
-	// }
+	// Add the sacrifice chart for each iteration
+	for iteration, turns := range iterationMap {
+		sacrificeChart := createSacrificeChart(iteration, turns)
+		if sacrificeChart != nil {
+			page.AddCharts(sacrificeChart)
+		}
+	}
 
 	// Create the output file
 	filepath := filepath.Join(outputDir, "tmt_visualisation.html")
@@ -91,60 +90,26 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 	}
 }
 
-func createSacrificeChart (iteration int, turns []TurnRecord) *charts.Line {
+func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
 	// Sort turns by turn number to ensure correct order
 	sort.Slice(turns, func(i, j int) bool {
 		return turns[i].TurnNumber < turns[j].TurnNumber
 	})
 
-	// Find first turn with agent records
-	var initialAgentRecords []AgentRecord
-	for _, turn := range turns {
-		if len(turn.AgentRecords) > 0 {
-			initialAgentRecords = turn.AgentRecords
-			break
-		}
-	}
-
-	if len(initialAgentRecords) == 0 {
-		log.Printf("Warning: No agent records found in iteration %d\n", iteration)
-		return nil
-	}
-
-	// Create a new line chart with adjusted layout
+	// Create a new line chart
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
-			Title: fmt.Sprintf("Iteration %d - Agent Sacrifices over Time", iteration),
+			Title: fmt.Sprintf("Iteration %d - Agent Sacrifices Over Time", iteration),
 			Top:   "5%",
 		}),
-		charts.WithTooltipOpts(opts.Tooltip{
-			Show: opts.Bool(true),
-		}),
-		charts.WithLegendOpts(opts.Legend{
-			Show: opts.Bool(showLegends),
-			Top:  "15%",
-		}),
+		charts.WithTooltipOpts(opts.Tooltip{Show: opts.Bool(true)}), // Wrap boolean values in opts.Bool()
+		charts.WithLegendOpts(opts.Legend{Show: opts.Bool(showLegends)}), // Wrap `showLegends`
 		charts.WithXAxisOpts(opts.XAxis{
-			Name:    "Turn Number",
-			NameGap: 30,
-			AxisLabel: &opts.AxisLabel{
-				Show: opts.Bool(showAxisLabels),
-			},
+			Name: "Turn Number",
 		}),
 		charts.WithYAxisOpts(opts.YAxis{
-			Name:    "Score",
-			NameGap: 30,
-			AxisLabel: &opts.AxisLabel{
-				Show: opts.Bool(showAxisLabels),
-			},
-		}),
-		charts.WithGridOpts(opts.Grid{
-			Top:          "25%",
-			Right:        "5%",
-			Left:         "10%",
-			Bottom:       "15%",
-			ContainLabel: opts.Bool(true),
+			Name: "Sacrifice Willingness",
 		}),
 		charts.WithInitializationOpts(opts.Initialization{
 			Width:  chartWidth,
@@ -153,69 +118,32 @@ func createSacrificeChart (iteration int, turns []TurnRecord) *charts.Line {
 	)
 
 	// Get turn numbers for X-axis
-	xAxis := make([]int, len(turns))
-	for i, turn := range turns {
-		xAxis[i] = turn.TurnNumber
+	xAxis := []int{}
+	for _, turn := range turns {
+		xAxis = append(xAxis, turn.TurnNumber)
 	}
 
-	// Create a map of agent sacrifices over turns
-	agentSacrifices := make(map[string][]float64)
-	for _, agent := range initialAgentRecords {
-		agentID := agent.AgentID.String()
-		agentSacrifices[agentID] = make([]float64, len(turns))
+	// Store sacrifice willingness for each agent
+	agentSacrifices := make(map[string][]opts.LineData)
+
+	for _, turn := range turns {
+		for _, agent := range turn.AgentRecords {
+			agentID := agent.AgentID.String()
+			if _, exists := agentSacrifices[agentID]; !exists {
+				agentSacrifices[agentID] = make([]opts.LineData, len(turns))
+			}
+			agentSacrifices[agentID][turn.TurnNumber] = opts.LineData{Value: agent.SelfSacrificeWillingness}
+		}
 	}
 
-	// Add series and death markers
+	// Add data series for each agent
 	for agentID, sacrifices := range agentSacrifices {
-		var deathMarker opts.ScatterData
-		var deathTurn int = -1
-
-		// Find death turn
-		for i, turn := range turns {
-			for _, agent := range turn.AgentRecords {
-				if agent.AgentID.String() == agentID && !agent.IsAlive {
-					deathTurn = i
-					deathMarker = opts.ScatterData{
-						Value:      []interface{}{xAxis[i], sacrifices[i]},
-						Symbol:     "💀",
-						SymbolSize: 20,
-					}
-					break
-				}
-			}
-			if deathTurn != -1 {
-				break
-			}
-
-			// Add the series
-			// line.AddSeries(agentID, generateLineItems(xAxis[:50], 5),
-			// charts.WithLineStyleOpts(opts.LineStyle{
-			// Color: teamColors[agentID],
-			// }),
-			// )
-
-			// Add death marker
-			if deathTurn != -1 {
-				scatter := charts.NewScatter()
-				scatter.AddSeries(agentID+" Death", []opts.ScatterData{deathMarker})
-				line.Overlap(scatter)
-			}
-		}
-		// Add the series
-		// line.AddSeries(agentID, generateLineItems(xAxis[:50], 5),
-		// 	charts.WithLineStyleOpts(opts.LineStyle{
-		// 		Color: teamColors[agentID],
-		// 	}),
-		// )
-
-		// Add death marker
-		if deathTurn != -1 {
-			scatter := charts.NewScatter()
-			scatter.AddSeries(agentID+" Death", []opts.ScatterData{deathMarker})
-			line.Overlap(scatter)
-		}
+		line.AddSeries(fmt.Sprintf("Agent %s", agentID), sacrifices)
 	}
+
+	// Set X-axis values
 	line.SetXAxis(xAxis)
+
 	return line
 }
 
@@ -298,7 +226,7 @@ func createSacrificePlot(recorder *ServerDataRecorder, outputDir string) {
 		// Create a map of agent sacrifices over turns
 		agentSacrifices := make(map[string][]float64)
 
-		// Initialize the map with empty slices using the first found agents
+		// Initialise the map with empty slices using the first found agents
 		for _, agent := range initialAgentRecords {
 			agentID := agent.AgentID.String()
 			agentSacrifices[agentID] = make([]float64, len(turns))
