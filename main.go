@@ -57,7 +57,7 @@ func main() {
 	serv := &tmtServer.TMTServer{
 		BaseServer: baseServer.CreateBaseServer[infra.IExtendedAgent](
 			3, //iterations
-			2, //turns per iteration
+			5, //turns per iteration
 			50*time.Millisecond, //max duration
 			0, //message bandwidth
 		),
@@ -77,6 +77,9 @@ func main() {
         agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
     }
 
+	// Set probability p for Erdős–Rényi network
+	
+
 	for _, agent := range agentPopulation {
 		//agent.SetName(i)
 		serv.AddAgent(agent)
@@ -87,8 +90,12 @@ func main() {
 		}
 
 		serv.ActiveAgents[extendedAgent.GetID()] = extendedAgent
-		fmt.Printf("Agent %d added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
+		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
+
+	const connectionProbability = 0.3 // Adjust as needed
+	// Initialize social network after agents are created
+	serv.InitialiseRandomNetwork(connectionProbability)
     
 	// Initialize data recorder
 	serv.DataRecorder = gameRecorder.CreateRecorder()

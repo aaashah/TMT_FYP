@@ -37,17 +37,16 @@ type AgentConfig struct {
 }
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgents(funcs agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
+func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
 	return &ExtendedAgent{
-		BaseAgent: agent.CreateBaseAgent(funcs),
-		Server: funcs.(infra.IServer),
-		NameID: uuid.New(),
-		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
-		Network: make(map[uuid.UUID]float32), // Assign a unique UUID
-		Age: rand.Intn(100), // Randomised age between 0 and 100
+		BaseAgent: agent.CreateBaseAgent(server),
+		Server:    server,
+		NameID:    uuid.New(),
+		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
+		Network:    make(map[uuid.UUID]float32),
+		Age:        rand.Intn(100),
 		MortalitySalience: false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
-		//ContextSacrifice: "",
 		Position: [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)},
 	}
 }
@@ -78,7 +77,11 @@ func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
 
 
 func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
-	return ea.Network
+	updatedNetwork := make(map[uuid.UUID]float32)
+	for id, strength := range ea.Network {
+		updatedNetwork[id] = strength
+	}
+	return updatedNetwork
 }
 
 func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
@@ -90,37 +93,83 @@ func (ea *ExtendedAgent) DistanceTo(other *ExtendedAgent) float64 {
 	return infra.Distance(ea.Position, other.Position)
 }
 
-func (a *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
-	if _, exists := a.Network[otherID]; !exists {
-		a.Network[otherID] = strength
-	}
+func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
+	ea.Server.UpdateAgentRelationship(ea.NameID, otherID, strength)
 }
 
-func (a *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
-	if _, exists := a.Network[otherID]; exists {
-		a.Network[otherID] += change
+func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
+	ea.Server.UpdateAgentRelationship(ea.NameID, otherID, change)
+}
 
-		// Keep values between 0 and 1
-		if a.Network[otherID] > 1 {
-			a.Network[otherID] = 1
-		} else if a.Network[otherID] < 0 {
-			a.Network[otherID] = 0
+
+// Moves an agent towards the strongest connection in its network.
+func (ea *ExtendedAgent) MoveAttractedToNetwork(grid *infra.Grid, server infra.IServer) {
+	if len(ea.Network) == 0 {
+		// No social ties → move randomly
+		ea.Position[0] += rand.Intn(3) - 1
+		ea.Position[1] += rand.Intn(3) - 1
+		return
+	}
+
+	// Find the most attractive agent(s)
+	var bestNeighbor uuid.UUID
+	maxAttraction := float32(-1)
+
+	for neighborID, strength := range ea.Network {
+		if strength > maxAttraction {
+			bestNeighbor = neighborID
+			maxAttraction = strength
 		}
 	}
-}
 
-func (a *ExtendedAgent) DecayRelationships() {
-	for id := range a.Network {
-		a.Network[id] -= 0.05 // Reduce strength over time
-		if a.Network[id] < 0 {
-			delete(a.Network, id) // Remove weak relationships
-		}
+	if bestNeighbor == uuid.Nil {
+		return // No valid movement target
 	}
-}
 
-func (a *ExtendedAgent) Interact(other *ExtendedAgent) {
-	a.UpdateRelationship(other.GetID(), 0.1)
-	other.UpdateRelationship(a.GetID(), 0.1)
+	// Get bestNeighbor's position from server
+	bestPos, exists := server.GetAgentPosition(bestNeighbor)
+	if !exists {
+		return
+	}
+
+	// Compute movement direction
+	dx := bestPos[0] - ea.Position[0]
+	dy := bestPos[1] - ea.Position[1]
+
+	moveX, moveY := 0, 0
+	if dx > 0 {
+		moveX = 1
+	} else if dx < 0 {
+		moveX = -1
+	}
+
+	if dy > 0 {
+		moveY = 1
+	} else if dy < 0 {
+		moveY = -1
+	}
+
+	// Move 1 or 2 steps in direction
+	step := rand.Intn(2) + 1
+	newX := ea.Position[0] + moveX*step
+	newY := ea.Position[1] + moveY*step
+
+	// Keep inside grid bounds
+	if newX < 0 {
+		newX = 0
+	} else if newX >= grid.Width {
+		newX = grid.Width - 1
+	}
+
+	if newY < 0 {
+		newY = 0
+	} else if newY >= grid.Height {
+		newY = grid.Height - 1
+	}
+
+	// Update position
+	ea.Position = [2]int{newX, newY}
+	fmt.Printf("Agent %v moved to (%d, %d) towards %v\n", ea.NameID, newX, newY, bestNeighbor)
 }
 
 func (ea *ExtendedAgent) GetAge() int{
@@ -129,10 +178,6 @@ func (ea *ExtendedAgent) GetAge() int{
 
 func (ea *ExtendedAgent) SetAge(age int) {
     ea.Age = age
-}
-
-func (a *ExtendedAgent) MoveRandomly(grid *infra.Grid) {
-	a.Position = [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)}
 }
 
 func (ea *ExtendedAgent) IsMortalitySalient() bool {
@@ -144,29 +189,21 @@ func (ea *ExtendedAgent) SetMortalitySalience(ms bool) {
 }
 
 func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
-    return ea.SelfSacrificeWillingness
+	return ea.SelfSacrificeWillingness
 }
-
-
-// func (ea *ExtendedAgent) GetContextSacrifice() string {
-//     return ea.ContextSacrifice
-// }
-
-// func (ea *ExtendedAgent) SetContextSacrifice(context string) {
-//     ea.ContextSacrifice = context
-// }
-
 
 // Decision-making logic
 func (ea *ExtendedAgent) DecideSacrifice() float32 {
     //TO-DO: Fuzzy logic stuff
 
+	ea.SelfSacrificeWillingness = rand.Float32()
+
 	
     //fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
     
-	fmt.Printf("Agent %v decided to %s \n",
-        ea.NameID,
-        map[float32]string{}[ea.SelfSacrificeWillingness])
+	// fmt.Printf("Agent %v willing to sacrifice by %s \n",
+    //     ea.NameID,
+    //     map[float32]string{}[ea.SelfSacrificeWillingness])
     return ea.SelfSacrificeWillingness
 }
 
@@ -193,4 +230,3 @@ func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRe
 	)
 	return record
 }
-
