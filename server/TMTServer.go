@@ -163,7 +163,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	//3. Eliminate Agents
 	remainingAgents := []*agents.ExtendedAgent{}
 	for _, agent := range tserv.ActiveAgents {
-		if agent.SelfSacrificeWillingness > 0.3 {
+		if agent.SelfSacrificeWillingness > 0.7 {
 			fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.NameID)
 		} else {
 			remainingAgents = append(remainingAgents, agent)
@@ -224,4 +224,3 @@ func (tserv *TMTServer) RecordTurnInfo() {
 
 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
 }
-

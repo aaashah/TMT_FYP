@@ -1,0 +1,99 @@
+main function started.
+--------Start of iteration 0---------
+
+
+Iteration 0, Turn 0, current agent count: 5
+
+
+Iteration 0, Turn 1, current agent count: 1
+
+
+Iteration 0, Turn 2, current agent count: 1
+
+
+Iteration 0, Turn 3, current agent count: 1
+
+
+Iteration 0, Turn 4, current agent count: 1
+--------End of iteration 0---------
+--------Start of iteration 1---------
+
+
+Iteration 1, Turn 0, current agent count: 0
+
+
+Iteration 1, Turn 1, current agent count: 0
+
+
+Iteration 1, Turn 2, current agent count: 0
+
+
+Iteration 1, Turn 3, current agent count: 0
+
+
+Iteration 1, Turn 4, current agent count: 0
+--------End of iteration 1---------
+--------Start of iteration 2---------
+
+
+Iteration 2, Turn 0, current agent count: 0
+
+
+Iteration 2, Turn 1, current agent count: 0
+
+
+Iteration 2, Turn 2, current agent count: 0
+
+
+Iteration 2, Turn 3, current agent count: 0
+
+
+Iteration 2, Turn 4, current agent count: 0
+--------End of iteration 2---------
+
+
+GamePlaybackSummary - playing 18 turn records
+
+Iteration 0, Turn 0:
+Agent 4eef61ed-1645-4c73-92d4-bad39800a345: 
+Agent ID: 4eef61ed-1645-4c73-92d4-bad39800a345
+
+Iteration 0, Turn 1:
+Agent 4eef61ed-1645-4c73-92d4-bad39800a345: 
+Agent ID: 4eef61ed-1645-4c73-92d4-bad39800a345
+
+Iteration 0, Turn 2:
+Agent 4eef61ed-1645-4c73-92d4-bad39800a345: 
+Agent ID: 4eef61ed-1645-4c73-92d4-bad39800a345
+
+Iteration 0, Turn 3:
+Agent 4eef61ed-1645-4c73-92d4-bad39800a345: 
+Agent ID: 4eef61ed-1645-4c73-92d4-bad39800a345
+
+Iteration 0, Turn 4:
+
+Iteration 0, Turn 5:
+
+Iteration 1, Turn 0:
+
+Iteration 1, Turn 1:
+
+Iteration 1, Turn 2:
+
+Iteration 1, Turn 3:
+
+Iteration 1, Turn 4:
+
+Iteration 1, Turn 5:
+
+Iteration 2, Turn 0:
+
+Iteration 2, Turn 1:
+
+Iteration 2, Turn 2:
+
+Iteration 2, Turn 3:
+
+Iteration 2, Turn 4:
+
+Iteration 2, Turn 5:

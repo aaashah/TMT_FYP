@@ -1,7 +1,9 @@
 package gameRecorder
 
 import (
+	"crypto/md5"
 	"encoding/csv"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -17,12 +19,30 @@ import (
 // Add these constants at the top of the file
 const (
 	outputDir      = "visualisation_output"
-	deathSymbol    = "💀"
-	showLegends    = false   // Toggle for showing/hiding legends
+	//deathSymbol    = "💀"
+	//deathSymbol = "\U0001F480"
+	//showLegends    = false   // Toggle for showing/hiding legends
 	//showAxisLabels = true    // Keep axis labels visible
 	//chartWidth     = "800px" // Increased from 500px
 	//chartHeight    = "500px" // Increased from 400px
 )
+
+// Stores agent colors permanently
+var agentColorMap = make(map[string]string)
+
+// Function to generate a consistent hex color for an agent ID
+func getAgentColor(agentID string) string {
+    if color, exists := agentColorMap[agentID]; exists {
+        return color // Reuse existing color
+    }
+
+    // Generate a unique color based on agent ID
+    hash := md5.Sum([]byte(agentID))
+    hexColor := fmt.Sprintf("#%s", hex.EncodeToString(hash[:3])) // Take first 3 bytes for RGB
+
+    agentColorMap[agentID] = hexColor
+    return hexColor
+}
 
 // CreatePlaybackHTML reads recorded data and generates an HTML file with charts
 func CreatePlaybackHTML(recorder *ServerDataRecorder) {
@@ -40,7 +60,16 @@ func CreatePlaybackHTML(recorder *ServerDataRecorder) {
 		iterationMap[record.IterationNumber] = append(iterationMap[record.IterationNumber], record)
 	}
 
-	for iteration, turns := range iterationMap {
+	// Extract iteration keys and sort them
+	iterationKeys := make([]int, 0, len(iterationMap))
+	for iteration := range iterationMap {
+		iterationKeys = append(iterationKeys, iteration)
+	}
+	sort.Ints(iterationKeys) // Sort iteration numbers in ascending order
+
+	// Render charts in sorted order
+	for _, iteration := range iterationKeys {
+		turns := iterationMap[iteration]
 		sacrificeChart := createSacrificeChart(iteration, turns)
 		if sacrificeChart != nil {
 			page.AddCharts(sacrificeChart)
@@ -116,7 +145,14 @@ func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
 
     for _, turn := range turns {
         for _, agent := range turn.AgentRecords {
+
             agentID := agent.AgentID.String()
+
+			// Skip processing if the agent has already been eliminated
+			if agentDeathTurn[agentID] {
+				continue
+			}
+
             if _, exists := agentSacrifices[agentID]; !exists {
                 agentSacrifices[agentID] = make([]opts.LineData, len(turns))
             }
@@ -126,7 +162,7 @@ func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
             if !agent.IsAlive && !agentDeathTurn[agentID] {
                 deathMarkers = append(deathMarkers, opts.ScatterData{
                     Value: []interface{}{turn.TurnNumber, agent.SelfSacrificeWillingness},
-                    Symbol: "rect", // Use a visible symbol instead of "pin"
+                    Symbol: "💀", // Use a visible symbol instead of "pin"
                     SymbolSize: 12,
                 })
                 agentDeathTurn[agentID] = true // Mark that this agent has been processed
@@ -136,12 +172,19 @@ func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
 
     // Add data series for each agent
     for agentID, sacrifices := range agentSacrifices {
+		color := getAgentColor(agentID) // Get unique color for agent
         line.AddSeries(
-            fmt.Sprintf("Agent %s", agentID), sacrifices,
-            charts.WithLineStyleOpts(opts.LineStyle{
-                Width: 2,
-            }),
-        )
+			fmt.Sprintf("Agent %s", agentID),
+			sacrifices,
+			charts.WithLineStyleOpts(opts.LineStyle{
+				Width: 2,
+				Color: color, // Ensure the line color stays consistent
+			}),
+			charts.WithItemStyleOpts(opts.ItemStyle{
+				Color: color,         // Ensure the marker (circle) color matches the line
+				BorderColor: color,   // Ensure the stroke around the marker is the same
+			}),
+		)
     }
 
     // Overlay death markers if any agents were eliminated
@@ -159,177 +202,9 @@ func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
     line.SetXAxis(xAxis)
 
     return line
+
 }
 
-// func createSacrificePlot(recorder *ServerDataRecorder, outputDir string) {
-// 	// Add safety check at the start
-// 	if len(recorder.TurnRecords) == 0 {
-// 		log.Println("Warning: No turn records to visualise")
-// 		return
-// 	}
-
-// 	// Group turn records by iteration
-// 	iterationMap := make(map[int][]TurnRecord)
-// 	for _, record := range recorder.TurnRecords {
-// 		iterationMap[record.IterationNumber] = append(iterationMap[record.IterationNumber], record)
-// 	}
-
-// 	// Create a page to hold all iteration charts
-// 	page := components.NewPage()
-// 	page.PageTitle = "Agent Sacrifices Per Iteration"
-
-// 	// For each iteration, create a line chart
-// 	for iteration, turns := range iterationMap {
-// 		// Sort turns by turn number to ensure correct order
-// 		sort.Slice(turns, func(i, j int) bool {
-// 			return turns[i].TurnNumber < turns[j].TurnNumber
-// 		})
-
-// 		// Find first turn with agent records to initialise our agent map
-// 		var initialAgentRecords []AgentRecord
-// 		for _, turn := range turns {
-// 			if len(turn.AgentRecords) > 0 {
-// 				initialAgentRecords = turn.AgentRecords
-// 				break
-// 			}
-// 		}
-
-// 		if len(initialAgentRecords) == 0 {
-// 			log.Printf("Warning: No agent records found in iteration %d\n", iteration)
-// 			continue
-// 		}
-
-// 		// Create a new line chart with adjusted layout
-// 		line := charts.NewLine()
-// 		line.SetGlobalOptions(
-// 			charts.WithTitleOpts(opts.Title{
-// 				Title: fmt.Sprintf("Iteration %d - Agent Sacrifices Over Time", iteration),
-// 				Left:  "center",  // Centers the title
-// 				Top:   "2%",      // Adjusts vertical position
-// 				TextStyle: &opts.TextStyle{
-// 					FontSize: 18, // Larger font size for readability
-// 					Bold:     true,
-// 				},
-// 			}),
-// 			charts.WithTooltipOpts(opts.Tooltip{
-// 				Show: opts.Bool(true),
-// 			}),
-// 			charts.WithLegendOpts(opts.Legend{
-// 				Show: opts.Bool(false),
-// 			}),
-// 			charts.WithXAxisOpts(opts.XAxis{
-// 				Name: "Turn Number",
-// 				NameGap: 30, // Increases space between axis and name
-// 				AxisLabel: &opts.AxisLabel{
-// 					Show:   opts.Bool(true),
-// 					Rotate: 0, // Ensures horizontal labels
-// 					Margin: 10,
-// 				},
-// 			}),
-// 			charts.WithYAxisOpts(opts.YAxis{
-// 				Name: "Self-Sacrifice Willingness",
-// 				NameGap: 40, // Moves Y-axis label further from axis
-// 				SplitLine: &opts.SplitLine{Show: opts.Bool(true)}, // Adds grid lines
-// 			}),
-// 			charts.WithGridOpts(opts.Grid{
-// 				Top:    "28%",
-// 				Right:  "5%",
-// 				Left:   "10%", // Add more space for Y-axis labels
-// 				Bottom: "15%", // Add more space for X-axis labels
-// 			}),
-// 		)
-// 		// Get turn numbers for X-axis
-// 		xAxis := make([]int, len(turns))
-// 		for i, turn := range turns {
-// 			xAxis[i] = turn.TurnNumber
-// 		}
-
-// 		// Create a map of agent sacrifices over turns
-// 		agentSacrifices := make(map[string][]float64)
-
-// 		// Initialise the map with empty slices using the first found agents
-// 		for _, agent := range initialAgentRecords {
-// 			agentID := agent.AgentID.String()
-// 			agentSacrifices[agentID] = make([]float64, len(turns))
-// 		}
-
-// 		// Fill in the sacrifices for each agent
-// 		for turnIdx, turn := range turns {
-// 			for _, agent := range turn.AgentRecords {
-// 				agentID := agent.AgentID.String()
-// 				agentSacrifices[agentID][turnIdx] = float64(agent.SelfSacrificeWillingness)
-// 			}
-// 		}
-
-// 		// When adding series, we can also add death markers
-// 		for agentID, sacrifices := range agentSacrifices {
-// 			// Find when the agent died (if they did)
-// 			var deathMarker opts.ScatterData
-// 			var deathTurn int = -1
-
-// 			// Find the turn where agent died
-// 			for i, turn := range turns {
-// 				for _, agent := range turn.AgentRecords {
-// 					if agent.AgentID.String() == agentID {
-// 						if !agent.IsAlive {
-// 							deathTurn = i
-// 							deathMarker = opts.ScatterData{
-// 								Value:      []interface{}{xAxis[i], sacrifices[i]},
-// 								Symbol:     deathSymbol,
-// 								SymbolSize: 20,
-// 							}
-// 							break
-// 						}
-// 					}
-// 				}
-// 				if deathTurn != -1 {
-// 					break
-// 				}
-// 			}
-		
-// 			// // Add the series with custom styling
-// 			// line.AddSeries(agentID, generateLineItems(xAxis[:len(sacrifices)], sacrifices),
-// 			// 	charts.WithLineStyleOpts(opts.LineStyle{
-// 			// 		Color: teamColors[agentID],
-// 			// 	}),
-// 			// 	charts.WithItemStyleOpts(opts.ItemStyle{
-// 			// 		Color: blue,
-// 			// 	}),
-// 			// )
-
-// 			// Add death marker as a scatter plot overlay
-// 			if deathTurn != -1 {
-// 				scatter := charts.NewScatter()
-// 				scatter.AddSeries(agentID+" Death", []opts.ScatterData{deathMarker},
-// 					charts.WithItemStyleOpts(opts.ItemStyle{
-// 						Color: "black",
-// 					}),
-// 				)
-// 				line.Overlap(scatter)
-// 			}
-// 			// Set X-axis data
-// 			line.SetXAxis(xAxis)
-
-// 			// Add the chart to the page
-// 			page.AddCharts(line)
-
-// 			// Update file creation
-// 			filepath := filepath.Join(outputDir, "agent_sacrifices.html")
-// 			f, err := os.Create(filepath)
-// 			if err != nil {
-// 				log.Printf("Error creating score plots file: %v\n", err)
-// 				return
-// 			}
-// 			defer f.Close()
-
-// 			// Render the page
-// 			err = page.Render(f)
-// 			if err != nil {
-// 				panic(err)
-// 			}	
-// 		}
-// 	}
-// }
 
 // ExportToCSV exports the turn records to CSV files
 func ExportToCSV(recorder *ServerDataRecorder, outputDir string) error {
