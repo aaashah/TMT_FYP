@@ -110,4 +110,5 @@ func main() {
 	// record data
 	serv.DataRecorder.GamePlaybackSummary()
 	gameRecorder.ExportToCSV(serv.DataRecorder, "visualisation_output/csv_data")
+	//gameRecorder.CreateGridHTML(serv.DataRecorder, "visualisation_output/csv_data")
 }

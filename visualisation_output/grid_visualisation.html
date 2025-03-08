@@ -1,0 +1,88 @@
+
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Agent Movement Grid</title>
+			<style>
+				body { font-family: Arial, sans-serif; text-align: center; }
+				.grid-container { width: 80%; margin: auto; }
+				#grid-visualisation {
+					width: 600px;
+					height: 600px;
+					border: 2px solid black;
+					position: relative;
+					display: grid;
+					grid-template-columns: repeat(15, 1fr);  /* 15x15 grid */
+					grid-template-rows: repeat(15, 1fr);
+					background-color: #f0f0f0;
+					background-image: 
+						linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
+						linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
+					background-size: 40px 40px;
+				}
+				.agent {
+					width: 38px;
+					height: 38px;
+					border-radius: 50%;
+					position: absolute;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					font-size: 18px;
+					color: white;
+					font-weight: bold;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+				}
+			</style>
+		</head>
+		<body>
+			<h2>Agent Movement Grid</h2>
+			<div id="grid-container" class="grid-container">
+				<div id="grid-visualisation"></div>
+				<input type="range" min="0" max="17" value="0" id="turn-slider" style="width: 500px;">
+			</div>
+
+			<script>
+				const gridData = {"1":[{"alive":false,"id":"006e837a-2fbf-489d-8632-e4e525683c3a","x":4,"y":8},{"alive":false,"id":"1e6436a9-05be-4bdd-97c4-9052bb29d33e","x":0,"y":2},{"alive":false,"id":"784350dc-8382-4e32-9d1c-7a225a1a59eb","x":0,"y":1},{"alive":false,"id":"8e859ce1-8be3-44a9-b73a-7e4522b9f079","x":2,"y":2},{"alive":false,"id":"e9bdfeb9-ea9e-4e8e-a460-af3651771192","x":0,"y":1}],"2":[{"alive":false,"id":"006e837a-2fbf-489d-8632-e4e525683c3a","x":4,"y":8},{"alive":false,"id":"1e6436a9-05be-4bdd-97c4-9052bb29d33e","x":0,"y":2},{"alive":false,"id":"784350dc-8382-4e32-9d1c-7a225a1a59eb","x":0,"y":1},{"alive":false,"id":"8e859ce1-8be3-44a9-b73a-7e4522b9f079","x":2,"y":2},{"alive":false,"id":"e9bdfeb9-ea9e-4e8e-a460-af3651771192","x":0,"y":1}],"3":[{"alive":false,"id":"006e837a-2fbf-489d-8632-e4e525683c3a","x":4,"y":8},{"alive":false,"id":"1e6436a9-05be-4bdd-97c4-9052bb29d33e","x":0,"y":2},{"alive":false,"id":"784350dc-8382-4e32-9d1c-7a225a1a59eb","x":0,"y":1},{"alive":false,"id":"8e859ce1-8be3-44a9-b73a-7e4522b9f079","x":2,"y":2},{"alive":false,"id":"e9bdfeb9-ea9e-4e8e-a460-af3651771192","x":0,"y":1}],"4":[{"alive":false,"id":"006e837a-2fbf-489d-8632-e4e525683c3a","x":4,"y":8},{"alive":false,"id":"1e6436a9-05be-4bdd-97c4-9052bb29d33e","x":0,"y":2},{"alive":false,"id":"784350dc-8382-4e32-9d1c-7a225a1a59eb","x":0,"y":1},{"alive":false,"id":"8e859ce1-8be3-44a9-b73a-7e4522b9f079","x":2,"y":2},{"alive":false,"id":"e9bdfeb9-ea9e-4e8e-a460-af3651771192","x":0,"y":1}],"5":[{"alive":false,"id":"006e837a-2fbf-489d-8632-e4e525683c3a","x":4,"y":8},{"alive":false,"id":"1e6436a9-05be-4bdd-97c4-9052bb29d33e","x":0,"y":2},{"alive":false,"id":"784350dc-8382-4e32-9d1c-7a225a1a59eb","x":0,"y":1},{"alive":false,"id":"8e859ce1-8be3-44a9-b73a-7e4522b9f079","x":2,"y":2},{"alive":false,"id":"e9bdfeb9-ea9e-4e8e-a460-af3651771192","x":0,"y":1}]};
+
+				function updateGridVisualisation(turn) {
+					console.log("Updating grid for turn:", turn); 
+
+					const gridContainer = document.getElementById("grid-visualisation");
+					if (!gridContainer) {
+						console.error("Grid container not found!");
+						return;
+					}
+
+					gridContainer.innerHTML = ""; // Clear previous agents
+
+					if (!gridData[turn] || gridData[turn].length === 0) {
+						console.warn("No agent data for turn:", turn);
+						return;
+					}
+
+					gridData[turn].forEach(agent => {
+						let agentDiv = document.createElement("div");
+						agentDiv.classList.add("agent");
+						agentDiv.style.left = (agent.x * 40 + 1) + "px";  // Align within cells
+						agentDiv.style.top = (agent.y * 40 + 1) + "px";
+						agentDiv.style.backgroundColor = agent.alive ? "blue" : "black";
+						agentDiv.innerHTML = agent.alive ? "" : "💀";
+
+						gridContainer.appendChild(agentDiv);
+					});
+				}
+
+				document.addEventListener("DOMContentLoaded", function() {
+					updateGridVisualisation(0);
+				});
+
+				document.getElementById("turn-slider").addEventListener("input", function() {
+					updateGridVisualisation(parseInt(this.value));
+				});
+			</script>
+		</body>
+		</html>
+	

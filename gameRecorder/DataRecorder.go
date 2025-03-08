@@ -79,5 +79,6 @@ func (sdr *ServerDataRecorder) GamePlaybackSummary() {
 
 	// Create the HTML visualization
 	CreatePlaybackHTML(sdr)
+	CreateGridHTML(sdr) 
 }
 
