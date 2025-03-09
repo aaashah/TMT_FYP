@@ -117,30 +117,48 @@ app.layout = html.Div(
 )
 def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
     """
-    Updates the grid visualization and handles movement between iterations and turns.
+    Handles movement through iterations and turns with proper logic.
     """
     global turns_per_iteration
 
-    # Determine new turn and iteration
+    # Ensure turn structure is valid
+    max_turns_in_current_iteration = turns_per_iteration.get(current_iteration, 0)
+
+    # Handle "Next" button
     if next_clicks > prev_clicks:
-        if current_turn < turns_per_iteration[current_iteration]:  # Move to next turn
-            new_turn = current_turn + 1
+        if current_turn < max_turns_in_current_iteration:
+            new_turn = current_turn + 1  # Move forward one turn
             new_iteration = current_iteration
-        else:  # Move to next iteration
-            new_iteration = min(current_iteration + 1, max_iteration)
-            new_turn = 0
-    elif prev_clicks < next_clicks:
-        if current_turn > 0:  # Move to previous turn
-            new_turn = current_turn - 1
+        else:
+            if current_iteration < max_iteration:
+                new_iteration = current_iteration + 1  # Move to next iteration
+                new_turn = 0  # Reset to first turn in the new iteration
+            else:
+                new_iteration = max_iteration  # Stay at last iteration
+                new_turn = max_turns_in_current_iteration  # Stay at last turn
+
+    # Handle "Previous" button
+    elif prev_clicks > next_clicks:
+        if current_turn > 0:
+            new_turn = current_turn - 1  # Move back one turn
             new_iteration = current_iteration
-        else:  # Move to previous iteration
-            new_iteration = max(current_iteration - 1, 0)
-            new_turn = turns_per_iteration[new_iteration]
+        else:
+            if (
+                current_iteration > 0
+            ):  # If at turn 0, move to the last turn of the previous iteration
+                new_iteration = current_iteration - 1
+                new_turn = turns_per_iteration[
+                    new_iteration
+                ]  # Last turn of previous iteration
+            else:
+                new_iteration = 0  # Already at first iteration
+                new_turn = 0  # Stay at turn 0
+
     else:
-        new_iteration = current_iteration
+        new_iteration = current_iteration  # No clicks, stay in place
         new_turn = current_turn
 
-    # Filter agent data for the correct iteration and turn
+    # **Filter agent data for correct iteration & turn**
     filtered_df = agent_df[
         (agent_df["IterationNumber"] == new_iteration)
         & (agent_df["TurnNumber"] == new_turn)

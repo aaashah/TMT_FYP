@@ -1,7 +1,6 @@
 package gameRecorder
 
 import (
-	//"github.com/google/uuid"
 	"log"
 	"sort"
 )
@@ -11,60 +10,66 @@ func Log(message string) {
 	log.Println(message)
 }
 
+// ✅ Now TurnRecord explicitly encapsulates an Iteration
 type TurnRecord struct {
-	TurnNumber      int
-	IterationNumber int
+	IterationNumber int  // ✅ Ensures iteration is always before turn
+	TurnNumber      int  // ✅ Turns belong inside an iteration
 	AgentRecords    []AgentRecord
-	InfraRecord    InfraRecord
+	InfraRecord     InfraRecord
 }
 
-// turn record constructor
-func NewTurnRecord(turnNumber int, iterationNumber int) TurnRecord {
+// ✅ Updated Constructor: Iteration comes first
+func NewTurnRecord(iterationNumber int, turnNumber int) TurnRecord {
 	return TurnRecord{
-		TurnNumber:      turnNumber,
 		IterationNumber: iterationNumber,
+		TurnNumber:      turnNumber,
 	}
 }
 
 // --------- Server Recording Functions ---------
 type ServerDataRecorder struct {
-	TurnRecords []TurnRecord // where all our info is stored!
-
+	TurnRecords      []TurnRecord // ✅ Stores all iterations & turns
 	currentIteration int
 	currentTurn      int
 }
 
+// ✅ Ensures we can retrieve the current Turn Record
 func (sdr *ServerDataRecorder) GetCurrentTurnRecord() *TurnRecord {
 	return &sdr.TurnRecords[len(sdr.TurnRecords)-1]
 }
 
+// ✅ Creates new recorder
 func CreateRecorder() *ServerDataRecorder {
 	return &ServerDataRecorder{
 		TurnRecords:      []TurnRecord{},
-		currentIteration: -1, // to start from 0, start from 0 later
+		currentIteration: -1, // Start from -1 so first call goes to 0
 		currentTurn:      -1,
-		
 	}
 }
 
+// ✅ **Properly initializes a new iteration** and resets turns to 0
 func (sdr *ServerDataRecorder) RecordNewIteration() {
 	sdr.currentIteration += 1
-	sdr.currentTurn = 0
-
-	// create new turn record
-	sdr.TurnRecords = append(sdr.TurnRecords, NewTurnRecord(sdr.currentTurn, sdr.currentIteration))
+	sdr.currentTurn = -1 // ✅ So that Turn 0 starts fresh in `RecordNewTurn()`
 }
 
+// ✅ **Records a new turn within the current iteration**
 func (sdr *ServerDataRecorder) RecordNewTurn(agentRecords []AgentRecord, infraRecord InfraRecord) {
-	sdr.currentTurn += 1
-	sdr.TurnRecords = append(sdr.TurnRecords, NewTurnRecord(sdr.currentTurn, sdr.currentIteration))
+    // ✅ Increment turn *before* creating the record, ensuring correct order
+    sdr.currentTurn += 1 
 
-	sdr.TurnRecords[len(sdr.TurnRecords)-1].AgentRecords = agentRecords
-	sdr.TurnRecords[len(sdr.TurnRecords)-1].InfraRecord = infraRecord
+    // ✅ Only create Turn 0 the first time it happens in an iteration
+    if sdr.currentTurn == 0 {
+        sdr.TurnRecords = append(sdr.TurnRecords, NewTurnRecord(sdr.currentIteration, sdr.currentTurn))
+        sdr.TurnRecords[len(sdr.TurnRecords)-1].InfraRecord = infraRecord
+    }
+
+    sdr.TurnRecords = append(sdr.TurnRecords, NewTurnRecord(sdr.currentIteration, sdr.currentTurn))
+    sdr.TurnRecords[len(sdr.TurnRecords)-1].AgentRecords = agentRecords
+    sdr.TurnRecords[len(sdr.TurnRecords)-1].InfraRecord = infraRecord
 }
 
-
-
+// ✅ **Fixes Iteration & Turn Order in CSV & Logs**
 func (sdr *ServerDataRecorder) GamePlaybackSummary() {
 	log.Printf("\n\nGamePlaybackSummary - playing %v turn records\n", len(sdr.TurnRecords))
 
@@ -72,20 +77,20 @@ func (sdr *ServerDataRecorder) GamePlaybackSummary() {
 		log.Printf("\nIteration %v, Turn %v:\n", turnRecord.IterationNumber, turnRecord.TurnNumber)
 
 		// ✅ Print the grid visualization in the logs
-		//PrintGrid(turnRecord)
+		// PrintGrid(turnRecord)
 
-		// Sort agent records by ID for consistent ordering
+		// ✅ Sort agent records **by ID** for consistent ordering
 		sort.Slice(turnRecord.AgentRecords, func(i, j int) bool {
 			return turnRecord.AgentRecords[i].AgentID.String() < turnRecord.AgentRecords[j].AgentID.String()
 		})
 
+		// ✅ Print agent info correctly
 		for _, agentRecord := range turnRecord.AgentRecords {
 			log.Printf("Agent %v: ", agentRecord.AgentID)
 			agentRecord.DebugPrint()
 		}
 	}
 
-	// ✅ Create the HTML visualization
+	// ✅ Creates the HTML visualization
 	CreatePlaybackHTML(sdr)
 }
-

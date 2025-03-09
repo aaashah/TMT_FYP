@@ -207,26 +207,43 @@ func createSacrificeChart(iteration int, turns []TurnRecord) *charts.Line {
 
 
 // ExportToCSV exports the turn records to CSV files
+// ✅ Fix: Ensure IterationNumber is written before TurnNumber
 func ExportToCSV(recorder *ServerDataRecorder, outputDir string) error {
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
-	// agent records
+	// ✅ Sort agent records by IterationNumber THEN TurnNumber
 	var allAgentRecords []AgentRecord
 	for _, turn := range recorder.TurnRecords {
 		allAgentRecords = append(allAgentRecords, turn.AgentRecords...)
 	}
+
+	sort.Slice(allAgentRecords, func(i, j int) bool {
+		if allAgentRecords[i].IterationNumber == allAgentRecords[j].IterationNumber {
+			return allAgentRecords[i].TurnNumber < allAgentRecords[j].TurnNumber
+		}
+		return allAgentRecords[i].IterationNumber < allAgentRecords[j].IterationNumber
+	})
+
 	if err := exportStructSliceToCSV(allAgentRecords, filepath.Join(outputDir, "agent_records.csv")); err != nil {
 		return fmt.Errorf("failed to export agent records: %v", err)
 	}
 
-	// infra records
+	// ✅ Sort infra records the same way
 	var allInfraRecords []InfraRecord
 	for _, turn := range recorder.TurnRecords {
 		allInfraRecords = append(allInfraRecords, turn.InfraRecord)
 	}
+
+	sort.Slice(allInfraRecords, func(i, j int) bool {
+		if allInfraRecords[i].IterationNumber == allInfraRecords[j].IterationNumber {
+			return allInfraRecords[i].TurnNumber < allInfraRecords[j].TurnNumber
+		}
+		return allInfraRecords[i].IterationNumber < allInfraRecords[j].IterationNumber
+	})
+
 	if err := exportInfraRecordsToCSV(allInfraRecords, filepath.Join(outputDir, "infra_records.csv")); err != nil {
 		return fmt.Errorf("failed to export infra records: %v", err)
 	}
@@ -255,12 +272,19 @@ func exportStructSliceToCSV(data interface{}, filepath string) error {
 
 	structType := v.Index(0).Type()
 	var headers []string
+
+	// ✅ **Ensure correct column order (IterationNumber first)**
 	for i := 0; i < structType.NumField(); i++ {
 		field := structType.Field(i)
-		if field.PkgPath == "" {
+		if field.Name == "IterationNumber" {
+			headers = append([]string{field.Name}, headers...) // Iteration first
+		} else if field.Name == "TurnNumber" {
+			headers = append(headers, field.Name) // Turn follows Iteration
+		} else {
 			headers = append(headers, field.Name)
 		}
 	}
+
 	if err := writer.Write(headers); err != nil {
 		return err
 	}
@@ -268,12 +292,14 @@ func exportStructSliceToCSV(data interface{}, filepath string) error {
 	for i := 0; i < v.Len(); i++ {
 		item := v.Index(i)
 		var row []string
-		for j := 0; j < item.Type().NumField(); j++ {
-			field := item.Type().Field(j)
-			if field.PkgPath == "" {
-				row = append(row, fmt.Sprint(item.Field(j).Interface()))
+
+		for _, fieldName := range headers {
+			fieldValue := item.FieldByName(fieldName)
+			if fieldValue.IsValid() {
+				row = append(row, fmt.Sprint(fieldValue.Interface()))
 			}
 		}
+
 		if err := writer.Write(row); err != nil {
 			return err
 		}
@@ -293,21 +319,27 @@ func exportInfraRecordsToCSV(records []InfraRecord, filepath string) error {
 	defer writer.Flush()
 
 	// ✅ Write CSV headers
-	headers := []string{"TurnNumber", "IterationNumber", "AgentPositions", "Tombstones"}
+	headers := []string{"IterationNumber", "TurnNumber", "AgentPositions", "Tombstones"}
 	if err := writer.Write(headers); err != nil {
 		return err
 	}
 
-	// ✅ Write each infra record
+	// ✅ Track seen Turn 0s to prevent duplication
+	seenIterations := make(map[int]bool)
+
 	for _, record := range records {
-		agentPositions := formatGridMap(record.AgentPositions)
-		tombstones := formatGridMap(record.Tombstones)
+		if record.TurnNumber == 0 {
+			if seenIterations[record.IterationNumber] {
+				continue // Skip duplicate Turn 0
+			}
+			seenIterations[record.IterationNumber] = true
+		}
 
 		row := []string{
-			fmt.Sprint(record.TurnNumber),
 			fmt.Sprint(record.IterationNumber),
-			agentPositions, // Convert map to string
-			tombstones,     // Convert map to string
+			fmt.Sprint(record.TurnNumber),
+			formatGridMap(record.AgentPositions),
+			formatGridMap(record.Tombstones),
 		}
 
 		if err := writer.Write(row); err != nil {
