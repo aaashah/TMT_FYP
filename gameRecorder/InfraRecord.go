@@ -8,13 +8,15 @@ type InfraRecord struct {
 	TurnNumber      int
 	IterationNumber int
 
-	Threshold              int  // current threshold set by server
-	ThresholdAppliedInTurn bool // whether the threshold was applied in the current turn
+	AgentPositions map[[2]int]bool // Stores occupied agent positions (x, y)
+	Tombstones     map[[2]int]bool // Stores tombstone locations (x, y)
 }
 
 func NewInfraRecord(turnNumber int, iterationNumber int) InfraRecord {
 	return InfraRecord{
-		TurnNumber:             turnNumber,
-		IterationNumber:        iterationNumber,
+		TurnNumber:      turnNumber,
+		IterationNumber: iterationNumber,
+		AgentPositions:  make(map[[2]int]bool),
+		Tombstones:      make(map[[2]int]bool),
 	}
 }

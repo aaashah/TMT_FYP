@@ -23,7 +23,7 @@ type TMTServer struct {
 	//mu     sync.Mutex
 	//context string
 	ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
-	grid         *infra.Grid
+	Grid         *infra.Grid
 	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
 
 	// data recorder
@@ -37,7 +37,6 @@ type TMTServer struct {
 	
 }
 
-var _ infra.IServer = (*TMTServer)(nil)
 
 func init () {
 	rand.Seed(time.Now().UnixNano())
@@ -48,13 +47,7 @@ func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, b
 	return agent, exists
 }
 
-func (tserv *TMTServer) GetAgentPosition(agentID uuid.UUID) ([2]int, bool) {
-	agent, exists := tserv.ActiveAgents[agentID]
-	if !exists {
-		return [2]int{0, 0}, false
-	}
-	return agent.Position, true
-}
+
 
 // Moved to TMTServer to avoid import cycle
 func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, change float32) {
@@ -120,9 +113,9 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
 
-	tserv.grid = infra.CreateGrid(70, 30) // Create grid dimensions
 	tserv.iteration = iteration
 	tserv.turn = 0
+
 
 	// Print the network structure
 	fmt.Println("Agent Social Network at iteration start:")
@@ -143,28 +136,25 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
 
-	// Print agent positions
-    fmt.Println("Agent positions at turn:", j)
-    for _, agent := range tserv.ActiveAgents {
-		fmt.Printf("Agent %v at Position (%d, %d)\n", agent.NameID, agent.Position[0], agent.Position[1])
-	}
-
-	// 1. Move agents based on social network attraction
+	// **Move all agents**
 	for _, agent := range tserv.ActiveAgents {
-		agent.MoveAttractedToNetwork(tserv.grid, tserv)
+		agent.Move(tserv.Grid)
 	}
 
-	// 2. Agents make decisions
+	// Agents make decisions
 	for _, agent := range tserv.ActiveAgents {
 		decision := agent.DecideSacrifice()
 		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.NameID, decision)
 	}
 
-	//3. Eliminate Agents
+	// Eliminate Agents
 	remainingAgents := []*agents.ExtendedAgent{}
 	for _, agent := range tserv.ActiveAgents {
 		if agent.SelfSacrificeWillingness > 0.7 {
 			fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.NameID)
+			// **Place a tombstone at agent's last position**
+			pos := agent.GetPosition()
+			tserv.Grid.PlaceTombstone(pos[0], pos[1])
 		} else {
 			remainingAgents = append(remainingAgents, agent)
 		}
@@ -177,10 +167,6 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	}
 	tserv.ActiveAgents = newActiveAgents
 
-	// 3. Move agents based on network
-	for _, agent := range tserv.ActiveAgents {
-		agent.MoveAttractedToNetwork(tserv.grid, tserv)
-	}
 
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.ActiveAgents))
 
@@ -195,10 +181,22 @@ func (tserv *TMTServer) RunEndOfIteration(int) {
 
 // ---------------------- Recording Turn Data ----------------------
 func (tserv *TMTServer) RecordTurnInfo() {
-	// agent information
-	agentRecords := []gameRecorder.AgentRecord{}
+	// ✅ Create a new infra record
+	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
 
-	// Log all alive agents using RecordAgentStatus
+	// ✅ Record agent positions
+	for _, agent := range tserv.ActiveAgents {
+		pos := agent.GetPosition()
+		newInfraRecord.AgentPositions[[2]int{pos[0], pos[1]}] = true
+	}
+
+	// ✅ Record tombstone locations
+	for tombstonePos := range tserv.Grid.Tombstones {
+		newInfraRecord.Tombstones[tombstonePos] = true
+	}
+
+	// ✅ Collect agent records
+	agentRecords := []gameRecorder.AgentRecord{}
 	for _, agent := range tserv.ActiveAgents {
 		newAgentRecord := agent.RecordAgentStatus(agent)
 		newAgentRecord.IsAlive = true
@@ -207,20 +205,18 @@ func (tserv *TMTServer) RecordTurnInfo() {
 		agentRecords = append(agentRecords, newAgentRecord)
 	}
 
-	// Log eliminated (sacrificed) agents
+	// ✅ Record eliminated agents
 	for _, agent := range tserv.GetAgentMap() {
-		if _, alive := tserv.ActiveAgents[agent.GetID()]; !alive { // If not in ActiveAgents, it's dead
+		if _, alive := tserv.ActiveAgents[agent.GetID()]; !alive { 
 			newAgentRecord := agent.RecordAgentStatus(agent)
 			newAgentRecord.IsAlive = false
 			newAgentRecord.TurnNumber = tserv.turn
 			newAgentRecord.IterationNumber = tserv.iteration
-			newAgentRecord.SpecialNote = "Eliminated" // Update special note
+			newAgentRecord.SpecialNote = "Eliminated"
 			agentRecords = append(agentRecords, newAgentRecord)
 		}
 	}
 
-	// common information
-	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
-
+	// ✅ Save the recorded turn in the data recorder
 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
 }

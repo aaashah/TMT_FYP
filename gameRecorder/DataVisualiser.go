@@ -213,12 +213,22 @@ func ExportToCSV(recorder *ServerDataRecorder, outputDir string) error {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
+	// agent records
 	var allAgentRecords []AgentRecord
 	for _, turn := range recorder.TurnRecords {
 		allAgentRecords = append(allAgentRecords, turn.AgentRecords...)
 	}
 	if err := exportStructSliceToCSV(allAgentRecords, filepath.Join(outputDir, "agent_records.csv")); err != nil {
 		return fmt.Errorf("failed to export agent records: %v", err)
+	}
+
+	// infra records
+	var allInfraRecords []InfraRecord
+	for _, turn := range recorder.TurnRecords {
+		allInfraRecords = append(allInfraRecords, turn.InfraRecord)
+	}
+	if err := exportInfraRecordsToCSV(allInfraRecords, filepath.Join(outputDir, "infra_records.csv")); err != nil {
+		return fmt.Errorf("failed to export infra records: %v", err)
 	}
 
 	return nil
@@ -270,4 +280,61 @@ func exportStructSliceToCSV(data interface{}, filepath string) error {
 	}
 
 	return nil
+}
+
+func exportInfraRecordsToCSV(records []InfraRecord, filepath string) error {
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// ✅ Write CSV headers
+	headers := []string{"TurnNumber", "IterationNumber", "AgentPositions", "Tombstones"}
+	if err := writer.Write(headers); err != nil {
+		return err
+	}
+
+	// ✅ Write each infra record
+	for _, record := range records {
+		agentPositions := formatGridMap(record.AgentPositions)
+		tombstones := formatGridMap(record.Tombstones)
+
+		row := []string{
+			fmt.Sprint(record.TurnNumber),
+			fmt.Sprint(record.IterationNumber),
+			agentPositions, // Convert map to string
+			tombstones,     // Convert map to string
+		}
+
+		if err := writer.Write(row); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func formatGridMap(gridMap map[[2]int]bool) string {
+	var positions []string
+	for pos := range gridMap {
+		positions = append(positions, fmt.Sprintf("(%d,%d)", pos[0], pos[1]))
+	}
+	sort.Strings(positions) // Keep order consistent
+	return fmt.Sprintf("[%s]", stringJoin(positions, ", "))
+}
+
+// Utility function to join strings
+func stringJoin(elements []string, sep string) string {
+	if len(elements) == 0 {
+		return ""
+	}
+	result := elements[0]
+	for _, elem := range elements[1:] {
+		result += sep + elem
+	}
+	return result
 }

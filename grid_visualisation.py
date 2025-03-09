@@ -19,8 +19,12 @@ agent_colors = {
     for i, agent in enumerate(unique_agents)
 }
 
-# Get iteration numbers
-df["IterationNumber"] = df["IterationNumber"].astype(int)  # Ensure it's an integer
+# Ensure iteration numbers are integers
+df["IterationNumber"] = df["IterationNumber"].astype(int)
+
+# Get the max iteration and turn count
+max_iteration = df["IterationNumber"].max()
+turns_per_iteration = df.groupby("IterationNumber")["TurnNumber"].max().to_dict()
 
 # Initialize Dash app
 app = dash.Dash(__name__)
@@ -53,7 +57,8 @@ app.layout = html.Div(
             },
         ),
         dcc.Graph(id="grid-plot"),
-        dcc.Store(id="turn-store", data=df["TurnNumber"].min()),  # Store current turn
+        dcc.Store(id="iteration-store", data=0),  # Track iteration
+        dcc.Store(id="turn-store", data=0),  # Track turn within iteration
     ],
     style={"width": "95%", "margin": "auto"},
 )
@@ -64,31 +69,47 @@ app.layout = html.Div(
     [
         Output("grid-plot", "figure"),
         Output("iteration-turn-label", "children"),
+        Output("iteration-store", "data"),
         Output("turn-store", "data"),
     ],
     [Input("prev-turn", "n_clicks"), Input("next-turn", "n_clicks")],
-    [State("turn-store", "data")],
+    [State("iteration-store", "data"), State("turn-store", "data")],
 )
-def update_grid(prev_clicks, next_clicks, current_turn):
-    # Determine new turn number
-    total_turns = df["TurnNumber"].max()
-    new_turn = current_turn + (1 if next_clicks > prev_clicks else -1)
+def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
+    """
+    Updates the grid visualization and handles movement between iterations and turns.
+    """
+    global turns_per_iteration
 
-    # Keep within valid range
-    new_turn = max(df["TurnNumber"].min(), min(new_turn, total_turns))
+    # Determine new turn and iteration
+    if next_clicks > prev_clicks:
+        if current_turn < turns_per_iteration[current_iteration]:  # Move to next turn
+            new_turn = current_turn + 1
+            new_iteration = current_iteration
+        else:  # Move to next iteration
+            new_iteration = min(current_iteration + 1, max_iteration)
+            new_turn = 0
+    elif prev_clicks < next_clicks:
+        if current_turn > 0:  # Move to previous turn
+            new_turn = current_turn - 1
+            new_iteration = current_iteration
+        else:  # Move to previous iteration
+            new_iteration = max(current_iteration - 1, 0)
+            new_turn = turns_per_iteration[new_iteration]
+    else:
+        new_iteration = current_iteration
+        new_turn = current_turn
 
-    # Get corresponding iteration number
-    current_iteration = df[df["TurnNumber"] == new_turn]["IterationNumber"].iloc[0]
+    # Filter data for the correct iteration and turn
+    filtered_df = df[
+        (df["IterationNumber"] == new_iteration) & (df["TurnNumber"] == new_turn)
+    ].copy()
 
-    filtered_df = df[df["TurnNumber"] == new_turn].copy()
-
-    # Center agents within cells
+    # Adjust positions to center agents in cells
     filtered_df["PositionX"] += 0.5
     filtered_df["PositionY"] += 0.5
 
-    # Ensure unique agent positions per turn
-    filtered_df = filtered_df.drop_duplicates(subset=["AgentID", "TurnNumber"])
-
+    # Create scatter plot
     fig = px.scatter(
         filtered_df,
         x="PositionX",
@@ -96,10 +117,10 @@ def update_grid(prev_clicks, next_clicks, current_turn):
         color="AgentID",
         color_discrete_map=agent_colors,
         labels={"PositionX": "X Position", "PositionY": "Y Position"},
-        title=f"Iteration {current_iteration} - Turn {new_turn}",
+        title=f"Iteration {new_iteration} - Turn {new_turn}",
     )
 
-    fig.update_traces(marker=dict(size=10))  # Adjust marker size
+    fig.update_traces(marker=dict(size=10))
 
     # Enforce square cells
     fig.update_layout(
@@ -118,7 +139,7 @@ def update_grid(prev_clicks, next_clicks, current_turn):
             showgrid=True,
             gridcolor="lightgray",
             zeroline=False,
-            scaleanchor="x",  # Forces square cells
+            scaleanchor="x",
         ),
         autosize=True,
         height=GRID_HEIGHT * CELL_SIZE,
@@ -127,7 +148,7 @@ def update_grid(prev_clicks, next_clicks, current_turn):
         plot_bgcolor="white",
     )
 
-    return fig, f"Iteration {current_iteration} - Turn {new_turn}", new_turn
+    return fig, f"Iteration {new_iteration} - Turn {new_turn}", new_iteration, new_turn
 
 
 # Run the app

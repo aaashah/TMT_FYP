@@ -53,6 +53,7 @@ func main() {
 	agentConfig := agents.AgentConfig{
 		InitSacrificeWillingness: 0.2,
 	}
+	grid := infra.NewGrid(70, 30) // Create grid
 
 	serv := &tmtServer.TMTServer{
 		BaseServer: baseServer.CreateBaseServer[infra.IExtendedAgent](
@@ -62,6 +63,7 @@ func main() {
 			0, //message bandwidth
 		),
 		ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
+		Grid:         grid,
 	}
 	
 	// Set game runner
@@ -71,10 +73,10 @@ func main() {
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}
-	grid := infra.CreateGrid(70, 30) // Create a 10x10 grid
+	//grid := infra.NewGrid(70, 30) // Create grid
 
 	for i := 0; i < numAgents; i++ {
-        agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
+        agentPopulation = append(agentPopulation,agents.CreateExtendedAgents(serv, agentConfig, grid))
     }
 
 	// Set probability p for Erdős–Rényi network

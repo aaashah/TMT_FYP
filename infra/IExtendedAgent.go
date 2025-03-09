@@ -18,6 +18,7 @@ type IExtendedAgent interface {
 	GetSelfSacrificeWillingness() float32
 	GetPosition() [2]int
 	//GetContextSacrifice() string
+	Move (grid *Grid)
 
 	//Setters
 	SetName(name uuid.UUID)

@@ -10,7 +10,7 @@ type IServer interface {
 	agent.IExposedServerFunctions[IExtendedAgent]
 
 	GetAgentByID(agentID uuid.UUID) (IExtendedAgent, bool)
-	GetAgentPosition(agentID uuid.UUID) ([2]int, bool)
+	//GetAgentPosition(agentID uuid.UUID) ([2]int, bool)
 
 	UpdateAgentRelationship(agentAID, agentBID uuid.UUID, change float32)
 
