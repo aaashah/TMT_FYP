@@ -1,30 +1,70 @@
 import dash
 from dash import dcc, html
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
+import ast  # Safer parsing of string lists
+import colorsys  # For generating unique colors
 
 # Load simulation data
-df = pd.read_csv("visualisation_output/csv_data/agent_records.csv")
+agent_df = pd.read_csv("visualisation_output/csv_data/agent_records.csv")
+infra_df = pd.read_csv("visualisation_output/csv_data/infra_records.csv")
 
 # Define grid dimensions
 GRID_WIDTH = 70
 GRID_HEIGHT = 30
 CELL_SIZE = 30  # Defines pixel size of each grid cell
 
+
+# Function to generate unique HSL-based colors for agents
+def generate_color(index, total_agents):
+    hue = (index / total_agents) % 1  # Evenly space hues
+    rgb = colorsys.hsv_to_rgb(hue, 0.85, 0.85)  # Convert HSV to RGB
+    return f"rgb({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)})"
+
+
 # Ensure consistent colors per agent
-unique_agents = df["AgentID"].unique()
+unique_agents = agent_df["AgentID"].unique()
 agent_colors = {
-    agent: px.colors.qualitative.Plotly[i % len(px.colors.qualitative.Plotly)]
+    agent: generate_color(i, len(unique_agents))
     for i, agent in enumerate(unique_agents)
 }
 
-# Ensure iteration numbers are integers
-df["IterationNumber"] = df["IterationNumber"].astype(int)
+# Convert IterationNumber to int for correct sorting
+agent_df["IterationNumber"] = agent_df["IterationNumber"].astype(int)
+infra_df["IterationNumber"] = infra_df["IterationNumber"].astype(int)
+
+# Parse tombstone positions from infra_records.csv
+tombstone_dict = {}  # Key: (iteration, turn) → Set of tombstone positions
+
+for _, row in infra_df.iterrows():
+    iteration = row["IterationNumber"]
+    turn = row["TurnNumber"]
+
+    # Safe parsing of tombstone positions
+    try:
+        tombstones = (
+            ast.literal_eval(row["Tombstones"])
+            if isinstance(row["Tombstones"], str) and row["Tombstones"] != "[]"
+            else []
+        )
+    except (SyntaxError, ValueError):
+        tombstones = []
+
+    # Store tombstones for all future turns
+    if (iteration, turn) not in tombstone_dict:
+        tombstone_dict[(iteration, turn)] = set(tombstones)
+
+    # Carry forward tombstones from previous turns
+    if turn > 0:
+        prev_tombstones = tombstone_dict.get((iteration, turn - 1), set())
+        tombstone_dict[
+            (iteration, turn)
+        ] |= prev_tombstones  # Merge previous tombstones
 
 # Get the max iteration and turn count
-max_iteration = df["IterationNumber"].max()
-turns_per_iteration = df.groupby("IterationNumber")["TurnNumber"].max().to_dict()
+max_iteration = agent_df["IterationNumber"].max()
+turns_per_iteration = agent_df.groupby("IterationNumber")["TurnNumber"].max().to_dict()
 
 # Initialize Dash app
 app = dash.Dash(__name__)
@@ -100,30 +140,48 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
         new_iteration = current_iteration
         new_turn = current_turn
 
-    # Filter data for the correct iteration and turn
-    filtered_df = df[
-        (df["IterationNumber"] == new_iteration) & (df["TurnNumber"] == new_turn)
+    # Filter agent data for the correct iteration and turn
+    filtered_df = agent_df[
+        (agent_df["IterationNumber"] == new_iteration)
+        & (agent_df["TurnNumber"] == new_turn)
     ].copy()
 
-    # Adjust positions to center agents in cells
-    filtered_df["PositionX"] += 0.5
-    filtered_df["PositionY"] += 0.5
+    # Retrieve tombstones that exist up to this turn
+    tombstones = list(tombstone_dict.get((new_iteration, new_turn), []))
 
-    # Create scatter plot
-    fig = px.scatter(
-        filtered_df,
-        x="PositionX",
-        y="PositionY",
-        color="AgentID",
-        color_discrete_map=agent_colors,
-        labels={"PositionX": "X Position", "PositionY": "Y Position"},
-        title=f"Iteration {new_iteration} - Turn {new_turn}",
-    )
+    # Convert tombstone positions into X and Y lists
+    tombstone_x = [pos[0] + 0.5 for pos in tombstones]
+    tombstone_y = [pos[1] + 0.5 for pos in tombstones]
 
-    fig.update_traces(marker=dict(size=10))
+    # Initialize figure
+    fig = go.Figure()
 
-    # Enforce square cells
+    # Add agent positions
+    for agent_id in filtered_df["AgentID"].unique():
+        agent_data = filtered_df[filtered_df["AgentID"] == agent_id]
+        fig.add_trace(
+            go.Scatter(
+                x=agent_data["PositionX"] + 0.5,
+                y=agent_data["PositionY"] + 0.5,
+                mode="markers",
+                marker=dict(size=10, color=agent_colors.get(agent_id, "gray")),
+                name=f"Agent {agent_id}",
+            )
+        )
+
+    # Add tombstones as text annotations
+    for x, y in zip(tombstone_x, tombstone_y):
+        fig.add_annotation(
+            x=x,
+            y=y,
+            text="💀",
+            showarrow=False,
+            font=dict(size=15, color="black"),
+        )
+
+    # Enforce square grid layout
     fig.update_layout(
+        title=f"Iteration {new_iteration} - Turn {new_turn}",
         xaxis=dict(
             range=[0, GRID_WIDTH],
             tickmode="linear",
