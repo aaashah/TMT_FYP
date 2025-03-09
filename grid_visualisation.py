@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 import ast  # Safer parsing of string lists
 import colorsys  # For generating unique colors
+from dash import callback_context
 
 # Load simulation data
 agent_df = pd.read_csv("visualisation_output/csv_data/agent_records.csv")
@@ -105,6 +106,8 @@ app.layout = html.Div(
 
 
 # Callback to update the grid and iteration/turn label
+
+
 @app.callback(
     [
         Output("grid-plot", "figure"),
@@ -124,8 +127,15 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
     # Ensure turn structure is valid
     max_turns_in_current_iteration = turns_per_iteration.get(current_iteration, 0)
 
-    # Handle "Next" button
-    if next_clicks > prev_clicks:
+    # ✅ Detect which button was clicked
+    ctx = callback_context
+    if not ctx.triggered:
+        triggered_id = None
+    else:
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]  # Extract button ID
+
+    # ✅ Handle "Next" button
+    if triggered_id == "next-turn":
         if current_turn < max_turns_in_current_iteration:
             new_turn = current_turn + 1  # Move forward one turn
             new_iteration = current_iteration
@@ -137,19 +147,19 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
                 new_iteration = max_iteration  # Stay at last iteration
                 new_turn = max_turns_in_current_iteration  # Stay at last turn
 
-    # Handle "Previous" button
-    elif prev_clicks > next_clicks:
+    # ✅ Handle "Previous" button
+    elif triggered_id == "prev-turn":
         if current_turn > 0:
             new_turn = current_turn - 1  # Move back one turn
             new_iteration = current_iteration
         else:
             if (
                 current_iteration > 0
-            ):  # If at turn 0, move to the last turn of the previous iteration
+            ):  # If at turn 0, move to last turn of the previous iteration
                 new_iteration = current_iteration - 1
-                new_turn = turns_per_iteration[
-                    new_iteration
-                ]  # Last turn of previous iteration
+                new_turn = turns_per_iteration.get(
+                    new_iteration, 0
+                )  # Last turn of previous iteration
             else:
                 new_iteration = 0  # Already at first iteration
                 new_turn = 0  # Stay at turn 0
@@ -158,23 +168,23 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
         new_iteration = current_iteration  # No clicks, stay in place
         new_turn = current_turn
 
-    # **Filter agent data for correct iteration & turn**
+    # ✅ Filter agent data for correct iteration & turn
     filtered_df = agent_df[
         (agent_df["IterationNumber"] == new_iteration)
         & (agent_df["TurnNumber"] == new_turn)
     ].copy()
 
-    # Retrieve tombstones that exist up to this turn
+    # ✅ Retrieve tombstones that exist up to this turn
     tombstones = list(tombstone_dict.get((new_iteration, new_turn), []))
 
     # Convert tombstone positions into X and Y lists
     tombstone_x = [pos[0] + 0.5 for pos in tombstones]
     tombstone_y = [pos[1] + 0.5 for pos in tombstones]
 
-    # Initialize figure
+    # ✅ Initialize figure
     fig = go.Figure()
 
-    # Add agent positions
+    # ✅ Add agent positions
     for agent_id in filtered_df["AgentID"].unique():
         agent_data = filtered_df[filtered_df["AgentID"] == agent_id]
         fig.add_trace(
@@ -187,7 +197,7 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
             )
         )
 
-    # Add tombstones as text annotations
+    # ✅ Add tombstones as text annotations
     for x, y in zip(tombstone_x, tombstone_y):
         fig.add_annotation(
             x=x,
@@ -197,7 +207,7 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
             font=dict(size=15, color="black"),
         )
 
-    # Enforce square grid layout
+    # ✅ Enforce square grid layout
     fig.update_layout(
         title=f"Iteration {new_iteration} - Turn {new_turn}",
         xaxis=dict(
