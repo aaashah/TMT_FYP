@@ -120,7 +120,7 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
 
-	tserv.grid = infra.CreateGrid(10, 10) // Create a 10x10 grid
+	tserv.grid = infra.CreateGrid(70, 30) // Create grid dimensions
 	tserv.iteration = iteration
 	tserv.turn = 0
 

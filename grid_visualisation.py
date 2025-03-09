@@ -2,52 +2,25 @@ import dash
 from dash import dcc, html
 import pandas as pd
 import plotly.express as px
-from dash.dependencies import Input, Output
-import hashlib
+from dash.dependencies import Input, Output, State
 
-# Constants for styling
-PLOT_HEIGHT = 600
-PLOT_WIDTH = 600  # Keep square grid
-PLOT_MARGIN = dict(r=150)
+# Load simulation data
+df = pd.read_csv("visualisation_output/csv_data/agent_records.csv")
 
-# Global cache for data
-last_data_hash = None
-cached_data = None
-
-
-# Function to load and cache data
-def load_data():
-    global last_data_hash, cached_data
-
-    base_path = "visualisation_output/csv_data"
-    current_data = {
-        "agent_records": pd.read_csv(f"{base_path}/agent_records.csv"),
-        "infra_records": pd.read_csv(f"{base_path}/infra_records.csv"),
-    }
-
-    # Generate hash of the current data
-    hash_string = "".join(df.to_json() for df in current_data.values())
-    current_hash = hashlib.md5(hash_string.encode()).hexdigest()
-
-    # If the data hasn't changed, use cached data
-    if last_data_hash == current_hash and cached_data is not None:
-        return cached_data
-
-    last_data_hash = current_hash
-    cached_data = current_data
-    return current_data
-
-
-# Load initial data
-data = load_data()
-agent_records = data["agent_records"]
+# Define grid dimensions
+GRID_WIDTH = 70
+GRID_HEIGHT = 30
+CELL_SIZE = 30  # Defines pixel size of each grid cell
 
 # Ensure consistent colors per agent
-unique_agents = agent_records["AgentID"].unique()
+unique_agents = df["AgentID"].unique()
 agent_colors = {
     agent: px.colors.qualitative.Plotly[i % len(px.colors.qualitative.Plotly)]
     for i, agent in enumerate(unique_agents)
 }
+
+# Get iteration numbers
+df["IterationNumber"] = df["IterationNumber"].astype(int)  # Ensure it's an integer
 
 # Initialize Dash app
 app = dash.Dash(__name__)
@@ -56,34 +29,65 @@ app = dash.Dash(__name__)
 app.layout = html.Div(
     [
         html.H2("Agent Movement Grid"),
-        dcc.Slider(
-            id="turn-slider",
-            min=agent_records["TurnNumber"].min(),
-            max=agent_records["TurnNumber"].max(),
-            value=agent_records["TurnNumber"].min(),
-            marks={
-                i: str(i)
-                for i in range(
-                    agent_records["TurnNumber"].min(),
-                    agent_records["TurnNumber"].max() + 1,
-                    5,
-                )
+        html.Div(
+            [
+                html.Button(
+                    "⬅️ Previous",
+                    id="prev-turn",
+                    n_clicks=0,
+                    style={"font-size": "20px"},
+                ),
+                html.Span(
+                    id="iteration-turn-label",
+                    style={"font-size": "20px", "margin": "0 20px"},
+                ),
+                html.Button(
+                    "Next ➡️", id="next-turn", n_clicks=0, style={"font-size": "20px"}
+                ),
+            ],
+            style={
+                "display": "flex",
+                "justify-content": "center",
+                "align-items": "center",
+                "margin-bottom": "10px",
             },
-            step=1,
         ),
         dcc.Graph(id="grid-plot"),
-    ]
+        dcc.Store(id="turn-store", data=df["TurnNumber"].min()),  # Store current turn
+    ],
+    style={"width": "95%", "margin": "auto"},
 )
 
 
-# Callback to update the grid
-@app.callback(Output("grid-plot", "figure"), [Input("turn-slider", "value")])
-def update_grid(turn):
-    filtered_df = agent_records[agent_records["TurnNumber"] == turn].copy()
+# Callback to update the grid and iteration/turn label
+@app.callback(
+    [
+        Output("grid-plot", "figure"),
+        Output("iteration-turn-label", "children"),
+        Output("turn-store", "data"),
+    ],
+    [Input("prev-turn", "n_clicks"), Input("next-turn", "n_clicks")],
+    [State("turn-store", "data")],
+)
+def update_grid(prev_clicks, next_clicks, current_turn):
+    # Determine new turn number
+    total_turns = df["TurnNumber"].max()
+    new_turn = current_turn + (1 if next_clicks > prev_clicks else -1)
 
-    # Adjust positions to center agents inside cells
+    # Keep within valid range
+    new_turn = max(df["TurnNumber"].min(), min(new_turn, total_turns))
+
+    # Get corresponding iteration number
+    current_iteration = df[df["TurnNumber"] == new_turn]["IterationNumber"].iloc[0]
+
+    filtered_df = df[df["TurnNumber"] == new_turn].copy()
+
+    # Center agents within cells
     filtered_df["PositionX"] += 0.5
     filtered_df["PositionY"] += 0.5
+
+    # Ensure unique agent positions per turn
+    filtered_df = filtered_df.drop_duplicates(subset=["AgentID", "TurnNumber"])
 
     fig = px.scatter(
         filtered_df,
@@ -92,42 +96,38 @@ def update_grid(turn):
         color="AgentID",
         color_discrete_map=agent_colors,
         labels={"PositionX": "X Position", "PositionY": "Y Position"},
-        title=f"Agent Movement at Turn {turn}",
+        title=f"Iteration {current_iteration} - Turn {new_turn}",
     )
 
-    fig.update_traces(marker=dict(size=12))  # Adjust marker size
+    fig.update_traces(marker=dict(size=10))  # Adjust marker size
 
-    # Set grid size correctly
-    grid_size = (
-        max(agent_records["PositionX"].max(), agent_records["PositionY"].max()) + 1
-    )
-
+    # Enforce square cells
     fig.update_layout(
         xaxis=dict(
-            range=[0, grid_size],
+            range=[0, GRID_WIDTH],
             tickmode="linear",
             dtick=1,
-            scaleanchor="y",  # Keeps square cells
             showgrid=True,
             gridcolor="lightgray",
             zeroline=False,
         ),
         yaxis=dict(
-            range=[0, grid_size],
+            range=[0, GRID_HEIGHT],
             tickmode="linear",
             dtick=1,
-            scaleanchor="x",  # Keeps square cells
             showgrid=True,
             gridcolor="lightgray",
             zeroline=False,
+            scaleanchor="x",  # Forces square cells
         ),
+        autosize=True,
+        height=GRID_HEIGHT * CELL_SIZE,
+        width=GRID_WIDTH * CELL_SIZE,
         showlegend=True,
         plot_bgcolor="white",
-        height=PLOT_HEIGHT,  # Keep plot square
-        width=PLOT_WIDTH,  # Make grid visually balanced
     )
 
-    return fig
+    return fig, f"Iteration {current_iteration} - Turn {new_turn}", new_turn
 
 
 # Run the app
