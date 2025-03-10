@@ -19,8 +19,8 @@ CELL_SIZE = 30  # Defines pixel size of each grid cell
 
 # Function to generate unique HSL-based colors for agents
 def generate_color(index, total_agents):
-    hue = (index / total_agents) % 1  # Evenly space hues
-    rgb = colorsys.hsv_to_rgb(hue, 0.85, 0.85)  # Convert HSV to RGB
+    hue = (index / total_agents) % 1
+    rgb = colorsys.hsv_to_rgb(hue, 0.85, 0.85)
     return f"rgb({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)})"
 
 
@@ -35,14 +35,10 @@ agent_colors = {
 agent_df["IterationNumber"] = agent_df["IterationNumber"].astype(int)
 infra_df["IterationNumber"] = infra_df["IterationNumber"].astype(int)
 
-# Parse tombstone positions from infra_records.csv
-tombstone_dict = {}  # Key: (iteration, turn) → Set of tombstone positions
-
+# Parse tombstone positions
+tombstone_dict = {}
 for _, row in infra_df.iterrows():
-    iteration = row["IterationNumber"]
-    turn = row["TurnNumber"]
-
-    # Safe parsing of tombstone positions
+    iteration, turn = row["IterationNumber"], row["TurnNumber"]
     try:
         tombstones = (
             ast.literal_eval(row["Tombstones"])
@@ -51,19 +47,13 @@ for _, row in infra_df.iterrows():
         )
     except (SyntaxError, ValueError):
         tombstones = []
-
-    # Store tombstones for all future turns
     if (iteration, turn) not in tombstone_dict:
         tombstone_dict[(iteration, turn)] = set(tombstones)
-
-    # Carry forward tombstones from previous turns
     if turn > 0:
         prev_tombstones = tombstone_dict.get((iteration, turn - 1), set())
-        tombstone_dict[
-            (iteration, turn)
-        ] |= prev_tombstones  # Merge previous tombstones
+        tombstone_dict[(iteration, turn)] |= prev_tombstones
 
-# Get the max iteration and turn count
+# Get max iteration and turn count
 max_iteration = agent_df["IterationNumber"].max()
 turns_per_iteration = agent_df.groupby("IterationNumber")["TurnNumber"].max().to_dict()
 
@@ -82,9 +72,11 @@ app.layout = html.Div(
                     n_clicks=0,
                     style={"font-size": "20px"},
                 ),
-                html.Span(
-                    id="iteration-turn-label",
-                    style={"font-size": "20px", "margin": "0 20px"},
+                html.Button(
+                    "▶ Play",
+                    id="play-pause",
+                    n_clicks=0,
+                    style={"font-size": "20px", "margin": "0 10px"},
                 ),
                 html.Button(
                     "Next ➡️", id="next-turn", n_clicks=0, style={"font-size": "20px"}
@@ -97,17 +89,40 @@ app.layout = html.Div(
                 "margin-bottom": "10px",
             },
         ),
+        html.Div(
+            id="iteration-turn-label",
+            style={"textAlign": "center", "font-size": "20px"},
+        ),
         dcc.Graph(id="grid-plot"),
-        dcc.Store(id="iteration-store", data=0),  # Track iteration
-        dcc.Store(id="turn-store", data=0),  # Track turn within iteration
+        dcc.Store(id="iteration-store", data=0),
+        dcc.Store(id="turn-store", data=0),
+        dcc.Store(id="animation-state", data=True),  # ✅ Start Paused
+        dcc.Interval(
+            id="animation-interval", interval=1000, n_intervals=0, disabled=False
+        ),  # ✅ Start Disabled
     ],
     style={"width": "95%", "margin": "auto"},
 )
 
 
-# Callback to update the grid and iteration/turn label
+# Play/Pause button callback
+@app.callback(
+    [
+        Output("animation-interval", "disabled"),
+        Output("play-pause", "children"),
+        Output("animation-state", "data"),
+    ],
+    [Input("play-pause", "n_clicks")],
+    [State("animation-state", "data")],
+)
+def toggle_animation(n_clicks, is_playing):
+    if is_playing:
+        return True, "▶ Play", False  # ✅ Start Paused
+    else:
+        return False, "⏸ Pause", True  # ✅ Play when clicked
 
 
+# Grid update callback
 @app.callback(
     [
         Output("grid-plot", "figure"),
@@ -115,13 +130,14 @@ app.layout = html.Div(
         Output("iteration-store", "data"),
         Output("turn-store", "data"),
     ],
-    [Input("prev-turn", "n_clicks"), Input("next-turn", "n_clicks")],
+    [
+        Input("prev-turn", "n_clicks"),
+        Input("next-turn", "n_clicks"),
+        Input("animation-interval", "n_intervals"),
+    ],
     [State("iteration-store", "data"), State("turn-store", "data")],
 )
-def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
-    """
-    Handles movement through iterations and turns with proper logic.
-    """
+def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, current_turn):
     global turns_per_iteration
 
     # Ensure turn structure is valid
@@ -132,52 +148,47 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
     if not ctx.triggered:
         triggered_id = None
     else:
-        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]  # Extract button ID
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
-    # ✅ Handle "Next" button
-    if triggered_id == "next-turn":
+    # ✅ Handle "Next" button & Animation
+    if triggered_id in ["next-turn", "animation-interval"]:
         if current_turn < max_turns_in_current_iteration:
-            new_turn = current_turn + 1  # Move forward one turn
+            new_turn = current_turn + 1
             new_iteration = current_iteration
         else:
             if current_iteration < max_iteration:
-                new_iteration = current_iteration + 1  # Move to next iteration
-                new_turn = 0  # Reset to first turn in the new iteration
+                new_iteration = current_iteration + 1
+                new_turn = 0
             else:
-                new_iteration = max_iteration  # Stay at last iteration
-                new_turn = max_turns_in_current_iteration  # Stay at last turn
+                new_iteration = max_iteration
+                new_turn = max_turns_in_current_iteration
 
     # ✅ Handle "Previous" button
     elif triggered_id == "prev-turn":
         if current_turn > 0:
-            new_turn = current_turn - 1  # Move back one turn
+            new_turn = current_turn - 1
             new_iteration = current_iteration
         else:
-            if (
-                current_iteration > 0
-            ):  # If at turn 0, move to last turn of the previous iteration
+            if current_iteration > 0:
                 new_iteration = current_iteration - 1
-                new_turn = turns_per_iteration.get(
-                    new_iteration, 0
-                )  # Last turn of previous iteration
+                new_turn = turns_per_iteration.get(new_iteration, 0)
             else:
-                new_iteration = 0  # Already at first iteration
-                new_turn = 0  # Stay at turn 0
+                new_iteration = 0
+                new_turn = 0
 
     else:
-        new_iteration = current_iteration  # No clicks, stay in place
-        new_turn = current_turn
+        new_iteration, new_turn = current_iteration, current_turn
 
-    # ✅ Filter agent data for correct iteration & turn
+    # ✅ Filter agent data
     filtered_df = agent_df[
         (agent_df["IterationNumber"] == new_iteration)
         & (agent_df["TurnNumber"] == new_turn)
     ].copy()
 
-    # ✅ Retrieve tombstones that exist up to this turn
+    # ✅ Retrieve tombstones
     tombstones = list(tombstone_dict.get((new_iteration, new_turn), []))
 
-    # Convert tombstone positions into X and Y lists
+    # ✅ Convert tombstone positions
     tombstone_x = [pos[0] + 0.5 for pos in tombstones]
     tombstone_y = [pos[1] + 0.5 for pos in tombstones]
 
@@ -197,14 +208,10 @@ def update_grid(prev_clicks, next_clicks, current_iteration, current_turn):
             )
         )
 
-    # ✅ Add tombstones as text annotations
+    # ✅ Add tombstones
     for x, y in zip(tombstone_x, tombstone_y):
         fig.add_annotation(
-            x=x,
-            y=y,
-            text="💀",
-            showarrow=False,
-            font=dict(size=15, color="black"),
+            x=x, y=y, text="💀", showarrow=False, font=dict(size=15, color="black")
         )
 
     # ✅ Enforce square grid layout
