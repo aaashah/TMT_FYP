@@ -69,7 +69,7 @@ func main() {
 	// Set game runner
 	serv.SetGameRunner(serv)
 
-	const numAgents int = 5
+	const numAgents int = 20
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}

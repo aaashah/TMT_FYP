@@ -15,20 +15,36 @@ type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
 	NameID uuid.UUID
-
-	//private
-	Network map[uuid.UUID]float32 // stores relationship strengths
-	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 	Age int
+	Telomere float32 // Determines lifespan decay (death probability)
+	Position [2]int
+	MovementPolicy string // Defines how movement is determined
+
+	// **History Tracking**
+	ObservedEliminationsCluster int
+	ObservedEliminationsNetwork int
+	Heroism                     int // Number of voluntary self-sacrifices
+
+	Network map[uuid.UUID]float32 // stores relationship strengths
+	KinshipGroup        []uuid.UUID  // Descendants 
+
+	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
+
+	// **Decision-Making Parameters**
+	ASP map[string]float64 // Parameters for decision-making
+	PTS map[string]float64 // Parameters for behavior protocols
+
+	// **Worldview (32-bit opinion vector)**
+	Worldview [32]bool
+
+	// **Isterofimia (Posthumous Recognition)**
+	Isterofimia float64 // Observation of self-sacrifice vs self-preservation
+
 	MortalitySalience bool
 	//WorldviewValidation float32
 	//RelationshipValidation float32
 
-
-	// dynamic
 	SelfSacrificeWillingness float32
-	//ContextSacrifice string
-	Position [2]int
 }
 
 
@@ -47,7 +63,7 @@ func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *i
 		Age:        rand.Intn(100),
 		MortalitySalience: false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
-		Position: [2]int{rand.Intn(grid.Width), rand.Intn(grid.Height)},
+		Position: [2]int{rand.Intn(grid.Width) + 1, rand.Intn(grid.Height) + 1},
 	}
 }
 

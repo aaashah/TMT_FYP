@@ -48,7 +48,7 @@ func (g *Grid) GetValidMove(x, y int) (int, int) {
 
 	for _, move := range moves {
 		newX, newY := x+move[0], y+move[1]
-		if newX >= 0 && newX < g.Width && newY >= 0 && newY < g.Height && !g.IsOccupied(newX, newY) {
+		if newX > 0 && newX <= g.Width && newY > 0 && newY <= g.Height && !g.IsOccupied(newX, newY) {
 			return newX, newY
 		}
 	}

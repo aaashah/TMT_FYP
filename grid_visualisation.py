@@ -189,8 +189,8 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
     tombstones = list(tombstone_dict.get((new_iteration, new_turn), []))
 
     # ✅ Convert tombstone positions
-    tombstone_x = [pos[0] + 0.5 for pos in tombstones]
-    tombstone_y = [pos[1] + 0.5 for pos in tombstones]
+    tombstone_x = [pos[0] for pos in tombstones]
+    tombstone_y = [pos[1] for pos in tombstones]
 
     # ✅ Initialize figure
     fig = go.Figure()
@@ -200,8 +200,8 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
         agent_data = filtered_df[filtered_df["AgentID"] == agent_id]
         fig.add_trace(
             go.Scatter(
-                x=agent_data["PositionX"] + 0.5,
-                y=agent_data["PositionY"] + 0.5,
+                x=agent_data["PositionX"],
+                y=agent_data["PositionY"],
                 mode="markers",
                 marker=dict(size=10, color=agent_colors.get(agent_id, "gray")),
                 name=f"Agent {agent_id}",
@@ -218,17 +218,21 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
     fig.update_layout(
         title=f"Iteration {new_iteration} - Turn {new_turn}",
         xaxis=dict(
-            range=[0, GRID_WIDTH],
-            tickmode="linear",
-            dtick=1,
+            range=[0, GRID_WIDTH + 1],  # Shift the range to align labels
+            tickmode="array",
+            tickvals=[i + 0.5 for i in range(GRID_WIDTH + 1)],  # Shift tick positions
+            ticktext=[
+                str(i) for i in range(GRID_WIDTH + 1)
+            ],  # Keep labels at shifted positions
             showgrid=True,
             gridcolor="lightgray",
             zeroline=False,
         ),
         yaxis=dict(
-            range=[0, GRID_HEIGHT],
-            tickmode="linear",
-            dtick=1,
+            range=[0, GRID_HEIGHT + 1],
+            tickmode="array",
+            tickvals=[i + 0.5 for i in range(GRID_HEIGHT + 1)],
+            ticktext=[str(i) for i in range(GRID_HEIGHT + 1)],
             showgrid=True,
             gridcolor="lightgray",
             zeroline=False,
