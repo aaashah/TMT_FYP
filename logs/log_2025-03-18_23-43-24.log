@@ -1,0 +1,291 @@
+main function started.
+--------Start of iteration 0---------
+
+
+Iteration 0, Turn 0, current agent count: 5
+
+
+Iteration 0, Turn 1, current agent count: 5
+
+
+Iteration 0, Turn 2, current agent count: 5
+
+
+Iteration 0, Turn 3, current agent count: 5
+
+
+Iteration 0, Turn 4, current agent count: 5
+--------End of iteration 0---------
+--------Start of iteration 1---------
+
+
+Iteration 1, Turn 0, current agent count: 5
+
+
+Iteration 1, Turn 1, current agent count: 5
+
+
+Iteration 1, Turn 2, current agent count: 5
+
+
+Iteration 1, Turn 3, current agent count: 5
+
+
+Iteration 1, Turn 4, current agent count: 5
+--------End of iteration 1---------
+--------Start of iteration 2---------
+
+
+Iteration 2, Turn 0, current agent count: 5
+
+
+Iteration 2, Turn 1, current agent count: 5
+
+
+Iteration 2, Turn 2, current agent count: 5
+
+
+Iteration 2, Turn 3, current agent count: 5
+
+
+Iteration 2, Turn 4, current agent count: 5
+--------End of iteration 2---------
+
+
+GamePlaybackSummary - playing 18 turn records
+
+Iteration 0, Turn 0:
+
+Iteration 0, Turn 0:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 0, Turn 1:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 0, Turn 2:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 0, Turn 3:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 0, Turn 4:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 1, Turn 0:
+
+Iteration 1, Turn 0:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 1, Turn 1:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 1, Turn 2:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 1, Turn 3:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 1, Turn 4:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 2, Turn 0:
+
+Iteration 2, Turn 0:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 2, Turn 1:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 2, Turn 2:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 2, Turn 3:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e
+
+Iteration 2, Turn 4:
+Agent 1d404f20-d7aa-4695-8565-fc2e6a19b646: 
+[DEAD] 
+Agent ID: 1d404f20-d7aa-4695-8565-fc2e6a19b646
+Agent 270b80da-f04b-4750-9000-92dc16654019: 
+[DEAD] 
+Agent ID: 270b80da-f04b-4750-9000-92dc16654019
+Agent 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea: 
+Agent ID: 5b7b6bf7-a7b8-409b-99e1-cdd74dc084ea
+Agent 98775bd7-2024-434f-b282-c181e2f123a6: 
+[DEAD] 
+Agent ID: 98775bd7-2024-434f-b282-c181e2f123a6
+Agent f501bc94-5d39-4aaf-bedd-5f07c65c789e: 
+[DEAD] 
+Agent ID: f501bc94-5d39-4aaf-bedd-5f07c65c789e

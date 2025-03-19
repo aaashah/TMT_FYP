@@ -116,7 +116,14 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	tserv.iteration = iteration
 	tserv.turn = 0
 
-
+	// Age up all agents at the start of each iteration (except start of game)
+	if iteration > 0 {
+		for _, agent := range tserv.ActiveAgents {
+			agent.Age++
+			fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.Age)
+		}
+	}
+	
 	// Print the network structure
 	fmt.Println("Agent Social Network at iteration start:")
 	for _, agent := range tserv.ActiveAgents {
@@ -139,26 +146,61 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	// **Move all agents**
 	for _, agent := range tserv.ActiveAgents {
 		agent.Move(tserv.Grid)
+		//fmt.Printf("Agent %v age is %d\n", agent.NameID, agent.Age)
+	}
+	
+	// skip decisions for very beginning
+	if i == 0 && j == 0 {
+		//fmt.Println("Skipping self-sacrifice decisions on Iteration 0, Turn 0.")
+		tserv.RecordTurnInfo()
+		tserv.turn++
+		return
 	}
 
 	// Agents make decisions
 	for _, agent := range tserv.ActiveAgents {
 		decision := agent.DecideSacrifice()
-		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.NameID, decision)
+		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.GetID(), decision)
 	}
 
 	// Eliminate Agents
 	remainingAgents := []*agents.ExtendedAgent{}
-	for _, agent := range tserv.ActiveAgents {
-		if agent.SelfSacrificeWillingness > 0.7 {
-			fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.NameID)
-			// **Place a tombstone at agent's last position**
-			pos := agent.GetPosition()
-			tserv.Grid.PlaceTombstone(pos[0], pos[1])
-		} else {
-			remainingAgents = append(remainingAgents, agent)
+	// 1. died due to natural causes
+	if j == 0 {
+		for _, agent := range tserv.ActiveAgents {
+			died := agent.GetMortality()
+			if died {
+				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
+				pos := agent.GetPosition()
+				tserv.Grid.PlaceTombstone(pos[0], pos[1])
+			} else {
+				remainingAgents = append(remainingAgents, agent)
+			}
+		}
+	} else {  // If it's not Turn 0, ensure survivors stay in remainingAgents
+		for _, agent := range tserv.ActiveAgents {
+			if agent.SelfSacrificeWillingness > 0.85 {
+				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
+				// **Place a tombstone at agent's last position**
+				pos := agent.GetPosition()
+				tserv.Grid.PlaceTemple(pos[0], pos[1])
+			} else {
+				remainingAgents = append(remainingAgents, agent)
+			}
 		}
 	}
+	// 2. self-sacrificed
+	
+	// for _, agent := range tserv.ActiveAgents {
+	// 	if agent.SelfSacrificeWillingness > 0.7 {
+	// 		fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
+	// 		// **Place a tombstone at agent's last position**
+	// 		pos := agent.GetPosition()
+	// 		tserv.Grid.PlaceTombstone(pos[0], pos[1])
+	// 	} else {
+	// 		remainingAgents = append(remainingAgents, agent)
+	// 	}
+	// }
 
 	// Update ActiveAgents after elimination
 	newActiveAgents := make(map[uuid.UUID]*agents.ExtendedAgent)
@@ -195,6 +237,10 @@ func (tserv *TMTServer) RecordTurnInfo() {
 		newInfraRecord.Tombstones[tombstonePos] = true
 	}
 
+	for templePos := range tserv.Grid.Temples {
+		newInfraRecord.Temples[templePos] = true
+	}
+
 	// ✅ Collect agent records
 	agentRecords := []gameRecorder.AgentRecord{}
 	for _, agent := range tserv.ActiveAgents {
@@ -202,6 +248,9 @@ func (tserv *TMTServer) RecordTurnInfo() {
 		newAgentRecord.IsAlive = true
 		newAgentRecord.TurnNumber = tserv.turn
 		newAgentRecord.IterationNumber = tserv.iteration
+		// ✅ Explicitly fetch the latest age instead of using stale data
+		newAgentRecord.AgentAge = agent.GetAge()
+		//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
 		agentRecords = append(agentRecords, newAgentRecord)
 	}
 
@@ -212,7 +261,12 @@ func (tserv *TMTServer) RecordTurnInfo() {
 			newAgentRecord.IsAlive = false
 			newAgentRecord.TurnNumber = tserv.turn
 			newAgentRecord.IterationNumber = tserv.iteration
+			//newAgentRecord.Died = agent.GetMortality()
 			newAgentRecord.SpecialNote = "Eliminated"
+
+			// ✅ Explicitly store the last known age before elimination
+			newAgentRecord.AgentAge = agent.GetAge()
+			//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
 			agentRecords = append(agentRecords, newAgentRecord)
 		}
 	}

@@ -25,6 +25,7 @@ type AgentRecord struct {
 	//RelationshipValidation   float64
 	
 	// special indicator fields for agents
+	Died bool // of natural causes
 	SpecialNote string
 }
 
@@ -39,6 +40,7 @@ func NewAgentRecord(agentID uuid.UUID, agentAge int, positionX int, positionY in
 		AttachmentAvoidance:      attachmentAvoidance,
 		//WorldviewValidation:      worldviewValidation,
 		//RelationshipValidation:   relationshipValidation,
+		//Died:			   false,
 		SpecialNote:        specialNote,
 	}
 }

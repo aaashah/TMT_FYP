@@ -10,6 +10,7 @@ type InfraRecord struct {
 
 	AgentPositions map[[2]int]bool // Stores occupied agent positions (x, y)
 	Tombstones     map[[2]int]bool // Stores tombstone locations (x, y)
+	Temples         map[[2]int]bool // Stores temple locations (x, y)
 }
 
 func NewInfraRecord(turnNumber int, iterationNumber int) InfraRecord {
@@ -18,5 +19,6 @@ func NewInfraRecord(turnNumber int, iterationNumber int) InfraRecord {
 		IterationNumber: iterationNumber,
 		AgentPositions:  make(map[[2]int]bool),
 		Tombstones:      make(map[[2]int]bool),
+		Temples:          make(map[[2]int]bool),
 	}
 }

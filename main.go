@@ -69,7 +69,7 @@ func main() {
 	// Set game runner
 	serv.SetGameRunner(serv)
 
-	const numAgents int = 20
+	const numAgents int = 10
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}
@@ -92,7 +92,7 @@ func main() {
 		}
 
 		serv.ActiveAgents[extendedAgent.GetID()] = extendedAgent
-		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetName(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
+		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
 
 	const connectionProbability = 0.3 // Adjust as needed

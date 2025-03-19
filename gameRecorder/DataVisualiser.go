@@ -319,7 +319,7 @@ func exportInfraRecordsToCSV(records []InfraRecord, filepath string) error {
 	defer writer.Flush()
 
 	// ✅ Write CSV headers
-	headers := []string{"IterationNumber", "TurnNumber", "AgentPositions", "Tombstones"}
+	headers := []string{"IterationNumber", "TurnNumber", "AgentPositions", "Tombstones", "Temples"}
 	if err := writer.Write(headers); err != nil {
 		return err
 	}
@@ -340,6 +340,7 @@ func exportInfraRecordsToCSV(records []InfraRecord, filepath string) error {
 			fmt.Sprint(record.TurnNumber),
 			formatGridMap(record.AgentPositions),
 			formatGridMap(record.Tombstones),
+			formatGridMap(record.Temples),
 		}
 
 		if err := writer.Write(row); err != nil {

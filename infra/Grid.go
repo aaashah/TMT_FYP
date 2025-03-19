@@ -11,6 +11,7 @@ type Grid struct {
     Height int
 	positions     map[[2]int]IExtendedAgent
 	Tombstones map[[2]int]bool
+	Temples map[[2]int]bool
     mutex     sync.Mutex
 }
 
@@ -20,6 +21,7 @@ func NewGrid(width, height int) *Grid {
 		Height: height,
 		positions: make(map[[2]int]IExtendedAgent),
 		Tombstones: make(map[[2]int]bool),
+		Temples: make(map[[2]int]bool),
 	}
 }
 
@@ -27,8 +29,9 @@ func NewGrid(width, height int) *Grid {
 func (g *Grid) IsOccupied(x, y int) bool {
 	_, exists := g.positions[[2]int{x, y}]
 	_, isTombstone := g.Tombstones[[2]int{x, y}] // ✅ Correctly using both values
+	_, isTemple := g.Temples[[2]int{x, y}] // ✅ Correctly using both values
 
-	return exists || isTombstone // ✅ Now `isTombstone` is properly used
+	return exists || isTombstone || isTemple// ✅ Now `isTombstone` is properly used
 }
 
 // Place a tombstone at an agent's last known position
@@ -36,6 +39,12 @@ func (g *Grid) PlaceTombstone(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	g.Tombstones[[2]int{x, y}] = true  // ✅ Mark the position as a tombstone
+}
+
+func (g *Grid) PlaceTemple(x, y int) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+	g.Temples[[2]int{x, y}] = false  // ✅ Mark the position as a temple
 }
 
 // Get a valid move for an agent

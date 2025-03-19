@@ -15,16 +15,21 @@ type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
 	NameID uuid.UUID
+
 	Age int
+	AgeA int // Age where mortality probability starts increasing
+	AgeB int // Age where agent is definitely eliminated
 	Telomere float32 // Determines lifespan decay (death probability)
+
 	Position [2]int
 	MovementPolicy string // Defines how movement is determined
 
-	// **History Tracking**
+	//History Tracking
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
 	Heroism                     int // Number of voluntary self-sacrifices
 
+	// Social network and kinship group
 	Network map[uuid.UUID]float32 // stores relationship strengths
 	KinshipGroup        []uuid.UUID  // Descendants 
 
@@ -40,11 +45,13 @@ type ExtendedAgent struct {
 	// **Isterofimia (Posthumous Recognition)**
 	Isterofimia float64 // Observation of self-sacrifice vs self-preservation
 
-	MortalitySalience bool
-	//WorldviewValidation float32
-	//RelationshipValidation float32
+	Mortality bool
 
-	SelfSacrificeWillingness float32
+	MortalitySalience float32 //section in ASP module
+	WorldviewValidation float32 //section in ASP module
+	RelationshipValidation float32 //section in ASP module
+
+	SelfSacrificeWillingness float32 //ASP result
 }
 
 
@@ -54,14 +61,19 @@ type AgentConfig struct {
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
 func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
+	A := rand.Intn(25) + 40  // (40-65)
+	B := A + rand.Intn(35) + 20  // Random max age (60 - 100)
+
 	return &ExtendedAgent{
 		BaseAgent: agent.CreateBaseAgent(server),
 		Server:    server,
 		NameID:    uuid.New(),
 		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
 		Network:    make(map[uuid.UUID]float32),
-		Age:        rand.Intn(100),
-		MortalitySalience: false,
+		Age:        rand.Intn(50),
+		AgeA:       A,
+		AgeB:       B,
+		Mortality: false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position: [2]int{rand.Intn(grid.Width) + 1, rand.Intn(grid.Height) + 1},
 	}
@@ -69,11 +81,11 @@ func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *i
 
 
 func (ea *ExtendedAgent) GetName() uuid.UUID {
-    return ea.NameID
+	return ea.GetID()
 }
 
 func (ea *ExtendedAgent) SetName(name uuid.UUID) {
-    ea.NameID = name
+    ea.NameID = ea.GetID()
 }
 
 func (ea *ExtendedAgent) GetPosition() [2]int {
@@ -108,7 +120,7 @@ func (ea *ExtendedAgent) Move(grid *infra.Grid) {
 	newX, newY := grid.GetValidMove(ea.Position[0], ea.Position[1]) // Get a valid move
 	grid.UpdateAgentPosition(ea, newX, newY)    // Update position in the grid
 	ea.Position = [2]int{newX, newY}             // ✅ Assign new position
-	fmt.Printf("Agent %v moved to (%d, %d)\n", ea.NameID, newX, newY)
+	fmt.Printf("Agent %v moved to (%d, %d)\n", ea.GetID(), newX, newY)
 }
 
 // distance between two agents on grid
@@ -117,98 +129,52 @@ func (ea *ExtendedAgent) Move(grid *infra.Grid) {
 // }
 
 func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
-	ea.Server.UpdateAgentRelationship(ea.NameID, otherID, strength)
+	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
 }
 
 func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
-	ea.Server.UpdateAgentRelationship(ea.NameID, otherID, change)
+	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, change)
 }
 
 
-// Moves an agent towards the strongest connection in its network.
-// func (ea *ExtendedAgent) MoveAttractedToNetwork(grid *infra.Grid, server infra.IServer) {
-// 	if len(ea.Network) == 0 {
-// 		// No social ties → move randomly
-// 		ea.Position[0] += rand.Intn(3) - 1
-// 		ea.Position[1] += rand.Intn(3) - 1
-// 		return
-// 	}
+// GetAge generates an age following a beta-like distribution approximating the UK population.
 
-// 	// Find the most attractive agent(s)
-// 	var bestNeighbor uuid.UUID
-// 	maxAttraction := float32(-1)
-
-// 	for neighborID, strength := range ea.Network {
-// 		if strength > maxAttraction {
-// 			bestNeighbor = neighborID
-// 			maxAttraction = strength
-// 		}
-// 	}
-
-// 	if bestNeighbor == uuid.Nil {
-// 		return // No valid movement target
-// 	}
-
-// 	// Get bestNeighbor's position from server
-// 	bestPos, exists := server.GetAgentPosition(bestNeighbor)
-// 	if !exists {
-// 		return
-// 	}
-
-// 	// Compute movement direction
-// 	dx := bestPos[0] - ea.Position[0]
-// 	dy := bestPos[1] - ea.Position[1]
-
-// 	moveX, moveY := 0, 0
-// 	if dx > 0 {
-// 		moveX = 1
-// 	} else if dx < 0 {
-// 		moveX = -1
-// 	}
-
-// 	if dy > 0 {
-// 		moveY = 1
-// 	} else if dy < 0 {
-// 		moveY = -1
-// 	}
-
-// 	// Move 1 or 2 steps in direction
-// 	step := rand.Intn(2) + 1
-// 	newX := ea.Position[0] + moveX*step
-// 	newY := ea.Position[1] + moveY*step
-
-// 	// Keep inside grid bounds
-// 	if newX < 0 {
-// 		newX = 0
-// 	} else if newX >= grid.Width {
-// 		newX = grid.Width - 1
-// 	}
-
-// 	if newY < 0 {
-// 		newY = 0
-// 	} else if newY >= grid.Height {
-// 		newY = grid.Height - 1
-// 	}
-
-// 	// Update position
-// 	ea.Position = [2]int{newX, newY}
-// 	fmt.Printf("Agent %v moved to (%d, %d) towards %v\n", ea.NameID, newX, newY, bestNeighbor)
-// }
-
-func (ea *ExtendedAgent) GetAge() int{
-    return ea.Age
+func (ea *ExtendedAgent) GetAge() int {
+	// Beta distribution parameters (adjusted to fit UK population shape)
+	return ea.Age
 }
+
+func (ea *ExtendedAgent) GetTelomere() float32 {
+
+	if ea.Age < ea.AgeA {
+		return 0.005 * float32(ea.Age) // Small increasing probability
+	} else if ea.Age >= ea.AgeB {
+		return 1.0 // Guaranteed death at AgeB
+	} else {
+		// Linearly increasing probability from AgeA to AgeB
+		return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
+	}
+}
+
 
 func (ea *ExtendedAgent) SetAge(age int) {
     ea.Age = age
 }
 
+// GetMortality returns the mortality status of the agent.
+func (ea *ExtendedAgent) GetMortality() bool {
+	probDeath := ea.GetTelomere() // get probability of death
+	randVal := rand.Float32()     // random value between 0 and 1
+	ea.Mortality = randVal < probDeath // Random chance to die of natural causes
+	return ea.Mortality
+}
+
 func (ea *ExtendedAgent) IsMortalitySalient() bool {
-    return ea.MortalitySalience
+    return ea.Mortality
 }
 
 func (ea *ExtendedAgent) SetMortalitySalience(ms bool) {
-    ea.MortalitySalience = ms
+    ea.Mortality = ms
 }
 
 func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
@@ -219,7 +185,7 @@ func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
 func (ea *ExtendedAgent) DecideSacrifice() float32 {
     //TO-DO: Fuzzy logic stuff
 
-	ea.SelfSacrificeWillingness = rand.Float32()
+	ea.SelfSacrificeWillingness = rand.Float32() // Random willingness to sacrifice
 
 	
     //fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
@@ -238,6 +204,7 @@ func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 
 // ----------------------- Data Recording Functions -----------------------
 func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
+	//fmt.Printf("[DEBUG] Fetching Age in RecordAgentStatus: %d for Agent %v\n", instance.GetAge(), instance.GetID()) 
 	record := gameRecorder.NewAgentRecord(
 		instance.GetID(),
 		instance.GetAge(),

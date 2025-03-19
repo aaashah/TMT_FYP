@@ -35,6 +35,8 @@ agent_colors = {
 agent_df["IterationNumber"] = agent_df["IterationNumber"].astype(int)
 infra_df["IterationNumber"] = infra_df["IterationNumber"].astype(int)
 
+print("Available columns:", infra_df.columns)  # Print all column names
+
 # Parse tombstone positions
 tombstone_dict = {}
 for _, row in infra_df.iterrows():
@@ -53,6 +55,22 @@ for _, row in infra_df.iterrows():
         prev_tombstones = tombstone_dict.get((iteration, turn - 1), set())
         tombstone_dict[(iteration, turn)] |= prev_tombstones
 
+temples_dict = {}
+for _, row in infra_df.iterrows():
+    iteration, turn = row["IterationNumber"], row["TurnNumber"]
+    try:
+        temples = (
+            ast.literal_eval(row["Temples"])
+            if isinstance(row["Temples"], str) and row["Temples"] != "[]"
+            else []
+        )
+    except (SyntaxError, ValueError):
+        temples = []
+    if (iteration, turn) not in temples_dict:
+        temples_dict[(iteration, turn)] = set(temples)
+    if turn > 0:
+        prev_temples = temples_dict.get((iteration, turn - 1), set())
+        temples_dict[(iteration, turn)] |= prev_temples
 # Get max iteration and turn count
 max_iteration = agent_df["IterationNumber"].max()
 turns_per_iteration = agent_df.groupby("IterationNumber")["TurnNumber"].max().to_dict()
@@ -185,12 +203,15 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
         & (agent_df["TurnNumber"] == new_turn)
     ].copy()
 
-    # ✅ Retrieve tombstones
+    # ✅ Retrieve tombstones & temples
     tombstones = list(tombstone_dict.get((new_iteration, new_turn), []))
+    temples = list(temples_dict.get((new_iteration, new_turn), []))
 
-    # ✅ Convert tombstone positions
+    # ✅ Convert tombstone + temples positions
     tombstone_x = [pos[0] for pos in tombstones]
     tombstone_y = [pos[1] for pos in tombstones]
+    temple_x = [pos[0] for pos in temples]
+    temple_y = [pos[1] for pos in temples]
 
     # ✅ Initialize figure
     fig = go.Figure()
@@ -212,6 +233,12 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
     for x, y in zip(tombstone_x, tombstone_y):
         fig.add_annotation(
             x=x, y=y, text="💀", showarrow=False, font=dict(size=15, color="black")
+        )
+
+    # ✅ Add temples
+    for x, y in zip(temple_x, temple_y):
+        fig.add_annotation(
+            x=x, y=y, text="🏛️", showarrow=False, font=dict(size=15, color="black")
         )
 
     # ✅ Enforce square grid layout
