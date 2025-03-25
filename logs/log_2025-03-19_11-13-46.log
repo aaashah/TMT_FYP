@@ -1,0 +1,487 @@
+main function started.
+--------Start of iteration 0---------
+
+
+Iteration 0, Turn 0, current agent count: 10
+
+
+Iteration 0, Turn 1, current agent count: 10
+
+
+Iteration 0, Turn 2, current agent count: 10
+
+
+Iteration 0, Turn 3, current agent count: 10
+
+
+Iteration 0, Turn 4, current agent count: 10
+--------End of iteration 0---------
+--------Start of iteration 1---------
+
+
+Iteration 1, Turn 0, current agent count: 10
+
+
+Iteration 1, Turn 1, current agent count: 10
+
+
+Iteration 1, Turn 2, current agent count: 10
+
+
+Iteration 1, Turn 3, current agent count: 10
+
+
+Iteration 1, Turn 4, current agent count: 10
+--------End of iteration 1---------
+--------Start of iteration 2---------
+
+
+Iteration 2, Turn 0, current agent count: 10
+
+
+Iteration 2, Turn 1, current agent count: 10
+
+
+Iteration 2, Turn 2, current agent count: 10
+
+
+Iteration 2, Turn 3, current agent count: 10
+
+
+Iteration 2, Turn 4, current agent count: 10
+--------End of iteration 2---------
+
+
+GamePlaybackSummary - playing 18 turn records
+
+Iteration 0, Turn 0:
+
+Iteration 0, Turn 0:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 0, Turn 1:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 0, Turn 2:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 0, Turn 3:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 0, Turn 4:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 1, Turn 0:
+
+Iteration 1, Turn 0:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 1, Turn 1:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 1, Turn 2:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 1, Turn 3:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 1, Turn 4:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 2, Turn 0:
+
+Iteration 2, Turn 0:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 2, Turn 1:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 2, Turn 2:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 2, Turn 3:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+[DEAD] 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec
+
+Iteration 2, Turn 4:
+Agent 252199e2-2315-4be4-a27c-8020c9da9c92: 
+[DEAD] 
+Agent ID: 252199e2-2315-4be4-a27c-8020c9da9c92
+Agent 357f0a2f-36cf-40cf-ad38-f7ba84962fc8: 
+[DEAD] 
+Agent ID: 357f0a2f-36cf-40cf-ad38-f7ba84962fc8
+Agent 378a2f50-73cd-43c8-9ae8-c0591a6fe144: 
+[DEAD] 
+Agent ID: 378a2f50-73cd-43c8-9ae8-c0591a6fe144
+Agent 669b150f-711b-47a4-9dc9-28708b94db71: 
+[DEAD] 
+Agent ID: 669b150f-711b-47a4-9dc9-28708b94db71
+Agent 72198ee1-41ef-4cff-a2ad-1f203cd8baef: 
+[DEAD] 
+Agent ID: 72198ee1-41ef-4cff-a2ad-1f203cd8baef
+Agent d51277e1-b016-42a7-9a3a-6bdeb24f51db: 
+[DEAD] 
+Agent ID: d51277e1-b016-42a7-9a3a-6bdeb24f51db
+Agent e5420f4f-f34b-4d2a-a488-e528d89764a3: 
+[DEAD] 
+Agent ID: e5420f4f-f34b-4d2a-a488-e528d89764a3
+Agent ea5bdac5-d12d-4ede-9e59-cb0f1deb6562: 
+[DEAD] 
+Agent ID: ea5bdac5-d12d-4ede-9e59-cb0f1deb6562
+Agent efa85486-8477-459f-bf73-da7bf3a41f41: 
+[DEAD] 
+Agent ID: efa85486-8477-459f-bf73-da7bf3a41f41
+Agent f34522cf-ea97-4bea-a073-3b5907e3f0ec: 
+[DEAD] 
+Agent ID: f34522cf-ea97-4bea-a073-3b5907e3f0ec

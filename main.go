@@ -75,8 +75,10 @@ func main() {
 	agentPopulation := []infra.IExtendedAgent{}
 	//grid := infra.NewGrid(70, 30) // Create grid
 
+	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
+
 	for i := 0; i < numAgents; i++ {
-        agentPopulation = append(agentPopulation,agents.CreateExtendedAgents(serv, agentConfig, grid))
+		agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
     }
 
 	// Set probability p for Erdős–Rényi network

@@ -2,6 +2,7 @@ package agents
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
@@ -35,14 +36,13 @@ type ExtendedAgent struct {
 
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 
-	// **Decision-Making Parameters**
+	// Decision-Making Parameters:
 	ASP map[string]float64 // Parameters for decision-making
 	PTS map[string]float64 // Parameters for behavior protocols
 
-	// **Worldview (32-bit opinion vector)**
-	Worldview [32]bool
+	Worldview uint32 // 32-bit binary representation of opinions
 
-	// **Isterofimia (Posthumous Recognition)**
+	// Isterofimia (Posthumous Recognition)
 	Isterofimia float64 // Observation of self-sacrifice vs self-preservation
 
 	Mortality bool
@@ -73,6 +73,7 @@ func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *i
 		Age:        rand.Intn(50),
 		AgeA:       A,
 		AgeB:       B,
+		Worldview: rand.Uint32(),
 		Mortality: false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position: [2]int{rand.Intn(grid.Width) + 1, rand.Intn(grid.Height) + 1},
@@ -136,6 +137,53 @@ func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, change)
 }
 
+// Finds closest friend in social network
+func (ea *ExtendedAgent) FindClosestFriend() *ExtendedAgent {
+	var closestFriends []*ExtendedAgent
+	minDist := math.MaxFloat64
+
+	for friendID := range ea.Network {
+		// lookup friend in server
+		agentInterface, exists := ea.Server.GetAgentByID(friendID)
+		if !exists {
+			continue
+		}
+		friend, ok := agentInterface.(*ExtendedAgent)
+		if !ok {
+			continue // type assertion failed
+		}
+
+		dist := distance(ea.Position, friend.Position)
+		if dist < minDist {
+			minDist = dist
+			closestFriends = []*ExtendedAgent{friend} // start new list
+		} else if dist == minDist {
+			closestFriends = append(closestFriends, friend) // add equally close
+		}
+	}
+	if len(closestFriends) == 0 {
+		return nil
+	}
+
+	return closestFriends[rand.Intn(len(closestFriends))] // pick randomly
+}
+
+// Returns -1, 0, or 1 to move in the right direction
+func getStep(current, target int) int {
+	if target > current {
+		return 1
+	} else if target < current {
+		return -1
+	}
+	return 0
+}
+
+// Euclidean distance helper
+func distance(pos1, pos2 [2]int) float64 {
+	dx := float64(pos1[0] - pos2[0])
+	dy := float64(pos1[1] - pos2[1])
+	return math.Sqrt(dx*dx + dy*dy)
+}
 
 // GetAge generates an age following a beta-like distribution approximating the UK population.
 
@@ -159,6 +207,11 @@ func (ea *ExtendedAgent) GetTelomere() float32 {
 
 func (ea *ExtendedAgent) SetAge(age int) {
     ea.Age = age
+}
+
+// GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
+func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
+	return ea.Worldview
 }
 
 // GetMortality returns the mortality status of the agent.

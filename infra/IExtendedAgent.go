@@ -17,6 +17,7 @@ type IExtendedAgent interface {
 	IsMortalitySalient() bool
 	GetSelfSacrificeWillingness() float32
 	GetPosition() [2]int
+	GetWorldviewBinary() uint32
 	GetMortality() bool
 	//GetContextSacrifice() string
 	Move (grid *Grid)

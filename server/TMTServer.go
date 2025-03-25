@@ -179,7 +179,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 		}
 	} else {  // If it's not Turn 0, ensure survivors stay in remainingAgents
 		for _, agent := range tserv.ActiveAgents {
-			if agent.SelfSacrificeWillingness > 0.85 {
+			if agent.SelfSacrificeWillingness > 0.9 {
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				// **Place a tombstone at agent's last position**
 				pos := agent.GetPosition()

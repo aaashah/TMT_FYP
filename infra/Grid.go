@@ -28,23 +28,23 @@ func NewGrid(width, height int) *Grid {
 // Check if a cell is occupied
 func (g *Grid) IsOccupied(x, y int) bool {
 	_, exists := g.positions[[2]int{x, y}]
-	_, isTombstone := g.Tombstones[[2]int{x, y}] // ✅ Correctly using both values
-	_, isTemple := g.Temples[[2]int{x, y}] // ✅ Correctly using both values
+	_, isTombstone := g.Tombstones[[2]int{x, y}] 
+	_, isTemple := g.Temples[[2]int{x, y}] 
 
-	return exists || isTombstone || isTemple// ✅ Now `isTombstone` is properly used
+	return exists || isTombstone || isTemple
 }
 
 // Place a tombstone at an agent's last known position
 func (g *Grid) PlaceTombstone(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Tombstones[[2]int{x, y}] = true  // ✅ Mark the position as a tombstone
+	g.Tombstones[[2]int{x, y}] = true  // Mark the position as a tombstone
 }
 
 func (g *Grid) PlaceTemple(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Temples[[2]int{x, y}] = false  // ✅ Mark the position as a temple
+	g.Temples[[2]int{x, y}] = false  // Mark the position as a temple
 }
 
 // Get a valid move for an agent
@@ -72,7 +72,7 @@ func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newX, newY int) {
 
 	// Ensure the new position is not already occupied OR a tombstone
 	if g.IsOccupied(newX, newY) {
-		//fmt.Printf("⚠️ Agent %v tried to move onto an occupied cell (%d, %d). Movement canceled.\n", agent.GetID(), newX, newY)
+		//fmt.Printf(" Agent %v tried to move onto an occupied cell (%d, %d). Movement canceled.\n", agent.GetID(), newX, newY)
 		return
 	}
 
