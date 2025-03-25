@@ -4,7 +4,7 @@ import (
 	"fmt"
 	// "github.com/google/uuid"
 
-	//"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -14,9 +14,9 @@ type DismissiveAgent struct {
 
 }
 
-func CreateDismissiveAgent(server infra.IServer , agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
+func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
 
-	extendedAgent := CreateExtendedAgents(server, agentConfig, grid)
+	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	return &DismissiveAgent{
 		ExtendedAgent: extendedAgent,

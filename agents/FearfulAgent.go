@@ -5,7 +5,7 @@ import (
 	"math"
 
 	// "github.com/google/uuid"
-	//"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -15,9 +15,9 @@ type FearfulAgent struct {
 
 }
 
-func CreateFearfulAgent(server infra.IServer , agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
+func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent] , agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
 	
-	extendedAgent := CreateExtendedAgents(server, agentConfig, grid)
+	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	return &FearfulAgent{
 		ExtendedAgent: extendedAgent,

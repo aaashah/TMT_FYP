@@ -4,7 +4,7 @@ import (
 	"fmt"
 	// "github.com/google/uuid"
 	// "math/rand"
-	//"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -14,12 +14,8 @@ type SecureAgent struct {
 
 }
 
-func CreateSecureAgent(server infra.IServer , agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
-	// agent := &SecureAgent{
-	// 	ExtendedAgent: CreateExtendedAgents(funcs, agentConfig),
-	// }
-	// Assuming `server` is an instance of infra.IServer and `&grid` is a pointer to the grid
-	extendedAgent := CreateExtendedAgents(server, agentConfig, grid)
+func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent] , agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
+	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	return &SecureAgent{
 		ExtendedAgent: extendedAgent,

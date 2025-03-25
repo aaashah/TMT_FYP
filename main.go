@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/google/uuid"
-
 	//"math/rand"
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
@@ -62,14 +60,14 @@ func main() {
 			50*time.Millisecond, //max duration
 			0, //message bandwidth
 		),
-		ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
+		//ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
 		Grid:         grid,
 	}
 	
 	// Set game runner
 	serv.SetGameRunner(serv)
 
-	const numAgents int = 10
+	const numAgents int = 16
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}
@@ -77,8 +75,11 @@ func main() {
 
 	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
 
-	for i := 0; i < numAgents; i++ {
-		agentPopulation = append(agentPopulation, agents.CreateExtendedAgents(serv, agentConfig, grid))
+	for i := 0; i < numAgents; i+=4 {
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, agentConfig, grid))
+		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, agentConfig, grid))
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, agentConfig, grid))
+		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, agentConfig, grid))
     }
 
 	// Set probability p for Erdős–Rényi network
@@ -87,13 +88,7 @@ func main() {
 	for _, agent := range agentPopulation {
 		//agent.SetName(i)
 		serv.AddAgent(agent)
-		extendedAgent, ok := agent.(*agents.ExtendedAgent)
-		if !ok {
-			fmt.Printf("Error: agent is not of type *agents.ExtendedAgent\n")
-			continue // Skip if type assertion fails
-		}
 
-		serv.ActiveAgents[extendedAgent.GetID()] = extendedAgent
 		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
 

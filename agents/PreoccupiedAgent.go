@@ -6,7 +6,7 @@ import (
 	"fmt"
 	//"math"
 
-	//"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -16,14 +16,15 @@ type PreoccupiedAgent struct {
 
 }
 
-func CreatePreoccupiedAgent(server infra.IServer , agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
+func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
 	
-	extendedAgent := CreateExtendedAgents(server, agentConfig, grid)
+	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	return &PreoccupiedAgent{
 		ExtendedAgent: extendedAgent,
 	}
 }
+
 
 // preoccupied agent movement policy
 // moves towards social network

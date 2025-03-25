@@ -57,16 +57,18 @@ type ExtendedAgent struct {
 
 type AgentConfig struct {
 	InitSacrificeWillingness float32
+	
 }
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
+
+func CreateExtendedAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
 	A := rand.Intn(25) + 40  // (40-65)
 	B := A + rand.Intn(35) + 20  // Random max age (60 - 100)
 
 	return &ExtendedAgent{
 		BaseAgent: agent.CreateBaseAgent(server),
-		Server:    server,
+		Server:    server.(infra.IServer), // Type assert the server functions to IServer interface
 		NameID:    uuid.New(),
 		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
 		Network:    make(map[uuid.UUID]float32),
@@ -80,6 +82,7 @@ func CreateExtendedAgents(server infra.IServer, configParam AgentConfig, grid *i
 	}
 }
 
+// ----------------------- Interface implementation -----------------------
 
 func (ea *ExtendedAgent) GetName() uuid.UUID {
 	return ea.GetID()

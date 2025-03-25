@@ -21,6 +21,8 @@ type IExtendedAgent interface {
 	GetMortality() bool
 	//GetContextSacrifice() string
 	Move (grid *Grid)
+	UpdateRelationship(agentID uuid.UUID, change float32)
+	DecideSacrifice() float32
 
 	//Setters
 	SetName(name uuid.UUID)
@@ -29,8 +31,7 @@ type IExtendedAgent interface {
 	SetAge(age int)
 	SetMortalitySalience(ms bool)
 	//SetContextSacrifice(context string)
-	
-	//DecideSacrifice() bool // Logic for making a self-sacrifice decision.
+
 
 	//Message functions
 
