@@ -30,7 +30,7 @@ func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtended
 // moves towards social network
 func (pa *PreoccupiedAgent) Move(grid *infra.Grid) {
 	occupiedAgents := grid.GetAllOccupiedAgentPositions()
-	fmt.Printf("PreoccupiedAgent %v network: %v\n", pa.GetID(), pa.Network)
+	//fmt.Printf("PreoccupiedAgent %v network: %v\n", pa.GetID(), pa.Network)
 
 	var closestFriendID uuid.UUID
 	var found bool
@@ -75,7 +75,6 @@ func (pa *PreoccupiedAgent) Move(grid *infra.Grid) {
 	grid.UpdateAgentPosition(pa, newX, newY)
 	pa.Position = [2]int{newX, newY}
 	fmt.Printf("PreoccupiedAgent %v fallback random move to (%d, %d)\n", pa.GetID(), newX, newY)
-
 }
 
 

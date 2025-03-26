@@ -2,7 +2,9 @@ package agents
 
 import (
 	"fmt"
-	// "github.com/google/uuid"
+	"math"
+
+	"github.com/google/uuid"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
@@ -27,40 +29,51 @@ func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedA
 // dismissive agent movement policy
 // moves away from social network
 func (da *DismissiveAgent) Move(grid *infra.Grid) {
-	if len(da.GetNetwork()) == 0 {
-		// No connections – random move
-		newX, newY := grid.GetValidMove(da.Position[0], da.Position[1])
-		grid.UpdateAgentPosition(da, newX, newY)
-		da.Position = [2]int{newX, newY}
-		fmt.Printf("Dismissive Agent %v moved randomly to (%d, %d)\n", da.GetID(), newX, newY)
-		return
+	occupiedAgents := grid.GetAllOccupiedAgentPositions()
+	//fmt.Printf("DismissiveAgent %v network: %v\n", pa.GetID(), pa.Network)
+
+	var closestFriendID uuid.UUID
+	var found bool
+	minDist := math.MaxFloat32
+
+	// Find closest friend
+	for _, otherAgent := range occupiedAgents {
+		if otherAgent.GetID() == da.GetID() {
+			continue // Skip self
+		}
+		if _, known := da.Network[otherAgent.GetID()]; known {
+			// friend so:
+			dist := distance(da.Position, otherAgent.GetPosition())
+			if dist < minDist {
+				minDist = dist
+				closestFriendID = otherAgent.GetID()
+				found = true
+			}
+		}
 	}
 
-	closestFriend := da.FindClosestFriend()
-	if closestFriend == nil {
-		// Fallback random move
-		newX, newY := grid.GetValidMove(da.Position[0], da.Position[1])
-		grid.UpdateAgentPosition(da, newX, newY)
-		da.Position = [2]int{newX, newY}
-		fmt.Printf("Dismissive Agent %v moved randomly to (%d, %d)\n", da.GetID(), newX, newY)
-		return
-	}
+	if found {
+		friend, ok := da.Server.GetAgentMap()[closestFriendID]
+		if ok {
+			targetPos := friend.GetPosition()
+			moveX := da.Position[0] - getStep(da.Position[0], targetPos[0])
+			moveY := da.Position[1] - getStep(da.Position[1], targetPos[1])
 
-	// Move one step away from the closest friend
-	friendPos := closestFriend.Position
-	moveX := da.Position[0] - getStep(friendPos[0], da.Position[0])
-	moveY := da.Position[1] - getStep(friendPos[1], da.Position[1])
-
-	if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
-		grid.UpdateAgentPosition(da, moveX, moveY)
-		da.Position = [2]int{moveX, moveY}
-		fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriend.GetID(), moveX, moveY)
-	} else {
-		newX, newY := grid.GetValidMove(da.Position[0], da.Position[1])
-		grid.UpdateAgentPosition(da, newX, newY)
-		da.Position = [2]int{newX, newY}
-		fmt.Printf("Dismissive Agent %v tried to avoid friend %v but was blocked, moved randomly to (%d, %d)\n", da.GetID(), closestFriend.GetID(), newX, newY)
+			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
+				grid.UpdateAgentPosition(da, moveX, moveY)
+				da.Position = [2]int{moveX, moveY}
+				fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriendID, moveX, moveY)
+				return
+			}
+		}
 	}
+	
+
+	// Fallback: move randomly if no friends found
+	newX, newY := grid.GetValidMove(da.Position[0], da.Position[1])
+	grid.UpdateAgentPosition(da, newX, newY)
+	da.Position = [2]int{newX, newY}
+	fmt.Printf("Dismissive Agent %v fallback random move to (%d, %d)\n", da.GetID(), newX, newY)
 }
 
 
