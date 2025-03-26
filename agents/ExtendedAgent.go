@@ -26,9 +26,10 @@ type ExtendedAgent struct {
 	MovementPolicy string // Defines how movement is determined
 
 	//History Tracking
+	ClusterID int
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
-	Heroism                     int // Number of voluntary self-sacrifices
+	Heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
 	Network map[uuid.UUID]float32 // stores relationship strengths
@@ -109,11 +110,7 @@ func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
 
 
 func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
-	updatedNetwork := make(map[uuid.UUID]float32)
-	for id, strength := range ea.Network {
-		updatedNetwork[id] = strength
-	}
-	return updatedNetwork
+	return ea.Network
 }
 
 func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
@@ -145,7 +142,7 @@ func (ea *ExtendedAgent) FindClosestFriend() *ExtendedAgent {
 	var closestFriends []*ExtendedAgent
 	minDist := math.MaxFloat64
 
-	for friendID := range ea.Network {
+	for friendID := range ea.GetNetwork() {
 		// lookup friend in server
 		agentInterface, exists := ea.Server.GetAgentByID(friendID)
 		if !exists {
@@ -186,6 +183,14 @@ func distance(pos1, pos2 [2]int) float64 {
 	dx := float64(pos1[0] - pos2[0])
 	dy := float64(pos1[1] - pos2[1])
 	return math.Sqrt(dx*dx + dy*dy)
+}
+
+func (ea *ExtendedAgent) GetClusterID() int {
+	return ea.ClusterID
+}
+
+func (ea *ExtendedAgent) SetClusterID(id int) {
+	ea.ClusterID = id
 }
 
 // GetAge generates an age following a beta-like distribution approximating the UK population.
@@ -269,6 +274,7 @@ func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRe
 		instance.GetSelfSacrificeWillingness(),
 		instance.GetAttachment()[0],
 		instance.GetAttachment()[1],
+		instance.GetWorldviewBinary(),
 		"1",
 		//instance.GetWorldviewValidation(),
 		//instance.GetRelationshipValidation(),

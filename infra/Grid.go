@@ -83,3 +83,15 @@ func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newX, newY int) {
 	// Update new position
 	g.positions[[2]int{newX, newY}] = agent
 }
+
+func (g *Grid) GetAllOccupiedAgentPositions() map[[2]int]IExtendedAgent {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	// Return a copy to prevent accidental modification
+	copyMap := make(map[[2]int]IExtendedAgent)
+	for pos, agent := range g.positions {
+		copyMap[pos] = agent
+	}
+	return copyMap
+}

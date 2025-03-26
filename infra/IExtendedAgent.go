@@ -21,6 +21,7 @@ type IExtendedAgent interface {
 	GetMortality() bool
 	//GetContextSacrifice() string
 	Move (grid *Grid)
+	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
 	DecideSacrifice() float32
 
@@ -30,6 +31,7 @@ type IExtendedAgent interface {
 	SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)
 	SetMortalitySalience(ms bool)
+	SetClusterID(id int)
 	//SetContextSacrifice(context string)
 
 

@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 
 	//"sync"
@@ -25,6 +26,8 @@ type TMTServer struct {
 	//ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
 	Grid         *infra.Grid
 	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
+	clusterMap map[int][]uuid.UUID // Map of cluster IDs to agent IDs
+	SocialNetwork map[uuid.UUID]map[uuid.UUID]float32 // Map of agent IDs to their social network
 
 	// data recorder
 	DataRecorder *gameRecorder.ServerDataRecorder
@@ -54,10 +57,35 @@ func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, ch
 	agentA, existsA := tserv.GetAgentMap()[agentAID]
 	agentB, existsB := tserv.GetAgentMap()[agentBID]
 
-	if existsA && existsB {
-		agentA.UpdateRelationship(agentBID, change)
-		agentB.UpdateRelationship(agentAID, change)
+	if !existsA || !existsB {
+		return
 	}
+
+	// Directly update internal network fields
+	if extA, ok := agentA.(*agents.ExtendedAgent); ok {
+		extA.Network[agentBID] = change
+	}
+	if extB, ok := agentB.(*agents.ExtendedAgent); ok {
+		extB.Network[agentAID] = change
+	}
+
+	// Persist to server-level map
+	if tserv.SocialNetwork == nil {
+		tserv.SocialNetwork = make(map[uuid.UUID]map[uuid.UUID]float32)
+	}
+	if tserv.SocialNetwork[agentAID] == nil {
+		tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
+	}
+	if tserv.SocialNetwork[agentBID] == nil {
+		tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
+	}
+	tserv.SocialNetwork[agentAID][agentBID] = change
+	tserv.SocialNetwork[agentBID][agentAID] = change
+
+	// if existsA && existsB {
+	// 	agentA.UpdateRelationship(agentBID, change)
+	// 	agentB.UpdateRelationship(agentAID, change)
+	// }
 }
 
 // Erdős–Rényi (ER) Random Network
@@ -79,16 +107,17 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 			// 	agentIDs[i], agentIDs[j], p, probability)
 			
 			if probability <= p { // Connect with probability p
-				agentA := tserv.GetAgentMap()[agentIDs[i]]
-				agentB := tserv.GetAgentMap()[agentIDs[j]]
+				//agentA := tserv.GetAgentMap()[agentIDs[i]]
+				//agentB := tserv.GetAgentMap()[agentIDs[j]]
 
 				// Assign a random relationship strength (0.2 to 1.0)
 				strength := 0.2 + rand.Float32()*0.8
-				tserv.AddRelationship(agentA.GetID(), agentB.GetID(), strength)
+				//tserv.AddRelationship(agentA.GetID(), agentB.GetID(), strength)
+				tserv.AddRelationship(agentIDs[i], agentIDs[j], strength)
 
 				// Log connections
-				fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n",
-					agentA.GetID(), agentB.GetID(), strength)
+				//fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n",
+					//agentA.GetID(), agentB.GetID(), strength)
 				edgeCount++
 			}
 		}
@@ -102,12 +131,26 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 	agentB, existsB := tserv.GetAgentMap()[agentBID]
 
 	if existsA && existsB {
-		agentA.GetNetwork()[agentBID] = strength
-		agentB.GetNetwork()[agentAID] = strength
-		fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
-	} else {
-		fmt.Printf("❌ Relationship failed: %v ↔ %v (agent missing?)\n", agentAID, agentBID)
+		agentA.UpdateRelationship(agentBID, strength)
+		agentB.UpdateRelationship(agentAID, strength)
+		//fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
+	} 
+
+	// Also persist it in the server-level map
+	if tserv.SocialNetwork == nil {
+		tserv.SocialNetwork = make(map[uuid.UUID]map[uuid.UUID]float32)
 	}
+	if tserv.SocialNetwork[agentAID] == nil {
+		tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
+	}
+	if tserv.SocialNetwork[agentBID] == nil {
+		tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
+	}
+
+	tserv.SocialNetwork[agentAID][agentBID] = strength
+	tserv.SocialNetwork[agentBID][agentAID] = strength
+
+	fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
@@ -116,6 +159,11 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	tserv.iteration = iteration
 	tserv.turn = 0
 
+	if iteration == 0 {
+		const connectionProbability = 0.35
+		tserv.InitialiseRandomNetwork(connectionProbability)
+	}
+
 	// Age up all agents at the start of each iteration (except start of game)
 	if iteration > 0 {
 		for _, agent := range tserv.GetAgentMap() {
@@ -123,16 +171,33 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 			fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
 		}
 	}
+
+	// Reapply the stored social network to living agents
+	for agentID, neighbors := range tserv.SocialNetwork {
+		agent, ok := tserv.GetAgentByID(agentID)
+		if !ok {
+			continue
+		}
+		
+		// Construct the valid neighbors map
+		network := make(map[uuid.UUID]float32)
+		for neighborID, strength := range neighbors {
+			if _, exists := tserv.GetAgentByID(neighborID); exists {
+				network[neighborID] = strength
+			}
+		}
+		agent.SetNetwork(network)
+	}
 	
 	// Print the network structure
-	fmt.Println("Agent Social Network at iteration start:")
-	for _, agent := range tserv.GetAgentMap() {
-		fmt.Printf("Agent %v connections: ", agent.GetID())
-		for otherID, strength := range agent.GetNetwork() {
-			fmt.Printf("(%v, strength=%.2f) ", otherID, strength)
-		}
-		fmt.Println()
-	}
+	// fmt.Println("Agent Social Network at iteration start:")
+	// for _, agent := range tserv.GetAgentMap() {
+	// 	fmt.Printf("Agent %v connections: ", agent.GetID())
+	// 	for otherID, strength := range agent.GetNetwork() {
+	// 		fmt.Printf("(%v, strength=%.2f) ", otherID, strength)
+	// 	}
+	// 	fmt.Println()
+	// }
 	
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	// Ensure DataRecorder starts recording a new iteration
@@ -143,26 +208,62 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
 
-	for _, agent := range tserv.GetAgentMap() {
-		agent.Move(tserv.Grid)
-	}
-
 	if i == 0 && j == 0 {
 		tserv.RecordTurnInfo()
 		tserv.turn++
 		return
 	}
 
+	// 1. Move agents
+	for _, agent := range tserv.GetAgentMap() {
+		agent.Move(tserv.Grid)
+	}
+
+	// 2. Apply clustering (k-means)
+	positions := [][]float64{}
+	idToIndex := make([]uuid.UUID, 0)
+
+	for _, agent := range tserv.GetAgentMap() {
+		pos := agent.GetPosition()
+		positions = append(positions, []float64{float64(pos[0]), float64(pos[1])})
+		idToIndex = append(idToIndex, agent.GetID())
+	}
+
+	k := 3
+	clusters := RunKMeans(positions, k)
+	
+	for i, clusterID := range clusters {
+		agentID := idToIndex[i]
+		if agent, ok := tserv.GetAgentByID(agentID); ok {
+			agent.SetClusterID(clusterID)
+		}
+	}
+	tserv.clusterMap = make(map[int][]uuid.UUID)
+	for _, agent := range tserv.GetAgentMap() {
+		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())
+	}
+
+	fmt.Println("Cluster assignments:")
+	for clusterID, agents := range tserv.clusterMap {
+		fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
+	}
+
+	// 3. For each agent in cluster:
+	// 3.1 Compute worldview
+
+	// 3.2 Apply ASP
 	for _, agent := range tserv.GetAgentMap() {
 		decision := agent.DecideSacrifice()
 		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.GetID(), decision)
 	}
 
+	// 4. Check for agent elimination
 	agentsToRemove := make(map[uuid.UUID]bool)
 
 	if j == 0 {
 		for _, agent := range tserv.GetAgentMap() {
 			if agent.GetMortality() {
+				// 4.1 Place tombstones for eliminated agents
 				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTombstone(pos[0], pos[1])
@@ -172,6 +273,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	} else {
 		for _, agent := range tserv.GetAgentMap() {
 			if agent.GetSelfSacrificeWillingness() > 0.9 {
+				// 4.1 Place temples/monuments for self-sacrificed agents
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTemple(pos[0], pos[1])
@@ -187,6 +289,12 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 		}
 	}
 
+	// 5. After eliminations for agents in each cluster:
+	// 5.1 Update social network
+	// 5.2 apply PTS protocol
+	// 5.3 update heroism
+	// 5.4 update worldview
+
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.GetAgentMap()))
 	tserv.RecordTurnInfo()
 	tserv.turn++
@@ -194,6 +302,67 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 func (tserv *TMTServer) RunEndOfIteration(int) {
 	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
+	//tserv.iteration++
+	// spawn new agents
+}
+
+// ---------------------- Helper Functions ----------------------
+func RunKMeans(data [][]float64, k int) []int {
+	// Initialize centroids
+	centroids := make([][]float64, k)
+	for i := 0; i < k; i++ {
+		centroids[i] = append([]float64(nil), data[rand.Intn(len(data))]...)
+	}
+
+	assignments := make([]int, len(data))
+	changed := true
+
+	for changed {
+		changed = false
+
+		// Assign points
+		for i, point := range data {
+			minDist := math.MaxFloat64
+			best := -1
+			for j, centroid := range centroids {
+				d := distance(point, centroid)
+				if d < minDist {
+					minDist = d
+					best = j
+				}
+			}
+			if assignments[i] != best {
+				assignments[i] = best
+				changed = true
+			}
+		}
+
+		// Update centroids
+		count := make([]int, k)
+		sums := make([][]float64, k)
+		for i := range sums {
+			sums[i] = make([]float64, 2) // because [x, y]
+		}
+		for i, a := range assignments {
+			sums[a][0] += data[i][0]
+			sums[a][1] += data[i][1]
+			count[a]++
+		}
+		for i := 0; i < k; i++ {
+			if count[i] > 0 {
+				centroids[i][0] = sums[i][0] / float64(count[i])
+				centroids[i][1] = sums[i][1] / float64(count[i])
+			}
+		}
+	}
+
+	return assignments
+}
+
+func distance(a, b []float64) float64 {
+	dx := a[0] - b[0]
+	dy := a[1] - b[1]
+	return math.Sqrt(dx*dx + dy*dy)
 }
 
 // ---------------------- Recording Turn Data ----------------------

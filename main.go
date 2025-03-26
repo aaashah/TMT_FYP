@@ -92,9 +92,9 @@ func main() {
 		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
 
-	const connectionProbability = 0.3 // Adjust as needed
+	//const connectionProbability = 0.3 // Adjust as needed
 	// Initialize social network after agents are created
-	serv.InitialiseRandomNetwork(connectionProbability)
+	//serv.InitialiseRandomNetwork(connectionProbability)
     
 	// Initialize data recorder
 	serv.DataRecorder = gameRecorder.CreateRecorder()

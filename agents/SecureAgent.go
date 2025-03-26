@@ -28,7 +28,7 @@ func (sa *SecureAgent) Move(grid *infra.Grid) {
 	newX, newY := grid.GetValidMove(sa.Position[0], sa.Position[1]) // Get a valid move
 	grid.UpdateAgentPosition(sa, newX, newY)    // Update position in the grid
 	sa.Position = [2]int{newX, newY}             // Assign new position
-	fmt.Printf("Agent %v moved to (%d, %d)\n", sa.GetID(), newX, newY)
+	fmt.Printf("Secure Agent %v moved to (%d, %d)\n", sa.GetID(), newX, newY)
 }
 
 //secure agent pts protocol

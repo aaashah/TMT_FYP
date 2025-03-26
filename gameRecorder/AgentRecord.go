@@ -21,6 +21,7 @@ type AgentRecord struct {
 	SelfSacrificeWillingness float32
 	AttachmentAnxiety        float32
 	AttachmentAvoidance      float32
+	Worldview                uint32
 	//WorldviewValidation      float64
 	//RelationshipValidation   float64
 	
@@ -29,7 +30,7 @@ type AgentRecord struct {
 	SpecialNote string
 }
 
-func NewAgentRecord(agentID uuid.UUID, agentAge int, positionX int, positionY int, sacrificeWillingness float32, attachmentAnxiety float32, attachmentAvoidance float32, specialNote string) AgentRecord {
+func NewAgentRecord(agentID uuid.UUID, agentAge int, positionX int, positionY int, sacrificeWillingness float32, attachmentAnxiety float32, attachmentAvoidance float32, worldview uint32, specialNote string) AgentRecord {
 	return AgentRecord{
 		AgentID:            agentID,
 		AgentAge: 			agentAge,
@@ -38,6 +39,7 @@ func NewAgentRecord(agentID uuid.UUID, agentAge int, positionX int, positionY in
 		SelfSacrificeWillingness: sacrificeWillingness,
 		AttachmentAnxiety:        attachmentAnxiety,
 		AttachmentAvoidance:      attachmentAvoidance,
+		Worldview:	worldview,
 		//WorldviewValidation:      worldviewValidation,
 		//RelationshipValidation:   relationshipValidation,
 		//Died:			   false,

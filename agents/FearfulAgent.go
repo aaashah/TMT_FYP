@@ -6,6 +6,8 @@ import (
 
 	// "github.com/google/uuid"
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
+	"github.com/google/uuid"
+
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -27,54 +29,49 @@ func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgen
 // Fearful agent movement policy
 // moves towards those not in social network
 func (fa *FearfulAgent) Move(grid *infra.Grid) {
-	allAgents := fa.Server.GetAgentMap()
-	var closestStranger *ExtendedAgent
-	minDist := math.MaxFloat64
+	occupied := grid.GetAllOccupiedAgentPositions()
 
-	for id, agentInterface := range allAgents {
-		// Skip self and agents already in social network
-		if id == fa.GetID() || fa.Network[id] > 0 {
+	var closestStrangerID uuid.UUID
+	var found bool
+	minDist := math.MaxFloat32
+
+	for _, other := range occupied {
+		if other.GetID() == fa.GetID() {
 			continue
 		}
-
-		stranger, ok := agentInterface.(*ExtendedAgent)
-		if !ok {
+		if _, known := fa.Network[other.GetID()]; known {
 			continue
 		}
-
-		dist := distance(fa.Position, stranger.Position)
+	
+		dist := distance(fa.Position, other.GetPosition())
 		if dist < minDist {
 			minDist = dist
-			closestStranger = stranger
+			closestStrangerID = other.GetID()
+			found = true
 		}
 	}
 
-	if closestStranger == nil {
-		// No strangers found, move randomly
-		newX, newY := grid.GetValidMove(fa.Position[0], fa.Position[1])
-		grid.UpdateAgentPosition(fa, newX, newY)
-		fa.Position = [2]int{newX, newY}
-		fmt.Printf("FearfulAgent %v moved randomly to (%d, %d)\n", fa.GetID(), newX, newY)
-		return
+	if found {
+		stranger, ok := fa.Server.GetAgentMap()[closestStrangerID]
+		if ok {
+			targetPos := stranger.GetPosition()
+			moveX := fa.Position[0] + getStep(fa.Position[0], targetPos[0])
+			moveY := fa.Position[1] + getStep(fa.Position[1], targetPos[1])
+	
+			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
+				grid.UpdateAgentPosition(fa, moveX, moveY)
+				fa.Position = [2]int{moveX, moveY}
+				fmt.Printf("FearfulAgent %v moved toward stranger %v to (%d, %d)\n", fa.GetID(), closestStrangerID, moveX, moveY)
+				return
+			}
+		}
 	}
 
-	// Move one step toward closest stranger
-	targetPos := closestStranger.Position
-	moveX := fa.Position[0] + getStep(fa.Position[0], targetPos[0])
-	moveY := fa.Position[1] + getStep(fa.Position[1], targetPos[1])
-
-	// If move is valid and unoccupied
-	if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
-		grid.UpdateAgentPosition(fa, moveX, moveY)
-		fa.Position = [2]int{moveX, moveY}
-		fmt.Printf("FearfulAgent %v moved toward stranger %v to (%d, %d)\n", fa.GetID(), closestStranger.GetID(), moveX, moveY)
-	} else {
-		// Fallback: move randomly
-		newX, newY := grid.GetValidMove(fa.Position[0], fa.Position[1])
-		grid.UpdateAgentPosition(fa, newX, newY)
-		fa.Position = [2]int{newX, newY}
-		fmt.Printf("FearfulAgent %v fallback random move to (%d, %d)\n", fa.GetID(), newX, newY)
-	}
+	// Fallback: move randomly if no strangers found
+	newX, newY := grid.GetValidMove(fa.Position[0], fa.Position[1])
+	grid.UpdateAgentPosition(fa, newX, newY)
+	fa.Position = [2]int{newX, newY}
+	fmt.Printf("FearfulAgent %v fallback random move to (%d, %d)\n", fa.GetID(), newX, newY)
 }
 
 
