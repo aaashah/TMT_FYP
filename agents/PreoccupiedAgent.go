@@ -17,14 +17,22 @@ type PreoccupiedAgent struct {
 }
 
 func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
-	
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+
+	// Set Preoccupied-style attachment: high anxiety, low avoidance
+	extendedAgent.Attachment = []float32{
+		randInRange(0.5, 1.0),
+		randInRange(0.0, 0.5),
+	}
 
 	return &PreoccupiedAgent{
 		ExtendedAgent: extendedAgent,
 	}
 }
 
+func (pa *PreoccupiedAgent) AgentInitialised() {
+	fmt.Printf("Preoccupied Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", pa.GetID(), pa.GetAge(), pa.GetAttachment()[0], pa.GetAttachment()[1])
+}
 
 // preoccupied agent movement policy
 // moves towards social network

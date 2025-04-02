@@ -17,13 +17,21 @@ type DismissiveAgent struct {
 }
 
 func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
-
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
-	//extendedAgent := GetBaseAgents(server, agentConfig)
+	
+	// Set Dismissive-style attachment: low anxiety, high avoidance
+	extendedAgent.Attachment = []float32{
+		randInRange(0.0, 0.5),
+		randInRange(0.5, 1.0),
+	}
 
 	return &DismissiveAgent{
 		ExtendedAgent: extendedAgent,
 	}
+}
+
+func (da *DismissiveAgent) AgentInitialised() {
+	fmt.Printf("Dismissive Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", da.GetID(), da.GetAge(), da.GetAttachment()[0], da.GetAttachment()[1])
 }
 
 // dismissive agent movement policy

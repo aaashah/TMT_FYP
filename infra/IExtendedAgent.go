@@ -39,6 +39,7 @@ type IExtendedAgent interface {
 
 	//Info
 	GetExposedInfo() ExposedAgentInfo
+	AgentInitialised()
 
 	// Data Recording
 	RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord

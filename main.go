@@ -89,7 +89,9 @@ func main() {
 		//agent.SetName(i)
 		serv.AddAgent(agent)
 
-		fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
+		agent.AgentInitialised() // Call the method to print agent details
+
+		//fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
 
 	//const connectionProbability = 0.3 // Adjust as needed

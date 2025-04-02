@@ -18,12 +18,20 @@ type FearfulAgent struct {
 }
 
 func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent] , agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
-	
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+
+	// Set Fearful-style attachment: high anxiety, high avoidance
+	extendedAgent.Attachment = []float32{
+		randInRange(0.5, 1.0),
+		randInRange(0.5, 1.0),
+	}
 
 	return &FearfulAgent{
 		ExtendedAgent: extendedAgent,
 	}
+}
+func (fa *FearfulAgent) AgentInitialised() {
+	fmt.Printf("Fearful Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", fa.GetID(), fa.GetAge(), fa.GetAttachment()[0], fa.GetAttachment()[1])
 }
 
 // Fearful agent movement policy
@@ -35,18 +43,18 @@ func (fa *FearfulAgent) Move(grid *infra.Grid) {
 	var found bool
 	minDist := math.MaxFloat32
 
-	for _, other := range occupied {
-		if other.GetID() == fa.GetID() {
-			continue
+	for _, otherAgent := range occupied {
+		if otherAgent.GetID() == fa.GetID() {
+			continue // Skip self
 		}
-		if _, known := fa.Network[other.GetID()]; known {
-			continue
+		if _, known := fa.Network[otherAgent.GetID()]; known {
+			continue // Skip friends
 		}
 	
-		dist := distance(fa.Position, other.GetPosition())
+		dist := distance(fa.Position, otherAgent.GetPosition())
 		if dist < minDist {
 			minDist = dist
-			closestStrangerID = other.GetID()
+			closestStrangerID = otherAgent.GetID()
 			found = true
 		}
 	}

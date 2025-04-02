@@ -29,7 +29,7 @@ type ExtendedAgent struct {
 	ClusterID int
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
-	Heroism                     int // number of times agent volunteered self-sacrifices
+	Heroism                     float32 // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
 	Network map[uuid.UUID]float32 // stores relationship strengths
@@ -38,13 +38,13 @@ type ExtendedAgent struct {
 	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
 
 	// Decision-Making Parameters:
-	ASP map[string]float64 // Parameters for decision-making
-	PTS map[string]float64 // Parameters for behavior protocols
+	ASP map[string]float32 // Parameters for decision-making
+	PTS map[string]float32 // Parameters for behavior protocols
 
 	Worldview uint32 // 32-bit binary representation of opinions
 
-	// Isterofimia (Posthumous Recognition)
-	Isterofimia float64 // Observation of self-sacrifice vs self-preservation
+	// Ysterofimia (Posthumous Recognition)
+	Ysterofimia float32 // Observation of self-sacrifice vs self-preservation
 
 	Mortality bool
 
@@ -71,7 +71,7 @@ func CreateExtendedAgent(server agent.IExposedServerFunctions[infra.IExtendedAge
 		BaseAgent: agent.CreateBaseAgent(server),
 		Server:    server.(infra.IServer), // Type assert the server functions to IServer interface
 		NameID:    uuid.New(),
-		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomized anxiety and avoidance
+		Attachment: []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
 		Network:    make(map[uuid.UUID]float32),
 		Age:        rand.Intn(50),
 		AgeA:       A,
@@ -85,6 +85,8 @@ func CreateExtendedAgent(server agent.IExposedServerFunctions[infra.IExtendedAge
 
 // ----------------------- Interface implementation -----------------------
 
+func (ea *ExtendedAgent) AgentInitialised() {}
+
 func (ea *ExtendedAgent) GetName() uuid.UUID {
 	return ea.GetID()
 }
@@ -93,8 +95,47 @@ func (ea *ExtendedAgent) SetName(name uuid.UUID) {
     ea.NameID = ea.GetID()
 }
 
+func (ea *ExtendedAgent) GetAge() int {
+	// Beta distribution parameters (adjusted to fit UK population shape)
+	return ea.Age
+}
+
+func (ea *ExtendedAgent) GetTelomere() float32 {
+
+	if ea.Age < ea.AgeA {
+		return 0.005 * float32(ea.Age) // Small increasing probability
+	} else if ea.Age >= ea.AgeB {
+		return 1.0 // Guaranteed death at AgeB
+	} else {
+		// Linearly increasing probability from AgeA to AgeB
+		return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
+	}
+}
+
+
+func (ea *ExtendedAgent) SetAge(age int) {
+    ea.Age = age
+}
+
 func (ea *ExtendedAgent) GetPosition() [2]int {
 	return ea.Position
+}
+
+func (ea *ExtendedAgent) Move(grid *infra.Grid) {
+	newX, newY := grid.GetValidMove(ea.Position[0], ea.Position[1]) // Get a valid move
+	grid.UpdateAgentPosition(ea, newX, newY)    // Update position in the grid
+	ea.Position = [2]int{newX, newY}             // ✅ Assign new position
+	fmt.Printf("Agent %v moved to (%d, %d)\n", ea.GetID(), newX, newY)
+}
+
+// Returns -1, 0, or 1 to move in the right direction
+func getStep(current, target int) int {
+	if target > current {
+		return 1
+	} else if target < current {
+		return -1
+	}
+	return 0
 }
 
 func (ea *ExtendedAgent) GetAttachment() []float32 {
@@ -108,6 +149,9 @@ func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
     ea.Attachment = attachment
 }
 
+func randInRange(min, max float32) float32 {
+	return min + rand.Float32()*(max-min)
+}
 
 func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 	return ea.Network
@@ -115,13 +159,6 @@ func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 
 func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
 	ea.Network = network
-}
-
-func (ea *ExtendedAgent) Move(grid *infra.Grid) {
-	newX, newY := grid.GetValidMove(ea.Position[0], ea.Position[1]) // Get a valid move
-	grid.UpdateAgentPosition(ea, newX, newY)    // Update position in the grid
-	ea.Position = [2]int{newX, newY}             // ✅ Assign new position
-	fmt.Printf("Agent %v moved to (%d, %d)\n", ea.GetID(), newX, newY)
 }
 
 // distance between two agents on grid
@@ -168,15 +205,6 @@ func (ea *ExtendedAgent) FindClosestFriend() *ExtendedAgent {
 	return closestFriends[rand.Intn(len(closestFriends))] // pick randomly
 }
 
-// Returns -1, 0, or 1 to move in the right direction
-func getStep(current, target int) int {
-	if target > current {
-		return 1
-	} else if target < current {
-		return -1
-	}
-	return 0
-}
 
 // Euclidean distance helper
 func distance(pos1, pos2 [2]int) float64 {
@@ -193,33 +221,22 @@ func (ea *ExtendedAgent) SetClusterID(id int) {
 	ea.ClusterID = id
 }
 
-// GetAge generates an age following a beta-like distribution approximating the UK population.
-
-func (ea *ExtendedAgent) GetAge() int {
-	// Beta distribution parameters (adjusted to fit UK population shape)
-	return ea.Age
-}
-
-func (ea *ExtendedAgent) GetTelomere() float32 {
-
-	if ea.Age < ea.AgeA {
-		return 0.005 * float32(ea.Age) // Small increasing probability
-	} else if ea.Age >= ea.AgeB {
-		return 1.0 // Guaranteed death at AgeB
-	} else {
-		// Linearly increasing probability from AgeA to AgeB
-		return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
-	}
-}
-
-
-func (ea *ExtendedAgent) SetAge(age int) {
-    ea.Age = age
-}
-
 // GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
 func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 	return ea.Worldview
+}
+
+func (ea *ExtendedAgent) GetHeroism() float32 {
+	ea.Heroism = rand.Float32() // Randomized value for Heroism
+	return ea.Heroism
+}
+// func (ea *ExtendedAgent) SetHeroism() {
+// 	ea.Heroism = rand.Float32()
+// }
+
+func (ea *ExtendedAgent) GetYsterofimia() float32 {
+	ea.Ysterofimia = rand.Float32() // Randomized value for Ysterofimia
+	return ea.Ysterofimia
 }
 
 // GetMortality returns the mortality status of the agent.
