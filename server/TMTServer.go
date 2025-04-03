@@ -261,25 +261,21 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	// 1. Move agents
 	for _, agent := range tserv.GetAgentMap() {
-		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
 		agentPos := agent.GetPosition()
-		moveX := agentPos.X - getStep(agentPos.X, targetPos.X)
-		moveY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
+		moveX, moveY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
+		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
 
-		// perform valid move
-		if posExists && tserv.moveIsValid(moveX, moveY) {
-			tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
-			newPos := infra.PositionVector{X: moveX, Y: moveY}
-			agent.SetPosition(newPos)
-			// fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriendID, moveX, moveY)
-		} else {
-			newX, newY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
-			tserv.Grid.UpdateAgentPosition(agent, newX, newY)
-			newPos := infra.PositionVector{X: newX, Y: newY}
-			agent.SetPosition(newPos)
-			// fmt.Printf("Dismissive Agent %v fallback random move to (%d, %d)\n", agent.GetID(), newX, newY)
+		if posExists {
+			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
+			attemptY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
+			if tserv.moveIsValid(attemptX, attemptY) {
+				moveX, moveY = attemptX, attemptY
+			}
 		}
 
+		tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
+		newPos := infra.PositionVector{X: moveX, Y: moveY}
+		agent.SetPosition(newPos)
 	}
 
 	// 2. Apply clustering (k-means)
