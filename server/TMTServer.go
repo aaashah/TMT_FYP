@@ -15,7 +15,7 @@ import (
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
-) 
+)
 
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
@@ -24,24 +24,23 @@ type TMTServer struct {
 	//mu     sync.Mutex
 	//context string
 	//ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
-	Grid         *infra.Grid
-	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
-	clusterMap map[int][]uuid.UUID // Map of cluster IDs to agent IDs
+	Grid          *infra.Grid
+	PositionMap   map[[2]int]*agents.ExtendedAgent    // Map of agent positions
+	clusterMap    map[int][]uuid.UUID                 // Map of cluster IDs to agent IDs
 	SocialNetwork map[uuid.UUID]map[uuid.UUID]float32 // Map of agent IDs to their social network
 
 	// data recorder
 	DataRecorder *gameRecorder.ServerDataRecorder
 
 	//server internal state
-	turn int
+	turn      int
 	iteration int
 	//allAgentsDead bool
 	//gameRunner infra.GameRunner
-	
+
 }
 
-
-func init () {
+func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
@@ -49,8 +48,6 @@ func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, b
 	agent, exists := tserv.GetAgentMap()[agentID]
 	return agent, exists
 }
-
-
 
 // Moved to TMTServer to avoid import cycle
 func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, change float32) {
@@ -61,13 +58,17 @@ func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, ch
 		return
 	}
 
-	// Directly update internal network fields
-	if extA, ok := agentA.(*agents.ExtendedAgent); ok {
-		extA.Network[agentBID] = change
-	}
-	if extB, ok := agentB.(*agents.ExtendedAgent); ok {
-		extB.Network[agentAID] = change
-	}
+	// // Directly update internal network fields
+	// if extA, ok := agentA.(*agents.ExtendedAgent); ok {
+	// 	extA.Network[agentBID] = change
+	// }
+
+	agentA.UpdateSocialNetwork(agentBID, change)
+
+	// if extB, ok := agentB.(*agents.ExtendedAgent); ok {
+	// 	extB.Network[agentAID] = change
+	// }
+	agentB.UpdateSocialNetwork(agentAID, change)
 
 	// Persist to server-level map
 	if tserv.SocialNetwork == nil {
@@ -103,9 +104,9 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 	for i := 0; i < len(agentIDs); i++ {
 		for j := i + 1; j < len(agentIDs); j++ { // Avoid duplicate edges
 			probability := rand.Float32() // Generate a random number
-			// fmt.Printf("Checking link between %v and %v (p=%.2f, rolled=%.2f)\n", 
+			// fmt.Printf("Checking link between %v and %v (p=%.2f, rolled=%.2f)\n",
 			// 	agentIDs[i], agentIDs[j], p, probability)
-			
+
 			if probability <= p { // Connect with probability p
 				//agentA := tserv.GetAgentMap()[agentIDs[i]]
 				//agentB := tserv.GetAgentMap()[agentIDs[j]]
@@ -117,7 +118,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 
 				// Log connections
 				//fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n",
-					//agentA.GetID(), agentB.GetID(), strength)
+				//agentA.GetID(), agentB.GetID(), strength)
 				edgeCount++
 			}
 		}
@@ -134,7 +135,7 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 		agentA.UpdateRelationship(agentBID, strength)
 		agentB.UpdateRelationship(agentAID, strength)
 		//fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
-	} 
+	}
 
 	// Also persist it in the server-level map
 	if tserv.SocialNetwork == nil {
@@ -178,7 +179,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 		if !ok {
 			continue
 		}
-		
+
 		// Construct the valid neighbors map
 		network := make(map[uuid.UUID]float32)
 		for neighborID, strength := range neighbors {
@@ -188,7 +189,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 		}
 		agent.SetNetwork(network)
 	}
-	
+
 	// Print the network structure
 	// fmt.Println("Agent Social Network at iteration start:")
 	// for _, agent := range tserv.GetAgentMap() {
@@ -198,10 +199,54 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	// 	}
 	// 	fmt.Println()
 	// }
-	
+
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	// Ensure DataRecorder starts recording a new iteration
 	tserv.DataRecorder.RecordNewIteration()
+}
+
+// 	if found {
+// 		friend, ok := da.Server.GetAgentMap()[closestFriendID]
+// 		if ok {
+// 			targetPos := friend.GetPosition()
+// 			moveX := da.Position.X - getStep(da.Position.X, targetPos.X)
+// 			moveY := da.Position.Y - getStep(da.Position.Y, targetPos.Y)
+
+// 			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
+// 				grid.UpdateAgentPosition(da, moveX, moveY)
+// 				da.Position = infra.PositionVector{X: moveX, Y: moveY}
+// 				fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriendID, moveX, moveY)
+// 				return
+// 			}
+// 		}
+// 	}
+
+// 	// Fallback: move randomly if no friends found
+// 	newX, newY := grid.GetValidMove(da.Position.X, da.Position.Y)
+// 	grid.UpdateAgentPosition(da, newX, newY)
+// 	da.Position = infra.PositionVector{X: newX, Y: newY}
+// 	fmt.Printf("Dismissive Agent %v fallback random move to (%d, %d)\n", da.GetID(), newX, newY)
+// }
+
+func getStep(current, target int) int {
+	if target > current {
+		return 1
+	} else if target < current {
+		return -1
+	}
+	return 0
+}
+
+func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
+	// moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY)
+	grid := tServ.Grid
+	if moveX < 0 || moveX >= grid.Width {
+		return false
+	}
+	if moveY < 0 || moveY >= grid.Height {
+		return false
+	}
+	return !grid.IsOccupied(moveX, moveY)
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
@@ -216,7 +261,25 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	// 1. Move agents
 	for _, agent := range tserv.GetAgentMap() {
-		agent.Move(tserv.Grid)
+		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
+		agentPos := agent.GetPosition()
+		moveX := agentPos.X - getStep(agentPos.X, targetPos.X)
+		moveY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
+
+		// perform valid move
+		if posExists && tserv.moveIsValid(moveX, moveY) {
+			tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
+			newPos := infra.PositionVector{X: moveX, Y: moveY}
+			agent.SetPosition(newPos)
+			// fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriendID, moveX, moveY)
+		} else {
+			newX, newY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
+			tserv.Grid.UpdateAgentPosition(agent, newX, newY)
+			newPos := infra.PositionVector{X: newX, Y: newY}
+			agent.SetPosition(newPos)
+			// fmt.Printf("Dismissive Agent %v fallback random move to (%d, %d)\n", agent.GetID(), newX, newY)
+		}
+
 	}
 
 	// 2. Apply clustering (k-means)
@@ -225,13 +288,13 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	for _, agent := range tserv.GetAgentMap() {
 		pos := agent.GetPosition()
-		positions = append(positions, []float64{float64(pos[0]), float64(pos[1])})
+		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
 		idToIndex = append(idToIndex, agent.GetID())
 	}
 
 	k := 3
 	clusters := RunKMeans(positions, k)
-	
+
 	for i, clusterID := range clusters {
 		agentID := idToIndex[i]
 		if agent, ok := tserv.GetAgentByID(agentID); ok {
@@ -266,7 +329,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 				// 4.1 Place tombstones for eliminated agents
 				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 				pos := agent.GetPosition()
-				tserv.Grid.PlaceTombstone(pos[0], pos[1])
+				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
 				agentsToRemove[agent.GetID()] = true
 			}
 		}
@@ -276,7 +339,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 				// 4.1 Place temples/monuments for self-sacrificed agents
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				pos := agent.GetPosition()
-				tserv.Grid.PlaceTemple(pos[0], pos[1])
+				tserv.Grid.PlaceTemple(pos.X, pos.Y)
 				agentsToRemove[agent.GetID()] = true
 			}
 		}
@@ -373,7 +436,7 @@ func (tserv *TMTServer) RecordTurnInfo() {
 	// Record agent positions
 	for _, agent := range tserv.GetAgentMap() {
 		pos := agent.GetPosition()
-		newInfraRecord.AgentPositions[[2]int{pos[0], pos[1]}] = true
+		newInfraRecord.AgentPositions[[2]int{pos.X, pos.Y}] = true
 	}
 
 	// Record tombstone locations
@@ -400,7 +463,7 @@ func (tserv *TMTServer) RecordTurnInfo() {
 
 	// Record eliminated agents
 	for _, agent := range tserv.GetAgentMap() {
-		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive { 
+		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive {
 			newAgentRecord := agent.RecordAgentStatus(agent)
 			newAgentRecord.IsAlive = false
 			newAgentRecord.TurnNumber = tserv.turn
