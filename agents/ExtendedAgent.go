@@ -157,9 +157,9 @@ func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 	return ea.Network
 }
 
-func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
-	ea.Network = network
-}
+// func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
+// 	ea.Network = network
+// }
 
 // distance between two agents on grid
 // func (ea *ExtendedAgent) DistanceTo(other *ExtendedAgent) float64 {

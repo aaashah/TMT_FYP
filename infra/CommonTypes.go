@@ -1,6 +1,10 @@
 package infra
 
-import "math"
+import (
+	"math"
+
+	"github.com/google/uuid"
+)
 
 type PositionVector struct {
 	X int
@@ -38,3 +42,5 @@ func (t Telomere) GetProbabilityOfDeath(age int) float32 {
 		return float32(age-t.lowerThreshold) / float32(t.upperThreshold-t.lowerThreshold)
 	}
 }
+
+type SocialNetwork map[uuid.UUID]float32
