@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -13,7 +12,7 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
+func CreateDismissiveAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance

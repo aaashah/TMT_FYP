@@ -5,7 +5,6 @@ import (
 	"math"
 
 	// "github.com/google/uuid"
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -15,7 +14,7 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
+func CreateFearfulAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance

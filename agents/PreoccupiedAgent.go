@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -13,7 +12,7 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
+func CreatePreoccupiedAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance

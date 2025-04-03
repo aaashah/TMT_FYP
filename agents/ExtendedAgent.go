@@ -60,13 +60,13 @@ type AgentConfig struct {
 
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
+func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
 	A := rand.Intn(25) + 40     // (40-65)
 	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
 	return &ExtendedAgent{
 		BaseAgent:                agent.CreateBaseAgent(server),
-		Server:                   server.(infra.IServer),                                               // Type assert the server functions to IServer interface
+		Server:                   server,                                                               // Type assert the server functions to IServer interface
 		Attachment:               infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
 		Network:                  make(map[uuid.UUID]float32),
 		Age:                      rand.Intn(50),

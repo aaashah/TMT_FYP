@@ -4,7 +4,6 @@ import (
 	"fmt"
 	// "github.com/google/uuid"
 
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -13,7 +12,7 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
+func CreateSecureAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
