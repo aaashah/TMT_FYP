@@ -17,9 +17,9 @@ func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
-	extendedAgent.Attachment = []float32{
-		randInRange(0.0, 0.5),
-		randInRange(0.0, 0.5),
+	extendedAgent.Attachment = infra.Attachment{
+		Anxiety:   randInRange(0.0, 0.5),
+		Avoidance: randInRange(0.0, 0.5),
 	}
 
 	return &SecureAgent{
@@ -28,7 +28,8 @@ func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent
 }
 
 func (sa *SecureAgent) AgentInitialised() {
-	fmt.Printf("Secure Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", sa.GetID(), sa.GetAge(), sa.GetAttachment()[0], sa.GetAttachment()[1])
+	atch := sa.GetAttachment()
+	fmt.Printf("Secure Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", sa.GetID(), sa.GetAge(), atch.Anxiety, atch.Avoidance)
 }
 
 // Secure agent movement policy

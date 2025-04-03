@@ -17,9 +17,9 @@ func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtended
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
-	extendedAgent.Attachment = []float32{
-		randInRange(0.5, 1.0),
-		randInRange(0.0, 0.5),
+	extendedAgent.Attachment = infra.Attachment{
+		Anxiety:   randInRange(0.5, 1.0),
+		Avoidance: randInRange(0.0, 0.5),
 	}
 
 	return &PreoccupiedAgent{
@@ -28,7 +28,8 @@ func CreatePreoccupiedAgent(server agent.IExposedServerFunctions[infra.IExtended
 }
 
 func (pa *PreoccupiedAgent) AgentInitialised() {
-	fmt.Printf("Preoccupied Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", pa.GetID(), pa.GetAge(), pa.GetAttachment()[0], pa.GetAttachment()[1])
+	atch := pa.GetAttachment()
+	fmt.Printf("Preoccupied Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", pa.GetID(), pa.GetAge(), atch.Anxiety, atch.Avoidance)
 }
 
 // preoccupied agent movement policy

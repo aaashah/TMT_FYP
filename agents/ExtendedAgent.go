@@ -15,10 +15,11 @@ type ExtendedAgent struct {
 	Server infra.IServer
 	NameID uuid.UUID
 
-	Age      int
-	AgeA     int     // Age where mortality probability starts increasing
-	AgeB     int     // Age where agent is definitely eliminated
-	Telomere float32 // Determines lifespan decay (death probability)
+	Age int
+	// AgeA     int     // Age where mortality probability starts increasing
+	// AgeB     int     // Age where agent is definitely eliminated
+	// Telomere float32 // Determines lifespan decay (death probability)
+	Telomere infra.Telomere
 
 	Position       infra.PositionVector
 	MovementPolicy string // Defines how movement is determined
@@ -33,7 +34,7 @@ type ExtendedAgent struct {
 	Network      map[uuid.UUID]float32 // stores relationship strengths
 	KinshipGroup []uuid.UUID           // Descendants
 
-	Attachment []float32 // Attachment orientations: [anxiety, avoidance].
+	Attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
 
 	// Decision-Making Parameters:
 	ASP map[string]float32 // Parameters for decision-making
@@ -65,13 +66,11 @@ func CreateExtendedAgent(server agent.IExposedServerFunctions[infra.IExtendedAge
 
 	return &ExtendedAgent{
 		BaseAgent:                agent.CreateBaseAgent(server),
-		Server:                   server.(infra.IServer), // Type assert the server functions to IServer interface
-		NameID:                   uuid.New(),
-		Attachment:               []float32{rand.Float32(), rand.Float32()}, // Randomised anxiety and avoidance
+		Server:                   server.(infra.IServer),                                               // Type assert the server functions to IServer interface
+		Attachment:               infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
 		Network:                  make(map[uuid.UUID]float32),
 		Age:                      rand.Intn(50),
-		AgeA:                     A,
-		AgeB:                     B,
+		Telomere:                 infra.NewTelomere(A, B, 0.5),
 		Worldview:                rand.Uint32(),
 		Mortality:                false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
@@ -98,14 +97,16 @@ func (ea *ExtendedAgent) GetAge() int {
 
 func (ea *ExtendedAgent) GetTelomere() float32 {
 
-	if ea.Age < ea.AgeA {
-		return 0.005 * float32(ea.Age) // Small increasing probability
-	} else if ea.Age >= ea.AgeB {
-		return 1.0 // Guaranteed death at AgeB
-	} else {
-		// Linearly increasing probability from AgeA to AgeB
-		return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
-	}
+	// if ea.Age < ea.AgeA {
+	// 	return 0.005 * float32(ea.Age) // Small increasing probability
+	// } else if ea.Age >= ea.AgeB {
+	// 	return 1.0 // Guaranteed death at AgeB
+	// } else {
+	// 	// Linearly increasing probability from AgeA to AgeB
+	// 	return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
+	// }
+	return ea.Telomere.GetProbabilityOfDeath(ea.Age)
+
 }
 
 func (ea *ExtendedAgent) SetAge(age int) {
@@ -137,14 +138,14 @@ func (ea *ExtendedAgent) SetPosition(newPos infra.PositionVector) {
 // 	return 0
 // }
 
-func (ea *ExtendedAgent) GetAttachment() []float32 {
+func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
 	return ea.Attachment
 }
 
-func (ea *ExtendedAgent) SetAttachment(attachment []float32) {
-	if len(attachment) != 2 {
-		panic("Attachment must have exactly two elements: [anxiety, avoidance]")
-	}
+func (ea *ExtendedAgent) SetAttachment(attachment infra.Attachment) {
+	// if len(attachment) != 2 {
+	// 	panic("Attachment must have exactly two elements: [anxiety, avoidance]")
+	// }
 	ea.Attachment = attachment
 }
 
@@ -286,14 +287,15 @@ func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
 func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
 	//fmt.Printf("[DEBUG] Fetching Age in RecordAgentStatus: %d for Agent %v\n", instance.GetAge(), instance.GetID())
 	agentPos := instance.GetPosition()
+	agentAttach := instance.GetAttachment()
 	record := gameRecorder.NewAgentRecord(
 		instance.GetID(),
 		instance.GetAge(),
 		agentPos.X,
 		agentPos.Y,
 		instance.GetSelfSacrificeWillingness(),
-		instance.GetAttachment()[0],
-		instance.GetAttachment()[1],
+		agentAttach.Anxiety,
+		agentAttach.Avoidance,
 		instance.GetWorldviewBinary(),
 		"1",
 		//instance.GetWorldviewValidation(),
