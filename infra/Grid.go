@@ -7,29 +7,29 @@ import (
 )
 
 type Grid struct {
-    Width  int
-    Height int
-	positions     map[[2]int]IExtendedAgent
+	Width      int
+	Height     int
+	positions  map[[2]int]IExtendedAgent
 	Tombstones map[[2]int]bool
-	Temples map[[2]int]bool
-    mutex     sync.Mutex
+	Temples    map[[2]int]bool
+	mutex      sync.Mutex
 }
 
 func NewGrid(width, height int) *Grid {
 	return &Grid{
-		Width: width,
-		Height: height,
-		positions: make(map[[2]int]IExtendedAgent),
+		Width:      width,
+		Height:     height,
+		positions:  make(map[[2]int]IExtendedAgent),
 		Tombstones: make(map[[2]int]bool),
-		Temples: make(map[[2]int]bool),
+		Temples:    make(map[[2]int]bool),
 	}
 }
 
 // Check if a cell is occupied
 func (g *Grid) IsOccupied(x, y int) bool {
 	_, exists := g.positions[[2]int{x, y}]
-	_, isTombstone := g.Tombstones[[2]int{x, y}] 
-	_, isTemple := g.Temples[[2]int{x, y}] 
+	_, isTombstone := g.Tombstones[[2]int{x, y}]
+	_, isTemple := g.Temples[[2]int{x, y}]
 
 	return exists || isTombstone || isTemple
 }
@@ -38,13 +38,13 @@ func (g *Grid) IsOccupied(x, y int) bool {
 func (g *Grid) PlaceTombstone(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Tombstones[[2]int{x, y}] = true  // Mark the position as a tombstone
+	g.Tombstones[[2]int{x, y}] = true // Mark the position as a tombstone
 }
 
 func (g *Grid) PlaceTemple(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Temples[[2]int{x, y}] = false  // Mark the position as a temple
+	g.Temples[[2]int{x, y}] = false // Mark the position as a temple
 }
 
 // Get a valid move for an agent
@@ -61,9 +61,8 @@ func (g *Grid) GetValidMove(x, y int) (int, int) {
 			return newX, newY
 		}
 	}
-	return x, y  // Stay in place if no move is available
+	return x, y // Stay in place if no move is available
 }
-
 
 // Update agent position on the grid
 func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newX, newY int) {
@@ -78,7 +77,7 @@ func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newX, newY int) {
 
 	// Remove from old position
 	oldPos := agent.GetPosition()
-	delete(g.positions, [2]int{oldPos[0], oldPos[1]})
+	delete(g.positions, [2]int{oldPos.X, oldPos.Y})
 
 	// Update new position
 	g.positions[[2]int{newX, newY}] = agent

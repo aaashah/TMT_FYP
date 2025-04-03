@@ -13,14 +13,16 @@ type IExtendedAgent interface {
 	GetName() uuid.UUID
 	GetAttachment() []float32
 	GetNetwork() map[uuid.UUID]float32
-	GetAge() int	
+	GetAge() int
 	IsMortalitySalient() bool
 	GetSelfSacrificeWillingness() float32
-	GetPosition() [2]int
+	GetPosition() PositionVector
+	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
 	GetMortality() bool
 	//GetContextSacrifice() string
-	Move (grid *Grid)
+	// Move(grid *Grid)
+	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
 	DecideSacrifice() float32
@@ -34,7 +36,6 @@ type IExtendedAgent interface {
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)
 
-
 	//Message functions
 
 	//Info
@@ -44,4 +45,6 @@ type IExtendedAgent interface {
 	// Data Recording
 	RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
 
+	// Updaters
+	UpdateSocialNetwork(uuid.UUID, float32)
 }
