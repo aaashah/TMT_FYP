@@ -28,7 +28,7 @@ type IExtendedAgent interface {
 	DecideSacrifice() float32
 
 	//Setters
-	SetName(name uuid.UUID)
+	// SetName(name uuid.UUID)
 	// SetAttachment(attachment []float32)
 	// SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)

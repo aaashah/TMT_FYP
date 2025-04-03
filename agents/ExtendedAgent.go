@@ -13,7 +13,7 @@ import (
 type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
-	NameID uuid.UUID
+	// NameID uuid.UUID
 
 	Age int
 	// AgeA     int     // Age where mortality probability starts increasing
@@ -86,9 +86,9 @@ func (ea *ExtendedAgent) GetName() uuid.UUID {
 	return ea.GetID()
 }
 
-func (ea *ExtendedAgent) SetName(name uuid.UUID) {
-	ea.NameID = ea.GetID()
-}
+// func (ea *ExtendedAgent) SetName(name uuid.UUID) {
+// 	ea.NameID = ea.GetID()
+// }
 
 func (ea *ExtendedAgent) GetAge() int {
 	// Beta distribution parameters (adjusted to fit UK population shape)
