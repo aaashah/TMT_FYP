@@ -260,93 +260,21 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	}
 
 	// 1. Move agents
-	for _, agent := range tserv.GetAgentMap() {
-		agentPos := agent.GetPosition()
-		moveX, moveY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
-		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
-
-		if posExists {
-			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
-			attemptY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
-			if tserv.moveIsValid(attemptX, attemptY) {
-				moveX, moveY = attemptX, attemptY
-			}
-		}
-
-		tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
-		newPos := infra.PositionVector{X: moveX, Y: moveY}
-		agent.SetPosition(newPos)
-	}
+	tserv.MoveAgents()
 
 	// 2. Apply clustering (k-means)
-	positions := [][]float64{}
-	idToIndex := make([]uuid.UUID, 0)
-
-	for _, agent := range tserv.GetAgentMap() {
-		pos := agent.GetPosition()
-		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
-		idToIndex = append(idToIndex, agent.GetID())
-	}
-
-	k := 3
-	clusters := RunKMeans(positions, k)
-
-	for i, clusterID := range clusters {
-		agentID := idToIndex[i]
-		if agent, ok := tserv.GetAgentByID(agentID); ok {
-			agent.SetClusterID(clusterID)
-		}
-	}
-	tserv.clusterMap = make(map[int][]uuid.UUID)
-	for _, agent := range tserv.GetAgentMap() {
-		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())
-	}
-
-	fmt.Println("Cluster assignments:")
-	for clusterID, agents := range tserv.clusterMap {
-		fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
-	}
+	tserv.ApplyClustering()
 
 	// 3. For each agent in cluster:
 	// 3.1 Compute worldview
 
 	// 3.2 Apply ASP
-	for _, agent := range tserv.GetAgentMap() {
-		decision := agent.DecideSacrifice()
-		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.GetID(), decision)
-	}
+	tserv.ApplyASP()
+
 
 	// 4. Check for agent elimination
-	agentsToRemove := make(map[uuid.UUID]bool)
-
-	if j == 0 {
-		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetMortality() {
-				// 4.1 Place tombstones for eliminated agents
-				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[agent.GetID()] = true
-			}
-		}
-	} else {
-		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetSelfSacrificeWillingness() > 0.9 {
-				// 4.1 Place temples/monuments for self-sacrificed agents
-				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTemple(pos.X, pos.Y)
-				agentsToRemove[agent.GetID()] = true
-			}
-		}
-	}
-
-	for id := range agentsToRemove {
-		agent, ok := tserv.GetAgentByID(id)
-		if ok {
-			tserv.RemoveAgent(agent)
-		}
-	}
+	tserv.ApplyElimination(j)
+	
 
 	// 5. After eliminations for agents in each cluster:
 	// 5.1 Update social network
@@ -423,6 +351,99 @@ func distance(a, b []float64) float64 {
 	dy := a[1] - b[1]
 	return math.Sqrt(dx*dx + dy*dy)
 }
+
+func (tserv *TMTServer) MoveAgents() {
+	for _, agent := range tserv.GetAgentMap() {
+		agentPos := agent.GetPosition()
+		moveX, moveY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
+		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
+
+		if posExists {
+			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
+			attemptY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
+			if tserv.moveIsValid(attemptX, attemptY) {
+				moveX, moveY = attemptX, attemptY
+			}
+		}
+
+		tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
+		newPos := infra.PositionVector{X: moveX, Y: moveY}
+		agent.SetPosition(newPos)
+	}
+}
+
+func (tserv *TMTServer) ApplyClustering() {
+	positions := [][]float64{}
+	idToIndex := make([]uuid.UUID, 0)
+
+	for _, agent := range tserv.GetAgentMap() {
+		pos := agent.GetPosition()
+		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
+		idToIndex = append(idToIndex, agent.GetID())
+	}
+
+	k := 3
+	clusters := RunKMeans(positions, k)
+
+	for i, clusterID := range clusters {
+		agentID := idToIndex[i]
+		if agent, ok := tserv.GetAgentByID(agentID); ok {
+			agent.SetClusterID(clusterID)
+		}
+	}
+	tserv.clusterMap = make(map[int][]uuid.UUID)
+	for _, agent := range tserv.GetAgentMap() {
+		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())
+	}
+
+	fmt.Println("Cluster assignments:")
+	for clusterID, agents := range tserv.clusterMap {
+		fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
+	}
+}
+
+func (tserv *TMTServer) ApplyASP() {
+	// for now
+	for _, agent := range tserv.GetAgentMap() {
+		decision := agent.DecideSacrifice()
+		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.GetID(), decision)
+	}
+}
+
+func (tserv *TMTServer) ApplyElimination(turn int) {
+	agentsToRemove := make(map[uuid.UUID]bool)
+
+	if turn == 0 {
+		for _, agent := range tserv.GetAgentMap() {
+			if agent.GetMortality() {
+				// 4.1 Place tombstones for eliminated agents
+				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
+				pos := agent.GetPosition()
+				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+				agentsToRemove[agent.GetID()] = true
+			}
+		}
+	} else {
+		for _, agent := range tserv.GetAgentMap() {
+			if agent.GetSelfSacrificeWillingness() > 0.9 {
+				// 4.1 Place temples/monuments for self-sacrificed agents
+				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
+				pos := agent.GetPosition()
+				tserv.Grid.PlaceTemple(pos.X, pos.Y)
+				agentsToRemove[agent.GetID()] = true
+			}
+		}
+	}
+
+	for id := range agentsToRemove {
+		agent, ok := tserv.GetAgentByID(id)
+		if ok {
+			tserv.RemoveAgent(agent)
+		}
+	}
+}
+
+func (tserv *TMTServer) ApplyPTS() {}
 
 // ---------------------- Recording Turn Data ----------------------
 func (tserv *TMTServer) RecordTurnInfo() {
