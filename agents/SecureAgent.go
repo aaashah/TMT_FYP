@@ -4,7 +4,6 @@ import (
 	"fmt"
 	// "github.com/google/uuid"
 
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -13,13 +12,13 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
+func CreateSecureAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
-	extendedAgent.Attachment = []float32{
-		randInRange(0.0, 0.5),
-		randInRange(0.0, 0.5),
+	extendedAgent.Attachment = infra.Attachment{
+		Anxiety:   randInRange(0.0, 0.5),
+		Avoidance: randInRange(0.0, 0.5),
 	}
 
 	return &SecureAgent{
@@ -28,7 +27,8 @@ func CreateSecureAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent
 }
 
 func (sa *SecureAgent) AgentInitialised() {
-	fmt.Printf("Secure Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", sa.GetID(), sa.GetAge(), sa.GetAttachment()[0], sa.GetAttachment()[1])
+	atch := sa.GetAttachment()
+	fmt.Printf("Secure Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", sa.GetID(), sa.GetAge(), atch.Anxiety, atch.Avoidance)
 }
 
 // Secure agent movement policy

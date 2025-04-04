@@ -5,7 +5,6 @@ import (
 	"math"
 
 	// "github.com/google/uuid"
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -15,13 +14,13 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
+func CreateFearfulAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
-	extendedAgent.Attachment = []float32{
-		randInRange(0.5, 1.0),
-		randInRange(0.5, 1.0),
+	extendedAgent.Attachment = infra.Attachment{
+		Anxiety:   randInRange(0.5, 1.0),
+		Avoidance: randInRange(0.5, 1.0),
 	}
 
 	return &FearfulAgent{
@@ -29,7 +28,8 @@ func CreateFearfulAgent(server agent.IExposedServerFunctions[infra.IExtendedAgen
 	}
 }
 func (fa *FearfulAgent) AgentInitialised() {
-	fmt.Printf("Fearful Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", fa.GetID(), fa.GetAge(), fa.GetAttachment()[0], fa.GetAttachment()[1])
+	atch := fa.GetAttachment()
+	fmt.Printf("Fearful Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", fa.GetID(), fa.GetAge(), atch.Anxiety, atch.Avoidance)
 }
 
 // Fearful agent movement policy

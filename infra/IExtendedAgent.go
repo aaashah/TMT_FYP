@@ -11,7 +11,7 @@ type IExtendedAgent interface {
 
 	//Getters
 	GetName() uuid.UUID
-	GetAttachment() []float32
+	GetAttachment() Attachment
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
 	IsMortalitySalient() bool
@@ -28,9 +28,9 @@ type IExtendedAgent interface {
 	DecideSacrifice() float32
 
 	//Setters
-	SetName(name uuid.UUID)
-	SetAttachment(attachment []float32)
-	SetNetwork(network map[uuid.UUID]float32)
+	// SetName(name uuid.UUID)
+	// SetAttachment(attachment []float32)
+	// SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)
 	SetMortalitySalience(ms bool)
 	SetClusterID(id int)

@@ -44,7 +44,7 @@ func main() {
 
 	log.Println("main function started.")
 	//rand.Seed(time.Now().UnixNano()) // Seed random number generator
-    // Other initialization
+	// Other initialization
 
 	//BEGIN
 	// agent configuration:
@@ -55,15 +55,15 @@ func main() {
 
 	serv := &tmtServer.TMTServer{
 		BaseServer: baseServer.CreateBaseServer[infra.IExtendedAgent](
-			3, //iterations
-			5, //turns per iteration
+			3,                   //iterations
+			5,                   //turns per iteration
 			50*time.Millisecond, //max duration
-			0, //message bandwidth
+			0,                   //message bandwidth
 		),
 		//ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
-		Grid:         grid,
+		Grid: grid,
 	}
-	
+
 	// Set game runner
 	serv.SetGameRunner(serv)
 
@@ -75,15 +75,14 @@ func main() {
 
 	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
 
-	for i := 0; i < numAgents; i+=4 {
+	for i := 0; i < numAgents; i += 4 {
 		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, agentConfig, grid))
 		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, agentConfig, grid))
 		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, agentConfig, grid))
 		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, agentConfig, grid))
-    }
+	}
 
 	// Set probability p for Erdős–Rényi network
-	
 
 	for _, agent := range agentPopulation {
 		//agent.SetName(i)
@@ -97,7 +96,7 @@ func main() {
 	//const connectionProbability = 0.3 // Adjust as needed
 	// Initialize social network after agents are created
 	//serv.InitialiseRandomNetwork(connectionProbability)
-    
+
 	// Initialize data recorder
 	serv.DataRecorder = gameRecorder.CreateRecorder()
 

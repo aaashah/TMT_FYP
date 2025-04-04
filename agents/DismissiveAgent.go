@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -13,13 +12,13 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedAgent], agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
+func CreateDismissiveAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
 	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
-	extendedAgent.Attachment = []float32{
-		randInRange(0.0, 0.5),
-		randInRange(0.5, 1.0),
+	extendedAgent.Attachment = infra.Attachment{
+		Anxiety:   randInRange(0.0, 0.5),
+		Avoidance: randInRange(0.5, 1.0),
 	}
 
 	return &DismissiveAgent{
@@ -28,7 +27,8 @@ func CreateDismissiveAgent(server agent.IExposedServerFunctions[infra.IExtendedA
 }
 
 func (da *DismissiveAgent) AgentInitialised() {
-	fmt.Printf("Dismissive Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", da.GetID(), da.GetAge(), da.GetAttachment()[0], da.GetAttachment()[1])
+	atch := da.GetAttachment()
+	fmt.Printf("Dismissive Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", da.GetID(), da.GetAge(), atch.Anxiety, atch.Avoidance)
 }
 
 // dismissive agent movement policy

@@ -24,10 +24,10 @@ type TMTServer struct {
 	//mu     sync.Mutex
 	//context string
 	//ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
-	Grid          *infra.Grid
-	PositionMap   map[[2]int]*agents.ExtendedAgent    // Map of agent positions
-	clusterMap    map[int][]uuid.UUID                 // Map of cluster IDs to agent IDs
-	SocialNetwork map[uuid.UUID]map[uuid.UUID]float32 // Map of agent IDs to their social network
+	Grid        *infra.Grid
+	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
+	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
+	// SocialNetwork map[uuid.UUID]infra.SocialNetwork // Map of agent IDs to their social network
 
 	// data recorder
 	DataRecorder *gameRecorder.ServerDataRecorder
@@ -70,18 +70,18 @@ func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, ch
 	// }
 	agentB.UpdateSocialNetwork(agentAID, change)
 
-	// Persist to server-level map
-	if tserv.SocialNetwork == nil {
-		tserv.SocialNetwork = make(map[uuid.UUID]map[uuid.UUID]float32)
-	}
-	if tserv.SocialNetwork[agentAID] == nil {
-		tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
-	}
-	if tserv.SocialNetwork[agentBID] == nil {
-		tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
-	}
-	tserv.SocialNetwork[agentAID][agentBID] = change
-	tserv.SocialNetwork[agentBID][agentAID] = change
+	// // Persist to server-level map
+	// if tserv.SocialNetwork == nil {
+	// 	tserv.SocialNetwork = make(map[uuid.UUID]infra.SocialNetwork)
+	// }
+	// if tserv.SocialNetwork[agentAID] == nil {
+	// 	tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
+	// }
+	// if tserv.SocialNetwork[agentBID] == nil {
+	// 	tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
+	// }
+	// tserv.SocialNetwork[agentAID][agentBID] = change
+	// tserv.SocialNetwork[agentBID][agentAID] = change
 
 	// if existsA && existsB {
 	// 	agentA.UpdateRelationship(agentBID, change)
@@ -137,19 +137,19 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 		//fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 	}
 
-	// Also persist it in the server-level map
-	if tserv.SocialNetwork == nil {
-		tserv.SocialNetwork = make(map[uuid.UUID]map[uuid.UUID]float32)
-	}
-	if tserv.SocialNetwork[agentAID] == nil {
-		tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
-	}
-	if tserv.SocialNetwork[agentBID] == nil {
-		tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
-	}
+	// // Also persist it in the server-level map
+	// if tserv.SocialNetwork == nil {
+	// 	tserv.SocialNetwork = make(map[uuid.UUID]infra.SocialNetwork)
+	// }
+	// if tserv.SocialNetwork[agentAID] == nil {
+	// 	tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
+	// }
+	// if tserv.SocialNetwork[agentBID] == nil {
+	// 	tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
+	// }
 
-	tserv.SocialNetwork[agentAID][agentBID] = strength
-	tserv.SocialNetwork[agentBID][agentAID] = strength
+	// tserv.SocialNetwork[agentAID][agentBID] = strength
+	// tserv.SocialNetwork[agentBID][agentAID] = strength
 
 	fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 }
@@ -166,29 +166,29 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	}
 
 	// Age up all agents at the start of each iteration (except start of game)
-	if iteration > 0 {
-		for _, agent := range tserv.GetAgentMap() {
-			agent.SetAge(agent.GetAge() + 1)
-			fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
-		}
+	// if iteration > 0 {
+	for _, agent := range tserv.GetAgentMap() {
+		agent.SetAge(iteration)
+		fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
 	}
+	// }
 
 	// Reapply the stored social network to living agents
-	for agentID, neighbors := range tserv.SocialNetwork {
-		agent, ok := tserv.GetAgentByID(agentID)
-		if !ok {
-			continue
-		}
+	// for agentID, neighbors := range tserv.SocialNetwork {
+	// 	agent, ok := tserv.GetAgentByID(agentID)
+	// 	if !ok {
+	// 		continue
+	// 	}
 
-		// Construct the valid neighbors map
-		network := make(map[uuid.UUID]float32)
-		for neighborID, strength := range neighbors {
-			if _, exists := tserv.GetAgentByID(neighborID); exists {
-				network[neighborID] = strength
-			}
-		}
-		agent.SetNetwork(network)
-	}
+	// 	// Construct the valid neighbors map
+	// 	network := make(map[uuid.UUID]float32)
+	// 	for neighborID, strength := range neighbors {
+	// 		if _, exists := tserv.GetAgentByID(neighborID); exists {
+	// 			network[neighborID] = strength
+	// 		}
+	// 	}
+	// 	agent.SetNetwork(network)
+	// }
 
 	// Print the network structure
 	// fmt.Println("Agent Social Network at iteration start:")
