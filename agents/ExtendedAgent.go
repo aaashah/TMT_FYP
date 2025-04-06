@@ -5,6 +5,8 @@ import (
 	"math/bits"
 	"math/rand"
 
+	//"fmt"
+
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -127,12 +129,12 @@ func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
 	return ea.Attachment
 }
 
-func (ea *ExtendedAgent) SetAttachment(attachment infra.Attachment) {
-	// if len(attachment) != 2 {
-	// 	panic("Attachment must have exactly two elements: [anxiety, avoidance]")
-	// }
-	ea.Attachment = attachment
-}
+// func (ea *ExtendedAgent) SetAttachment(attachment infra.Attachment) {
+// 	// if len(attachment) != 2 {
+// 	// 	panic("Attachment must have exactly two elements: [anxiety, avoidance]")
+// 	// }
+// 	ea.Attachment = attachment
+// }
 
 func randInRange(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
@@ -440,6 +442,15 @@ func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
 	ea.Network[id] = change
 }
+
+func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMessage) {
+	// depend on attachment 
+}
+
+func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
+	// depend on attachment 
+}
+
 
 // ----------------------- Data Recording Functions -----------------------
 func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {

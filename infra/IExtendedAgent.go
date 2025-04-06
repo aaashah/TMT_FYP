@@ -41,6 +41,8 @@ type IExtendedAgent interface {
 	//SetContextSacrifice(context string)
 
 	//Message functions
+	HandleWellbeingCheckMessage(msg *WellbeingCheckMessage)
+	HandleReplyMessage(msg *ReplyMessage)
 
 	//Info
 	GetExposedInfo() ExposedAgentInfo
