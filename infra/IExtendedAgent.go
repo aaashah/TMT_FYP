@@ -16,7 +16,7 @@ type IExtendedAgent interface {
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
 	//IsMortalitySalient() bool
-	GetSelfSacrificeWillingness() float32
+	GetSelfSacrificeWillingness() float64
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
@@ -26,7 +26,7 @@ type IExtendedAgent interface {
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
-	DecideSacrifice() float32
+	GetASPDecision(grid *Grid) int
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)
 	IncrementHeroism()

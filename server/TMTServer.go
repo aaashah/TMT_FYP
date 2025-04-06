@@ -265,13 +265,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	// 2. Apply clustering (k-means)
 	tserv.ApplyClustering()
 
-	// 3. For each agent in cluster:
-	// 3.1 Compute worldview
-
-	// 3.2 Apply ASP
-	tserv.ApplyASP()
-
-
+	
 	// 4. Check for agent elimination
 	tserv.ApplyElimination(j)
 	
@@ -402,14 +396,6 @@ func (tserv *TMTServer) ApplyClustering() {
 	}
 }
 
-func (tserv *TMTServer) ApplyASP() {
-	// for now
-	for _, agent := range tserv.GetAgentMap() {
-		decision := agent.DecideSacrifice()
-		fmt.Printf("Agent %v willing to sacrifice by: %v \n", agent.GetID(), decision)
-	}
-}
-
 func (tserv *TMTServer) ApplyElimination(turn int) {
 	agentsToRemove := make(map[uuid.UUID]bool)
 
@@ -425,7 +411,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 	} else {
 		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetSelfSacrificeWillingness() > 0.9 {
+			if float64(agent.GetASPDecision(tserv.Grid)) == 1 {
 				// 4.1 Place temples/monuments for self-sacrificed agents
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				pos := agent.GetPosition()
