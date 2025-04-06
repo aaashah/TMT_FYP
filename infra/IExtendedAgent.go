@@ -8,13 +8,14 @@ import (
 
 type IExtendedAgent interface {
 	agent.IAgent[IExtendedAgent]
+	
 
 	//Getters
 	GetName() uuid.UUID
 	GetAttachment() Attachment
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
-	IsMortalitySalient() bool
+	//IsMortalitySalient() bool
 	GetSelfSacrificeWillingness() float32
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
@@ -35,7 +36,7 @@ type IExtendedAgent interface {
 	// SetAttachment(attachment []float32)
 	// SetNetwork(network map[uuid.UUID]float32)
 	SetAge(age int)
-	SetMortalitySalience(ms bool)
+	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)
 

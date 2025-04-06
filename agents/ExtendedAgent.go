@@ -234,12 +234,76 @@ func (ea *ExtendedAgent) GetMortality() bool {
 	return ea.Mortality
 }
 
-func (ea *ExtendedAgent) IsMortalitySalient() bool {
-	return ea.Mortality
+func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
+	var totalAge float32
+	var numAgentsNetwork float32
+
+	for friendID := range ea.Network {
+		friend, ok := ea.Server.GetAgentByID(friendID)
+		if ok && friendID != ea.GetID() {
+			totalAge += float32(friend.GetAge())
+			numAgentsNetwork++
+		}
+	}
+	if numAgentsNetwork == 0 || ea.Age == 0 {
+		return 0
+	}
+	averageAge := totalAge / numAgentsNetwork
+	diff := float32(ea.Age) - averageAge
+	if diff <= 0 {
+		return 0
+	}
+	return diff / float32(ea.Age)
 }
 
-func (ea *ExtendedAgent) SetMortalitySalience(ms bool) {
-	ea.Mortality = ms
+func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uuid.UUID]infra.IExtendedAgent) float32 {
+	selfPosition := ea.GetPosition()
+	clusterID := ea.GetClusterID()
+	memorials := []infra.PositionVector{}
+
+	for tomb := range grid.Tombstones {
+		memorials = append(memorials, infra.PositionVector{X: tomb[0], Y: tomb[1]})
+	}
+	for temples := range grid.Temples {
+		memorials = append(memorials, infra.PositionVector{X: temples[0], Y: temples[1]})
+	}
+
+	if len(memorials) == 0 {
+		return 0 // no memorials
+	}
+
+	//numerator - distance from self to all memorials
+	var selfMemorialDistanceSum float64
+	for _, mem := range memorials {
+		selfMemorialDistanceSum += selfPosition.Dist(mem)
+	}
+
+	//denominator- distance from memorials and distance from cluster agents to memorials
+	denominator := selfMemorialDistanceSum
+	for _, otherAgent := range agentMap {
+		if otherAgent.GetID() == ea.GetID() {
+			continue // skip self
+		}
+		if otherAgent.GetClusterID() == clusterID {
+			otherPosition := otherAgent.GetPosition()
+			for _, mem := range memorials {
+				denominator += otherPosition.Dist(mem)
+			}
+		}
+	}
+
+	return float32(selfMemorialDistanceSum / denominator)
+}
+
+func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float64 {
+	w1, w2, w3, w4 := 0.25, 0.25, 0.25, 0.25 // tweak
+
+	cea := float64(ea.ObservedEliminationsCluster)
+	nea := float64(ea.ObservedEliminationsNetwork)
+	raa := float64(ea.RelativeAgeToNetwork())
+	mpa := float64(ea.GetMemorialProximity(grid, ea.Server.GetAgentMap()))
+
+	return w1*cea + w2*nea + w3*raa + w4*mpa
 }
 
 func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
