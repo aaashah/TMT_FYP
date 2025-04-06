@@ -26,6 +26,9 @@ type IExtendedAgent interface {
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
 	DecideSacrifice() float32
+	IncrementClusterEliminations(n int)
+	IncrementNetworkEliminations(n int)
+	IncrementHeroism()
 
 	//Setters
 	// SetName(name uuid.UUID)

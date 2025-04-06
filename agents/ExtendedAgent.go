@@ -28,7 +28,7 @@ type ExtendedAgent struct {
 	ClusterID                   int
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
-	Heroism                     float32 // number of times agent volunteered self-sacrifices
+	Heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
 	Network      map[uuid.UUID]float32 // stores relationship strengths
@@ -68,6 +68,7 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		BaseAgent:                agent.CreateBaseAgent(server),
 		Server:                   server,                                                               // Type assert the server functions to IServer interface
 		Attachment:               infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
+		Heroism: 			      0, 																	//start at 0 increment if chose to self-sacrifice
 		Network:                  make(map[uuid.UUID]float32),
 		Age:                      rand.Intn(50),
 		Telomere:                 infra.NewTelomere(A, B, 0.5),
@@ -120,23 +121,6 @@ func (ea *ExtendedAgent) GetPosition() infra.PositionVector {
 func (ea *ExtendedAgent) SetPosition(newPos infra.PositionVector) {
 	ea.Position = newPos
 }
-
-// func (ea *ExtendedAgent) Move(grid *infra.Grid) {
-// 	newX, newY := grid.GetValidMove(ea.Position.X, ea.Position.Y) // Get a valid move
-// 	grid.UpdateAgentPosition(ea, newX, newY)                      // Update position in the grid
-// 	ea.Position = infra.PositionVector{X: newX, Y: newY}          // ✅ Assign new position
-// 	fmt.Printf("Agent %v moved to (%d, %d)\n", ea.GetID(), newX, newY)
-// }
-
-// Returns -1, 0, or 1 to move in the right direction
-// func getStep(current, target int) int {
-// 	if target > current {
-// 		return 1
-// 	} else if target < current {
-// 		return -1
-// 	}
-// 	return 0
-// }
 
 func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
 	return ea.Attachment
@@ -205,12 +189,6 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	return closestFriends[rand.Intn(len(closestFriends))] // pick randomly
 }
 
-// Euclidean distance helper
-// func distance(pos1, pos2 [2]int) float64 {
-// 	dx := float64(pos1[0] - pos2[0])
-// 	dy := float64(pos1[1] - pos2[1])
-// 	return math.Sqrt(dx*dx + dy*dy)
-// }
 
 func (ea *ExtendedAgent) GetClusterID() int {
 	return ea.ClusterID
@@ -220,19 +198,28 @@ func (ea *ExtendedAgent) SetClusterID(id int) {
 	ea.ClusterID = id
 }
 
+func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
+	ea.ObservedEliminationsCluster +=n
+}
+
+func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
+	ea.ObservedEliminationsNetwork +=n
+}
+
+func (ea *ExtendedAgent) IncrementHeroism() {
+	ea.Heroism++
+}
+
+
+
+func (ea *ExtendedAgent) GetHeroism() int {
+	return ea.Heroism
+}
+
 // GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
 func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 	return ea.Worldview
 }
-
-func (ea *ExtendedAgent) GetHeroism() float32 {
-	ea.Heroism = rand.Float32() // Randomized value for Heroism
-	return ea.Heroism
-}
-
-// func (ea *ExtendedAgent) SetHeroism() {
-// 	ea.Heroism = rand.Float32()
-// }
 
 func (ea *ExtendedAgent) GetYsterofimia() float32 {
 	ea.Ysterofimia = rand.Float32() // Randomized value for Ysterofimia

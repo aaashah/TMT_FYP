@@ -430,18 +430,46 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTemple(pos.X, pos.Y)
+				agent.IncrementHeroism()
 				agentsToRemove[agent.GetID()] = true
 			}
 		}
 	}
 
+	// also track eliminations per cluster and in network
+	clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
 	for id := range agentsToRemove {
 		agent, ok := tserv.GetAgentByID(id)
 		if ok {
+			clusterID := agent.GetClusterID() // get the cluster ID of the agent
+			clusterEliminationCount[clusterID]++ // increment the count for that cluster
 			tserv.RemoveAgent(agent)
 		}
 	}
+
+	// update history for remaining agents:
+	for _, agent := range tserv.GetAgentMap() {
+
+		//cluster eliminations
+		clusterID := agent.GetClusterID()
+		if eliminatedInCluster, exists := clusterEliminationCount[clusterID]; exists {
+			agent.IncrementClusterEliminations(eliminatedInCluster)
+			//fmt.Printf("Agent %v in cluster %d has %d eliminations in this cluster\n", agent.GetID(), clusterID, eliminatedInCluster)
+		}
+
+		// social network eliminations
+		networkEliminationCount := 0
+		for friendID := range agent.GetNetwork() {
+			if agentsToRemove[friendID] {
+				networkEliminationCount++
+			}
+		}
+		agent.IncrementNetworkEliminations(networkEliminationCount)
+	}
+
 }
+
+
 
 func (tserv *TMTServer) ApplyPTS() {}
 
