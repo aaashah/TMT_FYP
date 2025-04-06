@@ -35,7 +35,7 @@ type IExtendedAgent interface {
 	// SetName(name uuid.UUID)
 	// SetAttachment(attachment []float32)
 	// SetNetwork(network map[uuid.UUID]float32)
-	SetAge(age int)
+	IncrementAge()
 	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)

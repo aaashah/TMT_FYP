@@ -111,8 +111,8 @@ func (ea *ExtendedAgent) GetTelomere() float32 {
 
 }
 
-func (ea *ExtendedAgent) SetAge(age int) {
-	ea.Age = age
+func (ea *ExtendedAgent) IncrementAge() {
+	ea.Age++
 }
 
 func (ea *ExtendedAgent) GetPosition() infra.PositionVector {
@@ -389,7 +389,7 @@ func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float64 {
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) int {
-	threshold := 0.5 //random threshold
+	threshold := 0.75 //random threshold
 
 	ms := ea.ComputeMortalitySalience(grid)        
 	wv := ea.ComputeWorldviewValidation()      

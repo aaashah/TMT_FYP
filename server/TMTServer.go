@@ -168,7 +168,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	// Age up all agents at the start of each iteration (except start of game)
 	// if iteration > 0 {
 	for _, agent := range tserv.GetAgentMap() {
-		agent.SetAge(iteration)
+		agent.IncrementAge()
 		fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
 	}
 	// }
@@ -267,6 +267,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	
 	// 4. Check for agent elimination
+	//tserv.ApplyAPS()
 	tserv.ApplyElimination(j)
 	
 
@@ -289,6 +290,9 @@ func (tserv *TMTServer) RunEndOfIteration(int) {
 
 // ---------------------- Helper Functions ----------------------
 func RunKMeans(data [][]float64, k int) []int {
+	if len(data) == 0 {
+		return []int{}
+	}
 	// Initialize centroids
 	centroids := make([][]float64, k)
 	for i := 0; i < k; i++ {
@@ -369,8 +373,12 @@ func (tserv *TMTServer) MoveAgents() {
 func (tserv *TMTServer) ApplyClustering() {
 	positions := [][]float64{}
 	idToIndex := make([]uuid.UUID, 0)
+	agentMap := tserv.GetAgentMap()
+	if len(agentMap) == 0 {
+		return // Nothing to cluster
+	}
 
-	for _, agent := range tserv.GetAgentMap() {
+	for _, agent := range agentMap {
 		pos := agent.GetPosition()
 		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
 		idToIndex = append(idToIndex, agent.GetID())
