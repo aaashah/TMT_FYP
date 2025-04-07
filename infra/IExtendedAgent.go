@@ -20,7 +20,9 @@ type IExtendedAgent interface {
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
-	GetMortality() bool
+	//GetMortality() bool
+	GetTelomere() float32
+	GetIsDead() bool
 	//GetContextSacrifice() string
 	// Move(grid *Grid)
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
@@ -39,6 +41,7 @@ type IExtendedAgent interface {
 	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)
+	MarkAsDead()
 
 	//Message functions
 	HandleWellbeingCheckMessage(msg *WellbeingCheckMessage)

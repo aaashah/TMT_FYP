@@ -48,7 +48,8 @@ type ExtendedAgent struct {
 	// Ysterofimia (Posthumous Recognition)
 	Ysterofimia float64 // Observation of self-sacrifice vs self-preservation
 
-	Mortality bool
+	//Mortality bool
+	isDead  bool // True if agent is dead
 
 	MortalitySalience      float32 //section in ASP module
 	WorldviewValidation    float32 //section in ASP module
@@ -76,7 +77,8 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		Age:                      rand.Intn(50),
 		Telomere:                 infra.NewTelomere(A, B, 0.5),
 		Worldview:                rand.Uint32(),
-		Mortality:                false,
+		Ysterofimia: 		      rand.Float64(),
+		isDead:                   false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
@@ -225,16 +227,23 @@ func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 }
 
 func (ea *ExtendedAgent) GetYsterofimia() float64 {
-	ea.Ysterofimia = rand.Float64() // Randomized value for Ysterofimia
 	return ea.Ysterofimia
 }
 
 // GetMortality returns the mortality status of the agent.
-func (ea *ExtendedAgent) GetMortality() bool {
-	probDeath := ea.GetTelomere()      // get probability of death
-	randVal := rand.Float32()          // random value between 0 and 1
-	ea.Mortality = randVal < probDeath // Random chance to die of natural causes
-	return ea.Mortality
+// func (ea *ExtendedAgent) GetMortality() bool {
+// 	probDeath := ea.GetTelomere()      // get probability of death
+// 	randVal := rand.Float32()          // random value between 0 and 1
+// 	ea.Mortality = randVal < probDeath // Random chance to die of natural causes
+// 	return ea.Mortality
+// }
+
+func (ea *ExtendedAgent) MarkAsDead() {
+	ea.isDead = true
+}
+
+func (ea *ExtendedAgent) GetIsDead() bool {
+	return ea.isDead
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {

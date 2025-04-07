@@ -408,9 +408,9 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 	agentsToRemove := make(map[uuid.UUID]bool)
 
 	if turn == 0 {
+		tserv.updateAgentMortality()
 		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetMortality() {
-				// 4.1 Place tombstones for eliminated agents
+			if agent.GetIsDead() {
 				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
@@ -463,6 +463,15 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 
 }
 
+func (tserv *TMTServer) updateAgentMortality(){
+	for _, agent := range tserv.GetAgentMap() {
+		probDeath := agent.GetTelomere()
+		randVal := rand.Float32()
+		if randVal < probDeath {
+			agent.MarkAsDead()
+		}
+	}
+}
 
 
 func (tserv *TMTServer) ApplyPTS() {}
