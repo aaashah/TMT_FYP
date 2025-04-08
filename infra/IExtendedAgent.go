@@ -8,7 +8,6 @@ import (
 
 type IExtendedAgent interface {
 	agent.IAgent[IExtendedAgent]
-	
 
 	//Getters
 	GetName() uuid.UUID
@@ -28,7 +27,7 @@ type IExtendedAgent interface {
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
-	GetASPDecision(grid *Grid) int
+	GetASPDecision(grid *Grid) ASPDecison
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)
 	IncrementHeroism()

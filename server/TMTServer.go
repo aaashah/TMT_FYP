@@ -265,11 +265,9 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	// 2. Apply clustering (k-means)
 	tserv.ApplyClustering()
 
-	
 	// 4. Check for agent elimination
 	//tserv.ApplyAPS()
 	tserv.ApplyElimination(j)
-	
 
 	// 5. After eliminations for agents in each cluster:
 	// 5.1 Update social network
@@ -419,7 +417,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 	} else {
 		for _, agent := range tserv.GetAgentMap() {
-			if float64(agent.GetASPDecision(tserv.Grid)) == 1 {
+			if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
 				// 4.1 Place temples/monuments for self-sacrificed agents
 				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
 				pos := agent.GetPosition()
@@ -435,7 +433,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 	for id := range agentsToRemove {
 		agent, ok := tserv.GetAgentByID(id)
 		if ok {
-			clusterID := agent.GetClusterID() // get the cluster ID of the agent
+			clusterID := agent.GetClusterID()    // get the cluster ID of the agent
 			clusterEliminationCount[clusterID]++ // increment the count for that cluster
 			tserv.RemoveAgent(agent)
 		}
@@ -463,7 +461,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 
 }
 
-func (tserv *TMTServer) updateAgentMortality(){
+func (tserv *TMTServer) updateAgentMortality() {
 	for _, agent := range tserv.GetAgentMap() {
 		probDeath := agent.GetTelomere()
 		randVal := rand.Float32()
@@ -472,7 +470,6 @@ func (tserv *TMTServer) updateAgentMortality(){
 		}
 	}
 }
-
 
 func (tserv *TMTServer) ApplyPTS() {}
 
