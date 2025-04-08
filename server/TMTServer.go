@@ -11,6 +11,8 @@ import (
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
+	"slices"
+
 	agents "github.com/aaashah/TMT_Attachment/agents"
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -293,8 +295,8 @@ func RunKMeans(data [][]float64, k int) []int {
 	}
 	// Initialize centroids
 	centroids := make([][]float64, k)
-	for i := 0; i < k; i++ {
-		centroids[i] = append([]float64(nil), data[rand.Intn(len(data))]...)
+	for i := range k {
+		centroids[i] = slices.Clone(data[rand.Intn(len(data))])
 	}
 
 	assignments := make([]int, len(data))
@@ -331,7 +333,7 @@ func RunKMeans(data [][]float64, k int) []int {
 			sums[a][1] += data[i][1]
 			count[a]++
 		}
-		for i := 0; i < k; i++ {
+		for i := range k {
 			if count[i] > 0 {
 				centroids[i][0] = sums[i][0] / float64(count[i])
 				centroids[i][1] = sums[i][1] / float64(count[i])
