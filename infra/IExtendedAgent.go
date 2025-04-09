@@ -14,29 +14,37 @@ type IExtendedAgent interface {
 	GetAttachment() Attachment
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
-	IsMortalitySalient() bool
+	//IsMortalitySalient() bool
 	GetSelfSacrificeWillingness() float32
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
-	GetMortality() bool
+	//GetMortality() bool
+	GetTelomere() float32
+	IsAlive() bool
 	//GetContextSacrifice() string
 	// Move(grid *Grid)
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
-	DecideSacrifice() float32
+	GetASPDecision(grid *Grid) ASPDecison
+	IncrementClusterEliminations(n int)
+	IncrementNetworkEliminations(n int)
+	IncrementHeroism()
 
 	//Setters
 	// SetName(name uuid.UUID)
 	// SetAttachment(attachment []float32)
 	// SetNetwork(network map[uuid.UUID]float32)
-	SetAge(age int)
-	SetMortalitySalience(ms bool)
+	IncrementAge()
+	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)
+	MarkAsDead()
 
 	//Message functions
+	HandleWellbeingCheckMessage(msg *WellbeingCheckMessage)
+	HandleReplyMessage(msg *ReplyMessage)
 
 	//Info
 	GetExposedInfo() ExposedAgentInfo

@@ -38,7 +38,7 @@ func (pa *PreoccupiedAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionV
 	//fmt.Printf("PreoccupiedAgent %v network: %v\n", pa.GetID(), pa.Network)
 
 	var closestFriend infra.IExtendedAgent = nil
-	minDist := math.MaxFloat32
+	minDist := math.Inf(1)
 
 	// Find closest friend
 	for _, otherAgent := range occupiedAgents {

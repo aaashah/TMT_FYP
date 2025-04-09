@@ -38,7 +38,7 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 	occupied := grid.GetAllOccupiedAgentPositions()
 
 	var closestStranger infra.IExtendedAgent = nil
-	minDist := math.MaxFloat32
+	minDist := math.Inf(1)
 
 	for _, otherAgent := range occupied {
 		if otherAgent.GetID() == fa.GetID() {

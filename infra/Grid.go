@@ -9,9 +9,9 @@ import (
 type Grid struct {
 	Width      int
 	Height     int
-	positions  map[[2]int]IExtendedAgent
-	Tombstones map[[2]int]bool
-	Temples    map[[2]int]bool
+	positions  map[PositionVector]IExtendedAgent
+	Tombstones []PositionVector
+	Temples    []PositionVector
 	mutex      sync.Mutex
 }
 
@@ -19,32 +19,44 @@ func NewGrid(width, height int) *Grid {
 	return &Grid{
 		Width:      width,
 		Height:     height,
-		positions:  make(map[[2]int]IExtendedAgent),
-		Tombstones: make(map[[2]int]bool),
-		Temples:    make(map[[2]int]bool),
+		positions:  make(map[PositionVector]IExtendedAgent),
+		Tombstones: []PositionVector{},
+		Temples:    []PositionVector{},
 	}
 }
 
 // Check if a cell is occupied
 func (g *Grid) IsOccupied(x, y int) bool {
-	_, exists := g.positions[[2]int{x, y}]
-	_, isTombstone := g.Tombstones[[2]int{x, y}]
-	_, isTemple := g.Temples[[2]int{x, y}]
+	pos := PositionVector{X: x, Y: y}
+	if _, exists := g.positions[pos]; exists {
+		return true
+	}
 
-	return exists || isTombstone || isTemple
+	target := PositionVector{X: x, Y: y}
+	for _, t := range g.Tombstones {
+		if t == target {
+			return true
+		}
+	}
+	for _, temple := range g.Temples {
+		if temple == target {
+			return true
+		}
+	}
+	return false
 }
 
 // Place a tombstone at an agent's last known position
 func (g *Grid) PlaceTombstone(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Tombstones[[2]int{x, y}] = true // Mark the position as a tombstone
+	g.Tombstones = append(g.Tombstones, PositionVector{X: x, Y: y}) // Mark the position as a tombstone
 }
 
 func (g *Grid) PlaceTemple(x, y int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.Temples[[2]int{x, y}] = false // Mark the position as a temple
+	g.Temples = append(g.Temples, PositionVector{X: x, Y: y}) // Mark the position as a temple
 }
 
 // Get a valid move for an agent
@@ -65,30 +77,30 @@ func (g *Grid) GetValidMove(x, y int) (int, int) {
 }
 
 // Update agent position on the grid
-func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newX, newY int) {
+func (g *Grid) UpdateAgentPosition(agent IExtendedAgent, newPos PositionVector) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
 	// Ensure the new position is not already occupied OR a tombstone
-	if g.IsOccupied(newX, newY) {
+	if g.IsOccupied(newPos.X, newPos.Y) {
 		//fmt.Printf(" Agent %v tried to move onto an occupied cell (%d, %d). Movement canceled.\n", agent.GetID(), newX, newY)
 		return
 	}
 
 	// Remove from old position
 	oldPos := agent.GetPosition()
-	delete(g.positions, [2]int{oldPos.X, oldPos.Y})
+	delete(g.positions, oldPos)
 
 	// Update new position
-	g.positions[[2]int{newX, newY}] = agent
+	g.positions[newPos] = agent
 }
 
-func (g *Grid) GetAllOccupiedAgentPositions() map[[2]int]IExtendedAgent {
+func (g *Grid) GetAllOccupiedAgentPositions() map[PositionVector]IExtendedAgent {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
 	// Return a copy to prevent accidental modification
-	copyMap := make(map[[2]int]IExtendedAgent)
+	copyMap := make(map[PositionVector]IExtendedAgent)
 	for pos, agent := range g.positions {
 		copyMap[pos] = agent
 	}
