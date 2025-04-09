@@ -46,7 +46,7 @@ type ExtendedAgent struct {
 	Worldview uint32 // 32-bit binary representation of opinions
 
 	// Ysterofimia (Posthumous Recognition)
-	Ysterofimia float64 // Observation of self-sacrifice vs self-preservation
+	Ysterofimia float32 // Observation of self-sacrifice vs self-preservation
 
 	//Mortality bool
 	isDead bool // True if agent is dead
@@ -55,11 +55,11 @@ type ExtendedAgent struct {
 	WorldviewValidation    float32 //section in ASP module
 	RelationshipValidation float32 //section in ASP module
 
-	SelfSacrificeWillingness float64 //ASP result
+	SelfSacrificeWillingness float32 //ASP result
 }
 
 type AgentConfig struct {
-	InitSacrificeWillingness float64
+	InitSacrificeWillingness float32
 }
 
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
@@ -77,13 +77,26 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		Age:                      rand.Intn(50),
 		Telomere:                 infra.NewTelomere(A, B, 0.5),
 		Worldview:                rand.Uint32(),
-		Ysterofimia:              rand.Float64(),
+		Ysterofimia:              rand.Float32(),
 		isDead:                   false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
 }
 
+const (
+	// ASP weights
+	w1 = float32(0.25)
+	w2 = float32(0.25)
+	w3 = float32(0.25)
+	w4 = float32(0.25)
+	w5 = float32(0.25)
+	w6 = float32(0.25)
+	w7 = float32(0.5)
+	w8 = float32(0.25)
+	w9 = float32(0.25)
+	w10 = float32(0.5)
+)
 // ----------------------- Interface implementation -----------------------
 
 func (ea *ExtendedAgent) AgentInitialised() {}
@@ -138,7 +151,7 @@ func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
 // Finds closest friend in social network
 func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	var closestFriends []infra.IExtendedAgent
-	minDist := math.MaxFloat64
+	minDist := math.MaxFloat32
 
 	for friendID := range ea.GetNetwork() {
 		// lookup friend in server
@@ -191,7 +204,7 @@ func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 	return ea.Worldview
 }
 
-func (ea *ExtendedAgent) GetYsterofimia() float64 {
+func (ea *ExtendedAgent) GetYsterofimia() float32 {
 	return ea.Ysterofimia
 }
 
@@ -275,7 +288,7 @@ func worldviewAlignment(a, b uint32) float32 {
 	return float32(alignedBitCount) / 32.0
 }
 
-func (ea *ExtendedAgent) GetCPR() float64 {
+func (ea *ExtendedAgent) GetCPR() float32 {
 	// compute cluster profiles
 	agentMap := ea.Server.GetAgentMap()
 	clusterID := ea.GetClusterID()
@@ -298,10 +311,10 @@ func (ea *ExtendedAgent) GetCPR() float64 {
 	for _, score := range clusterAlignments {
 		totalAlignment += score
 	}
-	return float64(totalAlignment) / float64(len(clusterAlignments))
+	return float32(totalAlignment) / float32(len(clusterAlignments))
 }
 
-func (ea *ExtendedAgent) GetNPR() float64 {
+func (ea *ExtendedAgent) GetNPR() float32 {
 	// compute network profiles
 	networkAlignments := []float32{}
 	agentMap := ea.Server.GetAgentMap()
@@ -319,22 +332,22 @@ func (ea *ExtendedAgent) GetNPR() float64 {
 	for _, score := range networkAlignments {
 		totalAlignment += score
 	}
-	return float64(totalAlignment) / float64(len(networkAlignments))
+	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
-func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float64 {
-	w1, w2, w3, w4 := 0.25, 0.25, 0.25, 0.25 // tweak
+func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
+	//w1, w2, w3, w4 := float32(0.25), float32(0.25), float32(0.25), float32(0.25) // tweak
 
-	ce := float64(ea.ObservedEliminationsCluster)
-	ne := float64(ea.ObservedEliminationsNetwork)
-	ra := float64(ea.RelativeAgeToNetwork())
-	mp := float64(ea.GetMemorialProximity(grid, ea.Server.GetAgentMap()))
+	ce := float32(ea.ObservedEliminationsCluster)
+	ne := float32(ea.ObservedEliminationsNetwork)
+	ra := float32(ea.RelativeAgeToNetwork())
+	mp := float32(ea.GetMemorialProximity(grid, ea.Server.GetAgentMap()))
 
 	return w1*ce + w2*ne + w3*ra + w4*mp
 }
 
-func (ea *ExtendedAgent) ComputeWorldviewValidation() float64 {
-	w5, w6, w7 := 0.25, 0.25, 0.5 // tweak
+func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
+	//w5, w6, w7 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
 	cpr := ea.GetCPR()
 	npr := ea.GetNPR() // compute NPR
@@ -343,30 +356,30 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float64 {
 	return w5*cpr + w6*npr + w7*ysterofimia
 }
 
-func (ea *ExtendedAgent) ComputeRelationshipValidation() float64 {
-	w8, w9, w10 := 0.25, 0.25, 0.5 // tweak
+func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
+	//w8, w9, w10 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
-	est := rand.Float64()             // compute EST
-	pse := rand.Float64()             // compute PSE
-	heroismTendency := rand.Float64() // compute heroism tendency
+	est := rand.Float32()             // compute EST
+	pse := rand.Float32()             // compute PSE
+	heroismTendency := rand.Float32() // compute heroism tendency
 
 	return w8*est + w9*pse + w10*heroismTendency
 }
 
-func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float64 {
+func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
 	return ea.SelfSacrificeWillingness
 }
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := 0.75 //random threshold
+	threshold := float32(0.75) //random threshold
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
 
 	sum := 0
-	for _, score := range []float64{ms, wv, rv} {
+	for _, score := range []float32{ms, wv, rv} {
 		if score > threshold {
 			sum += 1
 		} else {

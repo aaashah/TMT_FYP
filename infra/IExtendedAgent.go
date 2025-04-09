@@ -15,7 +15,7 @@ type IExtendedAgent interface {
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
 	//IsMortalitySalient() bool
-	GetSelfSacrificeWillingness() float64
+	GetSelfSacrificeWillingness() float32
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
