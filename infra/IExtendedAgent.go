@@ -21,7 +21,7 @@ type IExtendedAgent interface {
 	GetWorldviewBinary() uint32
 	//GetMortality() bool
 	GetTelomere() float32
-	GetIsDead() bool
+	IsAlive() bool
 	//GetContextSacrifice() string
 	// Move(grid *Grid)
 	GetTargetPosition(grid *Grid) (PositionVector, bool)

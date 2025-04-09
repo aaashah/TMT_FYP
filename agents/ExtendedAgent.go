@@ -49,7 +49,7 @@ type ExtendedAgent struct {
 	Ysterofimia float32 // Observation of self-sacrifice vs self-preservation
 
 	//Mortality bool
-	isDead bool // True if agent is dead
+	AgentIsAlive bool // True if agent is alive
 
 	MortalitySalience      float32 //section in ASP module
 	WorldviewValidation    float32 //section in ASP module
@@ -78,7 +78,7 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		Telomere:                 infra.NewTelomere(A, B, 0.5),
 		Worldview:                rand.Uint32(),
 		Ysterofimia:              rand.Float32(),
-		isDead:                   false,
+		AgentIsAlive:                   true,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
@@ -136,9 +136,9 @@ func randInRange(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
 }
 
-func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
-	return ea.Network
-}
+// func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
+// 	return ea.Network
+// }
 
 func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
@@ -153,7 +153,7 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	var closestFriends []infra.IExtendedAgent
 	minDist := math.MaxFloat32
 
-	for friendID := range ea.GetNetwork() {
+	for friendID := range ea.Network {
 		// lookup friend in server
 		agentInterface, exists := ea.Server.GetAgentByID(friendID)
 		if !exists {
@@ -204,16 +204,16 @@ func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 	return ea.Worldview
 }
 
-func (ea *ExtendedAgent) GetYsterofimia() float32 {
-	return ea.Ysterofimia
-}
+// func (ea *ExtendedAgent) GetYsterofimia() float32 {
+// 	return ea.Ysterofimia
+// }
 
 func (ea *ExtendedAgent) MarkAsDead() {
-	ea.isDead = true
+	ea.AgentIsAlive = false
 }
 
-func (ea *ExtendedAgent) GetIsDead() bool {
-	return ea.isDead
+func (ea *ExtendedAgent) IsAlive() bool {
+	return ea.AgentIsAlive
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
@@ -351,7 +351,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 
 	cpr := ea.GetCPR()
 	npr := ea.GetNPR() // compute NPR
-	ysterofimia := ea.GetYsterofimia()
+	ysterofimia := ea.Ysterofimia
 
 	return w5*cpr + w6*npr + w7*ysterofimia
 }

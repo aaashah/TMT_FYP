@@ -410,7 +410,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 	if turn == 0 {
 		tserv.updateAgentMortality()
 		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetIsDead() {
+			if !agent.IsAlive() {
 				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
