@@ -92,10 +92,6 @@ func (ea *ExtendedAgent) GetName() uuid.UUID {
 	return ea.GetID()
 }
 
-// func (ea *ExtendedAgent) SetName(name uuid.UUID) {
-// 	ea.NameID = ea.GetID()
-// }
-
 func (ea *ExtendedAgent) GetAge() int {
 	// Beta distribution parameters (adjusted to fit UK population shape)
 	return ea.Age
@@ -103,14 +99,6 @@ func (ea *ExtendedAgent) GetAge() int {
 
 func (ea *ExtendedAgent) GetTelomere() float32 {
 
-	// if ea.Age < ea.AgeA {
-	// 	return 0.005 * float32(ea.Age) // Small increasing probability
-	// } else if ea.Age >= ea.AgeB {
-	// 	return 1.0 // Guaranteed death at AgeB
-	// } else {
-	// 	// Linearly increasing probability from AgeA to AgeB
-	// 	return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
-	// }
 	return ea.Telomere.GetProbabilityOfDeath(ea.Age)
 
 }
@@ -131,13 +119,6 @@ func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
 	return ea.Attachment
 }
 
-// func (ea *ExtendedAgent) SetAttachment(attachment infra.Attachment) {
-// 	// if len(attachment) != 2 {
-// 	// 	panic("Attachment must have exactly two elements: [anxiety, avoidance]")
-// 	// }
-// 	ea.Attachment = attachment
-// }
-
 func randInRange(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
 }
@@ -145,15 +126,6 @@ func randInRange(min, max float32) float32 {
 func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 	return ea.Network
 }
-
-// func (ea *ExtendedAgent) SetNetwork(network map[uuid.UUID]float32) {
-// 	ea.Network = network
-// }
-
-// distance between two agents on grid
-// func (ea *ExtendedAgent) DistanceTo(other *ExtendedAgent) float64 {
-// 	return infra.Distance(ea.Position, other.Position)
-// }
 
 func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
@@ -174,10 +146,6 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 		if !exists {
 			continue
 		}
-		// friend, ok := agentInterface.(*ExtendedAgent)
-		// if !ok {
-		// 	continue // type assertion failed
-		// }
 
 		dist := ea.Position.Dist(agentInterface.GetPosition())
 		if dist < minDist {
@@ -226,14 +194,6 @@ func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 func (ea *ExtendedAgent) GetYsterofimia() float64 {
 	return ea.Ysterofimia
 }
-
-// GetMortality returns the mortality status of the agent.
-// func (ea *ExtendedAgent) GetMortality() bool {
-// 	probDeath := ea.GetTelomere()      // get probability of death
-// 	randVal := rand.Float32()          // random value between 0 and 1
-// 	ea.Mortality = randVal < probDeath // Random chance to die of natural causes
-// 	return ea.Mortality
-// }
 
 func (ea *ExtendedAgent) MarkAsDead() {
 	ea.isDead = true
@@ -422,22 +382,8 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 		return infra.INACTION // No action
 	}
 
-	//ea.SelfSacrificeWillingness = rand.Float64() // Random willingness to sacrifice
-
-	//fmt.Printf("Agent %d decision: %v\n", a.NameID, a.SacrificeChoice)
-
-	// fmt.Printf("Agent %v willing to sacrifice by %s \n",
-	//     ea.NameID,
-	//     map[float32]string{}[ea.SelfSacrificeWillingness])
-	//return ea.SelfSacrificeWillingness
 }
 
-// func thresholdVote(score float64, threshold float64) int {
-// 	if score > threshold {
-// 		return 1
-// 	}
-// 	return -1
-// }
 
 func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 	return infra.ExposedAgentInfo{
