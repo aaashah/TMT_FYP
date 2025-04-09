@@ -11,11 +11,10 @@ type PositionVector struct {
 	Y int
 }
 
-func (p1 PositionVector) Dist(p2 PositionVector) float32 {
+func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 	deltaX := float64(p1.X - p2.X)
 	deltaY := float64(p1.Y - p2.Y)
-	dist := math.Sqrt((deltaX * deltaX) + (deltaY * deltaY))
-	return float32(dist)
+	return math.Sqrt((deltaX * deltaX) + (deltaY * deltaY))
 }
 
 type Attachment struct {

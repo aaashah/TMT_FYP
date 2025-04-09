@@ -11,7 +11,7 @@ type Grid struct {
 	Height     int
 	positions  map[PositionVector]IExtendedAgent
 	Tombstones []PositionVector
-	Temples	[]PositionVector
+	Temples    []PositionVector
 	mutex      sync.Mutex
 }
 

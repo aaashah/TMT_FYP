@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"math"
 	"math/bits"
 	"math/rand"
 
@@ -77,27 +78,13 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		Telomere:                 infra.NewTelomere(rand.Intn(50), A, B, 0.5),
 		Worldview:                rand.Uint32(),
 		Ysterofimia:              rand.Float32(),
-		AgentIsAlive:                   true,
+		AgentIsAlive:             true,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
 }
 
-// const (
-// 	// ASP weights
-// 	w1 = float32(0.25)
-// 	w2 = float32(0.25)
-// 	w3 = float32(0.25)
-// 	w4 = float32(0.25)
-// 	w5 = float32(0.25)
-// 	w6 = float32(0.25)
-// 	w7 = float32(0.5)
-// 	w8 = float32(0.25)
-// 	w9 = float32(0.25)
-// 	w10 = float32(0.5)
-// )
-
-const MaxFloat32 = float32(3.4028235e+38) // largest float32 value
+// const MaxFloat32 = float32(3.4028235e+38) // largest float32 value
 // ----------------------- Interface implementation -----------------------
 
 func (ea *ExtendedAgent) AgentInitialised() {}
@@ -150,7 +137,7 @@ func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
 // Finds closest friend in social network
 func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	var closestFriends []infra.IExtendedAgent
-	minDist := MaxFloat32
+	minDist := math.Inf(1)
 
 	for friendID := range ea.Network {
 		// lookup friend in server
@@ -216,7 +203,7 @@ func (ea *ExtendedAgent) IsAlive() bool {
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
-	var totalAge float32
+	var totalAge int
 	var numAgentsNetwork float32
 	age := ea.GetAge()
 
@@ -230,7 +217,8 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 	if numAgentsNetwork == 0 || age == 0 {
 		return 0
 	}
-	averageAge := totalAge / numAgentsNetwork
+
+	averageAge := float32(totalAge) / numAgentsNetwork
 	diff := float32(age) - averageAge
 	if diff <= 0 {
 		return 0
@@ -251,15 +239,13 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 	// for temples := range grid.Temples {
 	// 	memorials = append(memorials, infra.PositionVector{X: temples[0], Y: temples[1]})
 	// }
-	
-
 
 	if len(memorials) == 0 {
 		return 0 // no memorials
 	}
 
 	//numerator - distance from self to all memorials
-	var selfMemorialDistanceSum float32
+	var selfMemorialDistanceSum float64
 	for _, mem := range memorials {
 		selfMemorialDistanceSum += selfPosition.Dist(mem)
 	}
@@ -400,7 +386,6 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	}
 
 }
-
 
 func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 	return infra.ExposedAgentInfo{

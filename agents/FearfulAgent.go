@@ -2,6 +2,7 @@ package agents
 
 import (
 	"fmt"
+	"math"
 
 	// "github.com/google/uuid"
 
@@ -37,7 +38,7 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 	occupied := grid.GetAllOccupiedAgentPositions()
 
 	var closestStranger infra.IExtendedAgent = nil
-	minDist := MaxFloat32
+	minDist := math.Inf(1)
 
 	for _, otherAgent := range occupied {
 		if otherAgent.GetID() == fa.GetID() {

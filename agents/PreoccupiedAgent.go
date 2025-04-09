@@ -2,6 +2,7 @@ package agents
 
 import (
 	"fmt"
+	"math"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -37,7 +38,7 @@ func (pa *PreoccupiedAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionV
 	//fmt.Printf("PreoccupiedAgent %v network: %v\n", pa.GetID(), pa.Network)
 
 	var closestFriend infra.IExtendedAgent = nil
-	minDist := MaxFloat32
+	minDist := math.Inf(1)
 
 	// Find closest friend
 	for _, otherAgent := range occupiedAgents {
