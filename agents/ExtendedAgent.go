@@ -83,19 +83,19 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 	}
 }
 
-const (
-	// ASP weights
-	w1 = float32(0.25)
-	w2 = float32(0.25)
-	w3 = float32(0.25)
-	w4 = float32(0.25)
-	w5 = float32(0.25)
-	w6 = float32(0.25)
-	w7 = float32(0.5)
-	w8 = float32(0.25)
-	w9 = float32(0.25)
-	w10 = float32(0.5)
-)
+// const (
+// 	// ASP weights
+// 	w1 = float32(0.25)
+// 	w2 = float32(0.25)
+// 	w3 = float32(0.25)
+// 	w4 = float32(0.25)
+// 	w5 = float32(0.25)
+// 	w6 = float32(0.25)
+// 	w7 = float32(0.5)
+// 	w8 = float32(0.25)
+// 	w9 = float32(0.25)
+// 	w10 = float32(0.5)
+// )
 
 const MaxFloat32 = float32(3.4028235e+38) // largest float32 value
 // ----------------------- Interface implementation -----------------------
@@ -239,7 +239,8 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 	return float32(diff) / float32(ea.Age)
 }
 
-func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uuid.UUID]infra.IExtendedAgent) float32 {
+func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
+	agentMap := ea.Server.GetAgentMap()
 	selfPosition := ea.GetPosition()
 	clusterID := ea.GetClusterID()
 	//memorials := []infra.PositionVector{}
@@ -345,9 +346,9 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	ce := float32(ea.ObservedEliminationsCluster)
 	ne := float32(ea.ObservedEliminationsNetwork)
 	ra := float32(ea.RelativeAgeToNetwork())
-	mp := float32(ea.GetMemorialProximity(grid, ea.Server.GetAgentMap()))
+	mp := float32(ea.GetMemorialProximity(grid))
 
-	return w1*ce + w2*ne + w3*ra + w4*mp
+	return infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 }
 
 func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
@@ -357,7 +358,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 	npr := ea.GetNPR() // compute NPR
 	ysterofimia := ea.Ysterofimia
 
-	return w5*cpr + w6*npr + w7*ysterofimia
+	return infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 }
 
 func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
@@ -367,7 +368,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	pse := rand.Float32()             // compute PSE
 	heroismTendency := rand.Float32() // compute heroism tendency
 
-	return w8*est + w9*pse + w10*heroismTendency
+	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }
 
 func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
