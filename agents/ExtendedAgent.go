@@ -18,11 +18,11 @@ type ExtendedAgent struct {
 	Server infra.IServer
 	// NameID uuid.UUID
 
-	Age int
+	// Age int
 	// AgeA     int     // Age where mortality probability starts increasing
 	// AgeB     int     // Age where agent is definitely eliminated
 	// Telomere float32 // Determines lifespan decay (death probability)
-	Telomere infra.Telomere
+	Telomere *infra.Telomere
 
 	Position       infra.PositionVector
 	MovementPolicy string // Defines how movement is determined
@@ -69,13 +69,13 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
 	return &ExtendedAgent{
-		BaseAgent:                agent.CreateBaseAgent(server),
-		Server:                   server,                                                               // Type assert the server functions to IServer interface
-		Attachment:               infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
-		Heroism:                  0,                                                                    //start at 0 increment if chose to self-sacrifice
-		Network:                  make(map[uuid.UUID]float32),
-		Age:                      rand.Intn(50),
-		Telomere:                 infra.NewTelomere(A, B, 0.5),
+		BaseAgent:  agent.CreateBaseAgent(server),
+		Server:     server,                                                               // Type assert the server functions to IServer interface
+		Attachment: infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
+		Heroism:    0,                                                                    //start at 0 increment if chose to self-sacrifice
+		Network:    make(map[uuid.UUID]float32),
+		// Age:                      rand.Intn(50),
+		Telomere:                 infra.NewTelomere(rand.Intn(50), A, B, 0.5),
 		Worldview:                rand.Uint32(),
 		Ysterofimia:              rand.Float64(),
 		isDead:                   false,
@@ -98,7 +98,7 @@ func (ea *ExtendedAgent) GetName() uuid.UUID {
 
 func (ea *ExtendedAgent) GetAge() int {
 	// Beta distribution parameters (adjusted to fit UK population shape)
-	return ea.Age
+	return ea.Telomere.GetAge()
 }
 
 func (ea *ExtendedAgent) GetTelomere() float32 {
@@ -111,12 +111,12 @@ func (ea *ExtendedAgent) GetTelomere() float32 {
 	// 	// Linearly increasing probability from AgeA to AgeB
 	// 	return float32(ea.Age-ea.AgeA) / float32(ea.AgeB-ea.AgeA)
 	// }
-	return ea.Telomere.GetProbabilityOfDeath(ea.Age)
+	return ea.Telomere.GetProbabilityOfDeath()
 
 }
 
 func (ea *ExtendedAgent) IncrementAge() {
-	ea.Age++
+	ea.Telomere.IncrementAge()
 }
 
 func (ea *ExtendedAgent) GetPosition() infra.PositionVector {
@@ -246,6 +246,7 @@ func (ea *ExtendedAgent) GetIsDead() bool {
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 	var totalAge float32
 	var numAgentsNetwork float32
+	age := ea.GetAge()
 
 	for friendID := range ea.Network {
 		friend, ok := ea.Server.GetAgentByID(friendID)
@@ -254,15 +255,15 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 			numAgentsNetwork++
 		}
 	}
-	if numAgentsNetwork == 0 || ea.Age == 0 {
+	if numAgentsNetwork == 0 || age == 0 {
 		return 0
 	}
 	averageAge := totalAge / numAgentsNetwork
-	diff := float32(ea.Age) - averageAge
+	diff := float32(age) - averageAge
 	if diff <= 0 {
 		return 0
 	}
-	return diff / float32(ea.Age)
+	return diff / float32(age)
 }
 
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uuid.UUID]infra.IExtendedAgent) float32 {

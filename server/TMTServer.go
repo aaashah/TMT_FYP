@@ -251,6 +251,8 @@ func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
 	return !grid.IsOccupied(moveX, moveY)
 }
 
+const MOVEMENT_TURNS int = 20
+
 func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
@@ -262,7 +264,9 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	}
 
 	// 1. Move agents
-	tserv.MoveAgents()
+	for range MOVEMENT_TURNS {
+		tserv.MoveAgents()
+	}
 
 	// 2. Apply clustering (k-means)
 	tserv.ApplyClustering()
