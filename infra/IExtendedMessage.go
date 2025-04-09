@@ -7,5 +7,4 @@ import (
 
 type IExtendedMessage interface {
 	message.IMessage[IExtendedAgent]
-
 }
