@@ -137,9 +137,9 @@ func randInRange(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
 }
 
-// func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
-// 	return ea.Network
-// }
+func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
+	return ea.Network
+}
 
 func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
