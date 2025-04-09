@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"math"
 	"math/bits"
 	"math/rand"
 
@@ -97,6 +96,8 @@ const (
 	w9 = float32(0.25)
 	w10 = float32(0.5)
 )
+
+const MaxFloat32 = float32(3.4028235e+38) // largest float32 value
 // ----------------------- Interface implementation -----------------------
 
 func (ea *ExtendedAgent) AgentInitialised() {}
@@ -151,7 +152,7 @@ func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
 // Finds closest friend in social network
 func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	var closestFriends []infra.IExtendedAgent
-	minDist := math.MaxFloat32
+	minDist := MaxFloat32
 
 	for friendID := range ea.Network {
 		// lookup friend in server
@@ -217,13 +218,13 @@ func (ea *ExtendedAgent) IsAlive() bool {
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
-	var totalAge float32
-	var numAgentsNetwork float32
+	var totalAge int
+	var numAgentsNetwork int
 
 	for friendID := range ea.Network {
 		friend, ok := ea.Server.GetAgentByID(friendID)
 		if ok && friendID != ea.GetID() {
-			totalAge += float32(friend.GetAge())
+			totalAge += friend.GetAge()
 			numAgentsNetwork++
 		}
 	}
@@ -231,11 +232,11 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 		return 0
 	}
 	averageAge := totalAge / numAgentsNetwork
-	diff := float32(ea.Age) - averageAge
+	diff := ea.Age - averageAge
 	if diff <= 0 {
 		return 0
 	}
-	return diff / float32(ea.Age)
+	return float32(diff) / float32(ea.Age)
 }
 
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uuid.UUID]infra.IExtendedAgent) float32 {
@@ -255,7 +256,7 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uui
 	}
 
 	//numerator - distance from self to all memorials
-	var selfMemorialDistanceSum float64
+	var selfMemorialDistanceSum float32
 	for _, mem := range memorials {
 		selfMemorialDistanceSum += selfPosition.Dist(mem)
 	}
