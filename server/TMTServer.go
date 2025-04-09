@@ -364,8 +364,9 @@ func (tserv *TMTServer) MoveAgents() {
 			}
 		}
 
-		tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
+		//tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
 		newPos := infra.PositionVector{X: moveX, Y: moveY}
+		tserv.Grid.UpdateAgentPosition(agent, newPos)
 		agent.SetPosition(newPos)
 	}
 }
@@ -487,12 +488,12 @@ func (tserv *TMTServer) RecordTurnInfo() {
 	}
 
 	// Record tombstone locations
-	for tombstonePos := range tserv.Grid.Tombstones {
-		newInfraRecord.Tombstones[tombstonePos] = true
+	for _, tombstonePos := range tserv.Grid.Tombstones {
+		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
 	}
 
-	for templePos := range tserv.Grid.Temples {
-		newInfraRecord.Temples[templePos] = true
+	for _, templePos := range tserv.Grid.Temples {
+		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
 	}
 
 	// Collect agent records

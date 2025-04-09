@@ -242,14 +242,17 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid, agentMap map[uuid.UUID]infra.IExtendedAgent) float32 {
 	selfPosition := ea.GetPosition()
 	clusterID := ea.GetClusterID()
-	memorials := []infra.PositionVector{}
+	//memorials := []infra.PositionVector{}
+	memorials := append(grid.Tombstones, grid.Temples...)
 
-	for tomb := range grid.Tombstones {
-		memorials = append(memorials, infra.PositionVector{X: tomb[0], Y: tomb[1]})
-	}
-	for temples := range grid.Temples {
-		memorials = append(memorials, infra.PositionVector{X: temples[0], Y: temples[1]})
-	}
+	// for tomb := range grid.Tombstones {
+	// 	memorials = append(memorials, infra.PositionVector{X: tomb[0], Y: tomb[1]})
+	// }
+	// for temples := range grid.Temples {
+	// 	memorials = append(memorials, infra.PositionVector{X: temples[0], Y: temples[1]})
+	// }
+	
+
 
 	if len(memorials) == 0 {
 		return 0 // no memorials
