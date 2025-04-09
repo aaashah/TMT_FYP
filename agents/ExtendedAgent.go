@@ -49,7 +49,7 @@ type ExtendedAgent struct {
 	Ysterofimia float64 // Observation of self-sacrifice vs self-preservation
 
 	//Mortality bool
-	isDead  bool // True if agent is dead
+	isDead bool // True if agent is dead
 
 	MortalitySalience      float32 //section in ASP module
 	WorldviewValidation    float32 //section in ASP module
@@ -72,12 +72,12 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		BaseAgent:                agent.CreateBaseAgent(server),
 		Server:                   server,                                                               // Type assert the server functions to IServer interface
 		Attachment:               infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
-		Heroism: 			      0, 																	//start at 0 increment if chose to self-sacrifice
+		Heroism:                  0,                                                                    //start at 0 increment if chose to self-sacrifice
 		Network:                  make(map[uuid.UUID]float32),
 		Age:                      rand.Intn(50),
 		Telomere:                 infra.NewTelomere(A, B, 0.5),
 		Worldview:                rand.Uint32(),
-		Ysterofimia: 		      rand.Float64(),
+		Ysterofimia:              rand.Float64(),
 		isDead:                   false,
 		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
@@ -194,7 +194,6 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	return closestFriends[rand.Intn(len(closestFriends))] // pick randomly
 }
 
-
 func (ea *ExtendedAgent) GetClusterID() int {
 	return ea.ClusterID
 }
@@ -204,18 +203,16 @@ func (ea *ExtendedAgent) SetClusterID(id int) {
 }
 
 func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
-	ea.ObservedEliminationsCluster +=n
+	ea.ObservedEliminationsCluster += n
 }
 
 func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
-	ea.ObservedEliminationsNetwork +=n
+	ea.ObservedEliminationsNetwork += n
 }
 
 func (ea *ExtendedAgent) IncrementHeroism() {
 	ea.Heroism++
 }
-
-
 
 func (ea *ExtendedAgent) GetHeroism() int {
 	return ea.Heroism
@@ -318,8 +315,9 @@ func worldviewAlignment(a, b uint32) float32 {
 	return float32(alignedBitCount) / 32.0
 }
 
-func (ea *ExtendedAgent) GetCPR(agentMap map[uuid.UUID]infra.IExtendedAgent) float64 {
+func (ea *ExtendedAgent) GetCPR() float64 {
 	// compute cluster profiles
+	agentMap := ea.Server.GetAgentMap()
 	clusterID := ea.GetClusterID()
 	clusterAlignments := []float32{}
 	for _, otherAgent := range agentMap {
@@ -343,9 +341,10 @@ func (ea *ExtendedAgent) GetCPR(agentMap map[uuid.UUID]infra.IExtendedAgent) flo
 	return float64(totalAlignment) / float64(len(clusterAlignments))
 }
 
-func (ea *ExtendedAgent) GetNPR(agentMap map[uuid.UUID]infra.IExtendedAgent) float64 {
+func (ea *ExtendedAgent) GetNPR() float64 {
 	// compute network profiles
 	networkAlignments := []float32{}
+	agentMap := ea.Server.GetAgentMap()
 	for friendID := range ea.Network {
 		if other, ok := agentMap[friendID]; ok {
 			score := worldviewAlignment(ea.Worldview, other.GetWorldviewBinary())
@@ -377,8 +376,8 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float64 {
 func (ea *ExtendedAgent) ComputeWorldviewValidation() float64 {
 	w5, w6, w7 := 0.25, 0.25, 0.5 // tweak
 
-	cpr :=  ea.GetCPR(ea.Server.GetAgentMap())
-	npr := ea.GetNPR(ea.Server.GetAgentMap()) // compute NPR
+	cpr := ea.GetCPR()
+	npr := ea.GetNPR() // compute NPR
 	ysterofimia := ea.GetYsterofimia()
 
 	return w5*cpr + w6*npr + w7*ysterofimia
@@ -387,8 +386,8 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float64 {
 func (ea *ExtendedAgent) ComputeRelationshipValidation() float64 {
 	w8, w9, w10 := 0.25, 0.25, 0.5 // tweak
 
-	est := rand.Float64() // compute EST
-	pse := rand.Float64() // compute PSE
+	est := rand.Float64()             // compute EST
+	pse := rand.Float64()             // compute PSE
 	heroismTendency := rand.Float64() // compute heroism tendency
 
 	return w8*est + w9*pse + w10*heroismTendency
@@ -399,30 +398,28 @@ func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float64 {
 }
 
 // Decision-making logic
-func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) int {
+func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	threshold := 0.75 //random threshold
 
-	ms := ea.ComputeMortalitySalience(grid)        
-	wv := ea.ComputeWorldviewValidation()      
+	ms := ea.ComputeMortalitySalience(grid)
+	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
 
-	votes := []int{
-		thresholdVote(ms, threshold),
-		thresholdVote(wv, threshold),
-		thresholdVote(rv, threshold),
-	}
-
 	sum := 0
-	for _, vote := range votes {
-		sum += vote
+	for _, score := range []float64{ms, wv, rv} {
+		if score > threshold {
+			sum += 1
+		} else {
+			sum -= 1
+		}
 	}
 
 	if sum > 0 {
-		return 1 // Self-sacrifice
+		return infra.SELF_SACRIFICE // Self-sacrifice
 	} else if sum < 0 {
-		return -1 // Reject self-sacrifice
+		return infra.NOT_SELF_SACRIFICE // Reject self-sacrifice
 	} else {
-		return 0 // No action
+		return infra.INACTION // No action
 	}
 
 	//ea.SelfSacrificeWillingness = rand.Float64() // Random willingness to sacrifice
@@ -435,12 +432,12 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) int {
 	//return ea.SelfSacrificeWillingness
 }
 
-func thresholdVote(score float64, threshold float64) int {
-	if score > threshold {
-		return 1
-	}
-	return -1
-}
+// func thresholdVote(score float64, threshold float64) int {
+// 	if score > threshold {
+// 		return 1
+// 	}
+// 	return -1
+// }
 
 func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
 	return infra.ExposedAgentInfo{
@@ -453,13 +450,12 @@ func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
 }
 
 func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMessage) {
-	// depend on attachment 
+	// depend on attachment
 }
 
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
-	// depend on attachment 
+	// depend on attachment
 }
-
 
 // ----------------------- Data Recording Functions -----------------------
 func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
