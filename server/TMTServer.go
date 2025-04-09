@@ -368,8 +368,9 @@ func (tserv *TMTServer) MoveAgents() {
 			}
 		}
 
-		tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
+		//tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
 		newPos := infra.PositionVector{X: moveX, Y: moveY}
+		tserv.Grid.UpdateAgentPosition(agent, newPos)
 		agent.SetPosition(newPos)
 	}
 }
@@ -414,7 +415,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 	if turn == 0 {
 		tserv.updateAgentMortality()
 		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetIsDead() {
+			if !agent.IsAlive() {
 				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
@@ -491,12 +492,12 @@ func (tserv *TMTServer) RecordTurnInfo() {
 	}
 
 	// Record tombstone locations
-	for tombstonePos := range tserv.Grid.Tombstones {
-		newInfraRecord.Tombstones[tombstonePos] = true
+	for _, tombstonePos := range tserv.Grid.Tombstones {
+		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
 	}
 
-	for templePos := range tserv.Grid.Temples {
-		newInfraRecord.Temples[templePos] = true
+	for _, templePos := range tserv.Grid.Temples {
+		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
 	}
 
 	// Collect agent records
