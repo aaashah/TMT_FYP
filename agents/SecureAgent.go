@@ -21,6 +21,13 @@ func CreateSecureAgent(server infra.IServer, agentConfig AgentConfig, grid *infr
 		Avoidance: randInRange(0.0, 0.5),
 	}
 
+	extendedAgent.PTW = infra.PTSParams{
+		CheckProb: randInRange(0.0, 0.5), 
+		ReplyProb: randInRange(0.5, 1.0),
+		Alpha:     0.5, 
+		Beta:      0.1, 
+	}
+
 	return &SecureAgent{
 		ExtendedAgent: extendedAgent,
 	}
@@ -37,13 +44,4 @@ func (sa *SecureAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector
 	return infra.PositionVector{}, false
 }
 
-// func (sa *SecureAgent) Move(grid *infra.Grid) {
-// 	newX, newY := grid.GetValidMove(sa.Position[0], sa.Position[1]) // Get a valid move
-// 	grid.UpdateAgentPosition(sa, newX, newY)    // Update position in the grid
-// 	sa.Position = [2]int{newX, newY}             // Assign new position
-// 	fmt.Printf("Secure Agent %v moved to (%d, %d)\n", sa.GetID(), newX, newY)
-// }
 
-//secure agent pts protocol
-//low probability of checking on other agents
-//high probability of responding to other agents

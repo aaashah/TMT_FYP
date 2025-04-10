@@ -5,8 +5,6 @@ import (
 	"math/bits"
 	"math/rand"
 
-	//"fmt"
-
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -40,8 +38,9 @@ type ExtendedAgent struct {
 	Attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
 
 	// Decision-Making Parameters:
-	ASP map[string]float32 // Parameters for decision-making
-	PTS map[string]float32 // Parameters for behavior protocols
+	//ASP map[string]float32 // Parameters for decision-making
+	//PTS map[string]float32 // Parameters for behavior protocols
+	PTW infra.PTSParams // Parameters for PTS
 
 	Worldview uint32 // 32-bit binary representation of opinions
 
@@ -397,13 +396,39 @@ func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
 	ea.Network[id] = change
 }
 
+func (ea *ExtendedAgent) GetPTSParams() infra.PTSParams {
+	return ea.PTW
+}
+
+
+func (ea *ExtendedAgent) CreateWellbeingCheckMessage() *infra.WellbeingCheckMessage {
+	return &infra.WellbeingCheckMessage{
+		BaseMessage: ea.CreateBaseMessage(),
+	}
+}
+
+
+func (ea *ExtendedAgent) CreateReplyMessage() *infra.ReplyMessage {
+	return &infra.ReplyMessage{
+		BaseMessage: ea.CreateBaseMessage(),
+	}
+}
+
 func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMessage) {
-	// depend on attachment
+	//fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
+	if rand.Float32() < ea.PTW.ReplyProb {
+		reply := infra.ReplyMessage{BaseMessage: ea.CreateBaseMessage()}
+		ea.SendMessage(&reply, msg.Sender)
+		//fmt.Printf("Agent %v sending reply message to %v\n", ea.GetID(), msg.Sender)
+		//then update alpha
+	}
 }
 
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
-	// depend on attachment
+	// update alpha
+	ea.SignalMessagingComplete()
 }
+
 
 // ----------------------- Data Recording Functions -----------------------
 func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {

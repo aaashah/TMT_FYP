@@ -259,7 +259,6 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	if i == 0 && j == 0 {
 		tserv.RecordTurnInfo()
-		tserv.turn++
 		return
 	}
 
@@ -276,14 +275,17 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	tserv.ApplyElimination(j)
 
 	// 5. After eliminations for agents in each cluster:
-	// 5.1 Update social network
-	// 5.2 apply PTS protocol
-	// 5.3 update heroism
-	// 5.4 update worldview
+	for _, agents := range tserv.clusterMap {
+		// 5.1 Update social network
+		// 5.2 apply PTS protocol
+		tserv.ApplyPTS(agents)
+		// 5.3 update heroism
+		// 5.4 update worldview
+	}
+
 
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.GetAgentMap()))
 	tserv.RecordTurnInfo()
-	tserv.turn++
 }
 
 func (tserv *TMTServer) RunEndOfIteration(int) {
@@ -478,7 +480,26 @@ func (tserv *TMTServer) updateAgentMortality() {
 	}
 }
 
-func (tserv *TMTServer) ApplyPTS() {}
+func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
+	// get ExtendedAgent from agentID
+	for _, senderID := range cluster {
+		sender, ok := tserv.GetAgentByID(senderID)
+		if !ok {
+			continue
+		}
+		if rand.Float32() < sender.GetPTSParams().CheckProb {
+			for _, receiverID := range cluster {
+				if receiverID == senderID {
+					continue // don't send to self
+				}
+				// send wellbeing check message
+				msg := sender.CreateWellbeingCheckMessage()
+				sender.SendMessage(msg, receiverID)
+				//fmt.Printf("Agent %v sent wellbeing check to %v\n", sender.GetID(), receiverID)
+			}
+		}
+	}
+}
 
 // ---------------------- Recording Turn Data ----------------------
 func (tserv *TMTServer) RecordTurnInfo() {

@@ -29,6 +29,13 @@ type Telomere struct {
 	lifespanDecay  float32
 }
 
+type PTSParams struct {
+	CheckProb    float32 // prob of sending a wellbeing check
+	ReplyProb    float32 // prob of replying to a check
+	Alpha        float32 // reinforcement param
+	Beta         float32 // reinforcement param
+}
+
 func NewTelomere(age, ageA, ageB int, lifeSpan float32) *Telomere {
 	return &Telomere{age, ageA, ageB, lifeSpan}
 }

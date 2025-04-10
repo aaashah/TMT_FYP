@@ -28,6 +28,7 @@ type IExtendedAgent interface {
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
 	GetASPDecision(grid *Grid) ASPDecison
+	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)
 	IncrementHeroism()
@@ -43,6 +44,8 @@ type IExtendedAgent interface {
 	MarkAsDead()
 
 	//Message functions
+	CreateWellbeingCheckMessage() *WellbeingCheckMessage
+	CreateReplyMessage() *ReplyMessage
 	HandleWellbeingCheckMessage(msg *WellbeingCheckMessage)
 	HandleReplyMessage(msg *ReplyMessage)
 

@@ -23,6 +23,13 @@ func CreateFearfulAgent(server infra.IServer, agentConfig AgentConfig, grid *inf
 		Avoidance: randInRange(0.5, 1.0),
 	}
 
+	extendedAgent.PTW = infra.PTSParams{
+		CheckProb: randInRange(0.5, 1.0), 
+		ReplyProb: randInRange(0.0, 0.5),
+		Alpha:     0.5, 
+		Beta:      0.1, 
+	}
+
 	return &FearfulAgent{
 		ExtendedAgent: extendedAgent,
 	}
@@ -63,52 +70,3 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 
 }
 
-// func (fa *FearfulAgent) Move(grid *infra.Grid) {
-// 	occupied := grid.GetAllOccupiedAgentPositions()
-
-// 	var closestStrangerID uuid.UUID
-// 	var found bool
-// 	minDist := math.MaxFloat32
-
-// 	for _, otherAgent := range occupied {
-// 		if otherAgent.GetID() == fa.GetID() {
-// 			continue // Skip self
-// 		}
-// 		if _, known := fa.Network[otherAgent.GetID()]; known {
-// 			continue // Skip friends
-// 		}
-
-// 		dist := fa.Position.Dist(otherAgent.GetPosition())
-// 		if dist < minDist {
-// 			minDist = dist
-// 			closestStrangerID = otherAgent.GetID()
-// 			found = true
-// 		}
-// 	}
-
-// 	if found {
-// 		stranger, ok := fa.Server.GetAgentMap()[closestStrangerID]
-// 		if ok {
-// 			targetPos := stranger.GetPosition()
-// 			moveX := fa.Position.X + getStep(fa.Position.X, targetPos.X)
-// 			moveY := fa.Position.Y + getStep(fa.Position.Y, targetPos.Y)
-
-// 			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
-// 				grid.UpdateAgentPosition(fa, moveX, moveY)
-// 				fa.Position = infra.PositionVector{X: moveX, Y: moveY}
-// 				fmt.Printf("FearfulAgent %v moved toward stranger %v to (%d, %d)\n", fa.GetID(), closestStrangerID, moveX, moveY)
-// 				return
-// 			}
-// 		}
-// 	}
-
-// 	// Fallback: move randomly if no strangers found
-// 	newX, newY := grid.GetValidMove(fa.Position.X, fa.Position.Y)
-// 	grid.UpdateAgentPosition(fa, newX, newY)
-// 	fa.Position = infra.PositionVector{X: newX, Y: newY}
-// 	fmt.Printf("FearfulAgent %v fallback random move to (%d, %d)\n", fa.GetID(), newX, newY)
-// }
-
-//fearful agent pts protocol
-//low probability of checking
-// high probability of responding
