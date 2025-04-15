@@ -20,12 +20,12 @@ func CreatePreoccupiedAgent(server infra.IServer, agentConfig AgentConfig, grid 
 		Anxiety:   randInRange(0.5, 1.0),
 		Avoidance: randInRange(0.0, 0.5),
 	}
-
+	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{
 		CheckProb: randInRange(0.5, 1.0), 
 		ReplyProb: randInRange(0.5, 1.0),
-		Alpha:     0.5, 
-		Beta:      0.1, 
+		Alpha:     randInRange(0.5, 1.0), 
+		Beta:      randInRange(0.5, 1.0), 
 	}
 
 	return &PreoccupiedAgent{

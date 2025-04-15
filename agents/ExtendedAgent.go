@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"fmt"
 	"math"
 	"math/bits"
 	"math/rand"
@@ -400,6 +401,14 @@ func (ea *ExtendedAgent) GetPTSParams() infra.PTSParams {
 	return ea.PTW
 }
 
+func (ea *ExtendedAgent) UpdateEsteem(friendID uuid.UUID, isCheck bool) {
+	currentEsteem := ea.Network[friendID]
+	if isCheck {
+		ea.Network[friendID] = currentEsteem + ea.PTW.Alpha*(1-currentEsteem)
+	} else {
+		ea.Network[friendID] = currentEsteem - ea.PTW.Beta*(currentEsteem)
+	}
+}
 
 func (ea *ExtendedAgent) CreateWellbeingCheckMessage() *infra.WellbeingCheckMessage {
 	return &infra.WellbeingCheckMessage{
@@ -415,17 +424,21 @@ func (ea *ExtendedAgent) CreateReplyMessage() *infra.ReplyMessage {
 }
 
 func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMessage) {
-	//fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
+	fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
+	// not receiving??
 	if rand.Float32() < ea.PTW.ReplyProb {
 		reply := infra.ReplyMessage{BaseMessage: ea.CreateBaseMessage()}
 		ea.SendMessage(&reply, msg.Sender)
 		//fmt.Printf("Agent %v sending reply message to %v\n", ea.GetID(), msg.Sender)
+
 		//then update alpha
+		//ea.UpdateEsteem(msg.Sender, true, ea.PTW.Alpha, ea.PTW.Beta)
 	}
 }
 
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 	// update alpha
+	//ea.UpdateEsteem(msg.Sender, true, ea.PTW.Alpha, ea.PTW.Beta)
 	ea.SignalMessagingComplete()
 }
 

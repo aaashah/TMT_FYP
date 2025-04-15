@@ -20,12 +20,12 @@ func CreateDismissiveAgent(server infra.IServer, agentConfig AgentConfig, grid *
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.5, 1.0),
 	}
-
+	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{
 		CheckProb: randInRange(0.0, 0.5),
 		ReplyProb: randInRange(0.0, 0.5),
-		Alpha:     0.5, 
-		Beta:      0.1, 
+		Alpha:     randInRange(0.0, 0.5), 
+		Beta:      randInRange(0.0, 0.5), 
 	}
 
 	return &DismissiveAgent{

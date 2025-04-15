@@ -42,6 +42,7 @@ type IExtendedAgent interface {
 	SetClusterID(id int)
 	//SetContextSacrifice(context string)
 	MarkAsDead()
+	UpdateEsteem(id uuid.UUID, isCheck bool)
 
 	//Message functions
 	CreateWellbeingCheckMessage() *WellbeingCheckMessage

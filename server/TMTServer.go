@@ -24,12 +24,10 @@ type TMTServer struct {
 
 	//agentInfoList []infra.IExtendedAgent
 	//mu     sync.Mutex
-	//context string
-	//ActiveAgents map[uuid.UUID]*agents.ExtendedAgent
+
 	Grid        *infra.Grid
 	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
 	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
-	// SocialNetwork map[uuid.UUID]infra.SocialNetwork // Map of agent IDs to their social network
 
 	// data recorder
 	DataRecorder *gameRecorder.ServerDataRecorder
@@ -60,35 +58,10 @@ func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, ch
 		return
 	}
 
-	// // Directly update internal network fields
-	// if extA, ok := agentA.(*agents.ExtendedAgent); ok {
-	// 	extA.Network[agentBID] = change
-	// }
-
 	agentA.UpdateSocialNetwork(agentBID, change)
 
-	// if extB, ok := agentB.(*agents.ExtendedAgent); ok {
-	// 	extB.Network[agentAID] = change
-	// }
 	agentB.UpdateSocialNetwork(agentAID, change)
 
-	// // Persist to server-level map
-	// if tserv.SocialNetwork == nil {
-	// 	tserv.SocialNetwork = make(map[uuid.UUID]infra.SocialNetwork)
-	// }
-	// if tserv.SocialNetwork[agentAID] == nil {
-	// 	tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
-	// }
-	// if tserv.SocialNetwork[agentBID] == nil {
-	// 	tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
-	// }
-	// tserv.SocialNetwork[agentAID][agentBID] = change
-	// tserv.SocialNetwork[agentBID][agentAID] = change
-
-	// if existsA && existsB {
-	// 	agentA.UpdateRelationship(agentBID, change)
-	// 	agentB.UpdateRelationship(agentAID, change)
-	// }
 }
 
 // Erdős–Rényi (ER) Random Network
@@ -139,20 +112,6 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 		//fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 	}
 
-	// // Also persist it in the server-level map
-	// if tserv.SocialNetwork == nil {
-	// 	tserv.SocialNetwork = make(map[uuid.UUID]infra.SocialNetwork)
-	// }
-	// if tserv.SocialNetwork[agentAID] == nil {
-	// 	tserv.SocialNetwork[agentAID] = make(map[uuid.UUID]float32)
-	// }
-	// if tserv.SocialNetwork[agentBID] == nil {
-	// 	tserv.SocialNetwork[agentBID] = make(map[uuid.UUID]float32)
-	// }
-
-	// tserv.SocialNetwork[agentAID][agentBID] = strength
-	// tserv.SocialNetwork[agentBID][agentAID] = strength
-
 	fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 }
 
@@ -175,60 +134,11 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	}
 	// }
 
-	// Reapply the stored social network to living agents
-	// for agentID, neighbors := range tserv.SocialNetwork {
-	// 	agent, ok := tserv.GetAgentByID(agentID)
-	// 	if !ok {
-	// 		continue
-	// 	}
-
-	// 	// Construct the valid neighbors map
-	// 	network := make(map[uuid.UUID]float32)
-	// 	for neighborID, strength := range neighbors {
-	// 		if _, exists := tserv.GetAgentByID(neighborID); exists {
-	// 			network[neighborID] = strength
-	// 		}
-	// 	}
-	// 	agent.SetNetwork(network)
-	// }
-
-	// Print the network structure
-	// fmt.Println("Agent Social Network at iteration start:")
-	// for _, agent := range tserv.GetAgentMap() {
-	// 	fmt.Printf("Agent %v connections: ", agent.GetID())
-	// 	for otherID, strength := range agent.GetNetwork() {
-	// 		fmt.Printf("(%v, strength=%.2f) ", otherID, strength)
-	// 	}
-	// 	fmt.Println()
-	// }
 
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	// Ensure DataRecorder starts recording a new iteration
 	tserv.DataRecorder.RecordNewIteration()
 }
-
-// 	if found {
-// 		friend, ok := da.Server.GetAgentMap()[closestFriendID]
-// 		if ok {
-// 			targetPos := friend.GetPosition()
-// 			moveX := da.Position.X - getStep(da.Position.X, targetPos.X)
-// 			moveY := da.Position.Y - getStep(da.Position.Y, targetPos.Y)
-
-// 			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
-// 				grid.UpdateAgentPosition(da, moveX, moveY)
-// 				da.Position = infra.PositionVector{X: moveX, Y: moveY}
-// 				fmt.Printf("Dismissive Agent %v moved away from friend %v to (%d, %d)\n", da.GetID(), closestFriendID, moveX, moveY)
-// 				return
-// 			}
-// 		}
-// 	}
-
-// 	// Fallback: move randomly if no friends found
-// 	newX, newY := grid.GetValidMove(da.Position.X, da.Position.Y)
-// 	grid.UpdateAgentPosition(da, newX, newY)
-// 	da.Position = infra.PositionVector{X: newX, Y: newY}
-// 	fmt.Printf("Dismissive Agent %v fallback random move to (%d, %d)\n", da.GetID(), newX, newY)
-// }
 
 func getStep(current, target int) int {
 	if target > current {
@@ -481,6 +391,7 @@ func (tserv *TMTServer) updateAgentMortality() {
 }
 
 func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
+	receivedCheck := make(map[uuid.UUID]bool) // Track who got a check
 	// get ExtendedAgent from agentID
 	for _, senderID := range cluster {
 		sender, ok := tserv.GetAgentByID(senderID)
@@ -492,11 +403,34 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 				if receiverID == senderID {
 					continue // don't send to self
 				}
+				receiver, ok := tserv.GetAgentByID(receiverID)
+				if !ok {
+					continue
+				}
 				// send wellbeing check message
 				msg := sender.CreateWellbeingCheckMessage()
-				sender.SendMessage(msg, receiverID)
+				sender.SendMessage(msg, receiver.GetID())
 				//fmt.Printf("Agent %v sent wellbeing check to %v\n", sender.GetID(), receiverID)
+
+				//make agent as getting checked on
+				receivedCheck[receiver.GetID()] = true
 			}
+		}
+	}
+
+	//update beta for agents that didn't get checked on
+	for _, agentID := range cluster {
+		if receivedCheck[agentID] {
+			continue // skip agents who received a check
+		}
+		agent, ok := tserv.GetAgentByID(agentID)
+		if !ok {
+			continue
+		}
+
+		//update beta
+		for neighbourID := range agent.GetNetwork() {
+			agent.UpdateEsteem(neighbourID, false)
 		}
 	}
 }
