@@ -357,6 +357,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			}
 		}
 	} else {
+		// voluntary self-sacrifice
 		for _, agent := range tserv.GetAgentMap() {
 			if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
 				// 4.1 Place temples/monuments for self-sacrificed agents
@@ -365,6 +366,22 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 				tserv.Grid.PlaceTemple(pos.X, pos.Y)
 				agent.IncrementHeroism()
 				agentsToRemove[agent.GetID()] = true
+			}
+		}
+		// pick random agent to eliminate if no one self-sacrificed
+		if len(agentsToRemove) == 0 {
+			livingAgents := []infra.IExtendedAgent{}
+			for _, agent := range tserv.GetAgentMap() {
+				if agent.IsAlive() {
+					livingAgents = append(livingAgents, agent)
+				}
+			}
+			if len(livingAgents) > 0 {
+				victim := livingAgents[rand.Intn(len(livingAgents))]
+				fmt.Printf("No self-sacrifices this turn — randomly eliminating Agent %v\n", victim.GetID())
+				pos := victim.GetPosition()
+				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+				agentsToRemove[victim.GetID()] = true
 			}
 		}
 	}
