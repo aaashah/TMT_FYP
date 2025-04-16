@@ -27,6 +27,7 @@ type IExtendedAgent interface {
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
 	UpdateRelationship(agentID uuid.UUID, change float32)
+	RemoveRelationship(agentID uuid.UUID)
 	GetASPDecision(grid *Grid) ASPDecison
 	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)

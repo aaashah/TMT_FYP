@@ -121,6 +121,18 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 	fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 }
 
+func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
+	agentA, okA := tserv.GetAgentByID(agentAID)
+	agentB, okB := tserv.GetAgentByID(agentBID)
+
+	if okA && okB {
+		agentA.RemoveRelationship(agentBID)
+		agentB.RemoveRelationship(agentAID)
+
+		fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
+	}
+}
+
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
 
@@ -192,7 +204,8 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	// 5. After eliminations for agents in each cluster:
 	for _, agents := range tserv.clusterMap {
-		// 5.1 Update social network
+		// 5.1 Update social network (create/ cut links)
+		tserv.UpdateSocialNetwork(agents)
 		// 5.2 apply PTS protocol
 		tserv.ApplyPTS(agents)
 		// 5.3 update heroism
@@ -393,6 +406,36 @@ func (tserv *TMTServer) updateAgentMortality() {
 		randVal := rand.Float32()
 		if randVal < probDeath {
 			agent.MarkAsDead()
+		}
+	}
+}
+
+func (tserv *TMTServer) UpdateSocialNetwork(cluster []uuid.UUID) {
+	for _, agentID := range cluster {
+		agent, ok := tserv.GetAgentByID(agentID)
+		if !ok || !agent.IsAlive() {
+			continue
+		}
+
+		for _, otherID := range cluster {
+			if otherID == agentID {
+				continue
+			}
+
+			_, connected := agent.GetNetwork()[otherID]
+
+			// add link based on anxiety
+			if !connected && rand.Float32() < agent.GetAttachment().Anxiety {
+				// Add symmetric relationship with random strength
+				strength := 0.2 + rand.Float32()*0.8
+				tserv.AddRelationship(agentID, otherID, strength)
+			}
+
+			// remove link based on attachment
+			if connected && rand.Float32() < agent.GetAttachment().Avoidance {
+				agent.RemoveRelationship(otherID)
+				tserv.RemoveRelationship(agentID, otherID)
+			}
 		}
 	}
 }

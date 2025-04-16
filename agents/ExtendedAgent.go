@@ -132,6 +132,10 @@ func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
 }
 
+func (ea *ExtendedAgent) RemoveRelationship(otherID uuid.UUID) {
+	delete(ea.Network, otherID)
+}
+
 func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
 	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, change)
 }
