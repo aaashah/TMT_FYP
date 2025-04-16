@@ -347,11 +347,27 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 
 //func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {}
 
-//func (ea *ExtendedAgent) ComputeEstrangement() float32 {}
+func (ea *ExtendedAgent) ComputeEstrangement() float32 {
+	kin := ea.KinshipGroup
+	network := ea.Network
+
+	if len(kin) == 0 {
+		return 0.0 // no descendants
+	}
+
+	connectedDescendants := 0
+	for _, descendantsID := range kin {
+		if _, ok := network[descendantsID]; ok {
+			connectedDescendants++
+		}
+	}
+
+	return float32(connectedDescendants) / float32(len(kin))
+}
 
 func (ea *ExtendedAgent) ComputeHeroismTendency() float32 {
 	agentMap := ea.Server.GetAgentMap()
-	network := ea.GetNetwork()
+	network := ea.Network
 	if len(network) == 0 {
 		return 0.0 // No neighbors, no tendency
 	}
@@ -404,7 +420,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	//w8, w9, w10 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
-	est := rand.Float32()             // compute EST
+	est := ea.ComputeEstrangement()            // compute EST
 	pse := rand.Float32()             // compute PSE
 	heroismTendency := ea.ComputeHeroismTendency() // compute heroism tendency
 

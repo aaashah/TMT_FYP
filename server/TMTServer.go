@@ -549,6 +549,12 @@ func (tserv *TMTServer) SpawnNewAgents() {
 			//add new agent to server
 			tserv.AddAgent(newAgent)
 			//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
+
+			// add relationships in social network
+			tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
+			tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+			tserv.AddRelationship(newAgent.GetID(), parent1.GetID(), 0.5)
+			tserv.AddRelationship(newAgent.GetID(), parent2.GetID(), 0.5)
 	}
 }
 
