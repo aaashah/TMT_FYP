@@ -399,7 +399,6 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 
 	// update history for remaining agents:
 	for _, agent := range tserv.GetAgentMap() {
-
 		//cluster eliminations
 		clusterID := agent.GetClusterID()
 		if eliminatedInCluster, exists := clusterEliminationCount[clusterID]; exists {
@@ -408,13 +407,28 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 
 		// social network eliminations
-		networkEliminationCount := 0
-		for friendID := range agent.GetNetwork() {
+		//networkEliminationCount := 0
+		for friendID, esteem := range agent.GetNetwork() {
 			if agentsToRemove[friendID] {
-				networkEliminationCount++
+				eliminatedAgent, exists := tserv.GetAgentByID(friendID)
+				if !exists {
+					continue
+				}
+				//networkEliminationCount++
+				
+				if eliminatedAgent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
+					agent.IncrementSelfSacrificeCount()
+					agent.AddSelfSacrificeEsteems(esteem)
+				} else {
+					agent.IncrementOtherEliminationCount()
+					agent.AddOtherEliminationsEsteems(esteem)
+				}
+
 			}
 		}
-		agent.IncrementNetworkEliminations(networkEliminationCount)
+		//agent.IncrementNetworkEliminations(networkEliminationCount)
+
+		//track eliminations and esteems for ysterofimia
 	}
 
 }

@@ -31,9 +31,13 @@ type IExtendedAgent interface {
 	GetASPDecision(grid *Grid) ASPDecison
 	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)
-	IncrementNetworkEliminations(n int)
+	//IncrementNetworkEliminations(n int)
 	IncrementHeroism()
 	GetHeroism() int
+	IncrementSelfSacrificeCount()
+	AddSelfSacrificeEsteems(esteem float32)
+	IncrementOtherEliminationCount()
+	AddOtherEliminationsEsteems(esteem float32)
 
 	//Setters
 	// SetName(name uuid.UUID)

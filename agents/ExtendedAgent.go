@@ -30,8 +30,12 @@ type ExtendedAgent struct {
 	//History Tracking
 	ClusterID                   int
 	ObservedEliminationsCluster int
-	ObservedEliminationsNetwork int
+	//ObservedEliminationsNetwork int
 	Heroism                     int // number of times agent volunteered self-sacrifices
+	SelfSacrificeCount		    int // number of times agent volunteered self-sacrifices
+	SelfSacrificeEsteems        float32 // total esteems from agents who self-sacrificed
+	OtherEliminationCount       int // number of times agent was eliminated by other than self-sacrifice
+	OtherEliminationsEsteems    float32 // total esteems from agents who eliminated other than self-sacrifice
 
 	// Social network and kinship group
 	Network      map[uuid.UUID]float32 // stores relationship strengths
@@ -180,9 +184,9 @@ func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
 	ea.ObservedEliminationsCluster += n
 }
 
-func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
-	ea.ObservedEliminationsNetwork += n
-}
+// func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
+// 	ea.ObservedEliminationsNetwork += n
+// }
 
 func (ea *ExtendedAgent) IncrementHeroism() {
 	ea.Heroism++
@@ -190,6 +194,20 @@ func (ea *ExtendedAgent) IncrementHeroism() {
 
 func (ea *ExtendedAgent) GetHeroism() int {
 	return ea.Heroism
+}
+
+func (ea *ExtendedAgent) IncrementSelfSacrificeCount() {
+	ea.SelfSacrificeCount++
+}
+
+func (ea *ExtendedAgent) AddSelfSacrificeEsteems(esteem float32) {
+	ea.SelfSacrificeEsteems += esteem
+}
+func (ea *ExtendedAgent) IncrementOtherEliminationCount() {
+	ea.OtherEliminationCount++
+}
+func (ea *ExtendedAgent) AddOtherEliminationsEsteems(esteem float32) {
+	ea.OtherEliminationsEsteems += esteem
 }
 
 // GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
@@ -345,8 +363,24 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
+func (ea *ExtendedAgent) GetYsterofimia() float32 {
+	totalEliminations := ea.SelfSacrificeCount + ea.OtherEliminationCount
+	totalEsteem := ea.SelfSacrificeEsteems + ea.OtherEliminationsEsteems
 
-func (ea *ExtendedAgent) ComputeEstrangement() float32 {
+	if totalEliminations == 0 || totalEsteem == 0 {
+        return 0.0 // no eliminations or no esteem data
+    }
+
+	esteemRatio := float32(ea.SelfSacrificeEsteems) / float32(totalEsteem)
+
+	if esteemRatio > 0.5 {
+		return float32(ea.SelfSacrificeCount) / float32(totalEliminations)
+	} else {
+		return float32(ea.OtherEliminationCount) / float32(totalEliminations)
+	}
+}
+
+func (ea *ExtendedAgent) GetEstrangement() float32 {
 	kin := ea.KinshipGroup
 	network := ea.Network
 
@@ -364,7 +398,7 @@ func (ea *ExtendedAgent) ComputeEstrangement() float32 {
 	return float32(connectedDescendants) / float32(len(kin))
 }
 
-func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {
+func (ea *ExtendedAgent) GetProSocialEsteem() float32 {
 	network := ea.Network
 	if len(network) == 0 {
 		return 0.0 // No neighbors, no esteem
@@ -377,7 +411,7 @@ func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {
 	return sumEsteem / float32(len(network))
 }
 
-func (ea *ExtendedAgent) ComputeHeroismTendency() float32 {
+func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 	agentMap := ea.Server.GetAgentMap()
 	network := ea.Network
 	if len(network) == 0 {
@@ -412,7 +446,7 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	//w1, w2, w3, w4 := float32(0.25), float32(0.25), float32(0.25), float32(0.25) // tweak
 
 	ce := float32(ea.ObservedEliminationsCluster)
-	ne := float32(ea.ObservedEliminationsNetwork)
+	ne := float32(ea.SelfSacrificeCount) + float32(ea.OtherEliminationCount)
 	ra := float32(ea.RelativeAgeToNetwork())
 	mp := float32(ea.GetMemorialProximity(grid))
 
@@ -424,7 +458,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 
 	cpr := ea.GetCPR()
 	npr := ea.GetNPR() // compute NPR
-	ysterofimia := ea.Ysterofimia
+	ysterofimia := ea.GetYsterofimia()
 
 	return infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 }
@@ -432,9 +466,9 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	//w8, w9, w10 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
-	est := ea.ComputeEstrangement()                // compute EST
-	pse := ea.ComputeProSocialEsteem()             // compute PSE
-	heroismTendency := ea.ComputeHeroismTendency() // compute heroism tendency
+	est := ea.GetEstrangement()                // compute EST
+	pse := ea.GetProSocialEsteem()             // compute PSE
+	heroismTendency := ea.GetHeroismTendency() // compute heroism tendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }
