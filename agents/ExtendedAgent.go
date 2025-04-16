@@ -345,7 +345,6 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
-//func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {}
 
 func (ea *ExtendedAgent) ComputeEstrangement() float32 {
 	kin := ea.KinshipGroup
@@ -363,6 +362,19 @@ func (ea *ExtendedAgent) ComputeEstrangement() float32 {
 	}
 
 	return float32(connectedDescendants) / float32(len(kin))
+}
+
+func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {
+	network := ea.Network
+	if len(network) == 0 {
+		return 0.0 // No neighbors, no esteem
+	}
+	sumEsteem := float32(0.0)
+	for _, esteem := range network {
+		sumEsteem += esteem
+	}
+
+	return sumEsteem / float32(len(network))
 }
 
 func (ea *ExtendedAgent) ComputeHeroismTendency() float32 {
@@ -420,8 +432,8 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	//w8, w9, w10 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
-	est := ea.ComputeEstrangement()            // compute EST
-	pse := rand.Float32()             // compute PSE
+	est := ea.ComputeEstrangement()                // compute EST
+	pse := ea.ComputeProSocialEsteem()             // compute PSE
 	heroismTendency := ea.ComputeHeroismTendency() // compute heroism tendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
