@@ -344,6 +344,31 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
+//func (ea *ExtendedAgent) ComputeProSocialEsteem() float32 {}
+
+//func (ea *ExtendedAgent) ComputeEstrangement() float32 {}
+
+func (ea *ExtendedAgent) ComputeHeroismTendency() float32 {
+	agentMap := ea.Server.GetAgentMap()
+	network := ea.GetNetwork()
+	if len(network) == 0 {
+		return 0.0 // No neighbors, no tendency
+	}
+
+	selfHeroism := ea.GetHeroism()
+	lessHeroicCount := 0
+
+	for neighborID := range network {
+		if neighbor, ok := agentMap[neighborID]; ok {
+			if neighbor.GetHeroism() < selfHeroism {
+				lessHeroicCount++
+			}
+		}
+	}
+
+	return float32(lessHeroicCount) / float32(len(network))
+}
+
 func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	//w1, w2, w3, w4 := float32(0.25), float32(0.25), float32(0.25), float32(0.25) // tweak
 
@@ -370,7 +395,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 
 	est := rand.Float32()             // compute EST
 	pse := rand.Float32()             // compute PSE
-	heroismTendency := rand.Float32() // compute heroism tendency
+	heroismTendency := ea.ComputeHeroismTendency() // compute heroism tendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }

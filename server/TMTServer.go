@@ -184,11 +184,10 @@ const MOVEMENT_TURNS int = 20
 func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
 	tserv.turn = j
-
-	if i == 0 && j == 0 {
-		tserv.RecordTurnInfo()
-		return
-	}
+	// if i == 0 && j == 0 {
+	// 	tserv.RecordTurnInfo()
+	// 	return
+	// }
 
 	// 1. Move agents
 	for range MOVEMENT_TURNS {
@@ -204,12 +203,15 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	// 5. After eliminations for agents in each cluster:
 	for _, agents := range tserv.clusterMap {
+		// age up agents here??
+
 		// 5.1 Update social network (create/ cut links)
 		tserv.UpdateSocialNetwork(agents)
 		// 5.2 apply PTS protocol
 		tserv.ApplyPTS(agents)
 		// 5.3 update heroism
-		// 5.4 update worldview
+		//(done within ApplyElimination)
+		// 5.4 update worldview ??
 	}
 
 

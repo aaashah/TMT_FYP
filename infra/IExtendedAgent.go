@@ -33,6 +33,7 @@ type IExtendedAgent interface {
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)
 	IncrementHeroism()
+	GetHeroism() int
 
 	//Setters
 	// SetName(name uuid.UUID)
