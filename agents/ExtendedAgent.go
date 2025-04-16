@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/bits"
 	"math/rand"
+	"sort"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
@@ -355,18 +356,28 @@ func (ea *ExtendedAgent) ComputeHeroismTendency() float32 {
 		return 0.0 // No neighbors, no tendency
 	}
 
-	selfHeroism := ea.GetHeroism()
-	lessHeroicCount := 0
+	heroismScores := []int{}
 
-	for neighborID := range network {
-		if neighbor, ok := agentMap[neighborID]; ok {
-			if neighbor.GetHeroism() < selfHeroism {
-				lessHeroicCount++
-			}
+	for id := range network {
+		if agent, ok := agentMap[id]; ok {
+			heroismScores = append(heroismScores, agent.GetHeroism())
 		}
 	}
 
-	return float32(lessHeroicCount) / float32(len(network))
+	// Sort heroism scores in ascending order
+	sort.Ints(heroismScores)
+
+	// Find the first index where self's heroism matches
+	selfHeroism := ea.GetHeroism()
+	index := 0
+	for i, h := range heroismScores {
+		if h == selfHeroism {
+			index = i
+			break
+		}
+	}
+
+	return float32(index) / float32(len(heroismScores))
 }
 
 func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
