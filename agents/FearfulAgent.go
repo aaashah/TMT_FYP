@@ -14,8 +14,8 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreateFearfulAgent(server infra.IServer, grid *infra.Grid) *FearfulAgent {
+	extendedAgent := CreateExtendedAgent(server, grid)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{

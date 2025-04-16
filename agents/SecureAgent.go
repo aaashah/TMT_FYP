@@ -12,8 +12,8 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreateSecureAgent(server infra.IServer, grid *infra.Grid) *SecureAgent {
+	extendedAgent := CreateExtendedAgent(server, grid)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{

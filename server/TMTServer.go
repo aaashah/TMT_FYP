@@ -202,6 +202,7 @@ func (tserv *TMTServer) RunEndOfIteration(int) {
 	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
 	//tserv.iteration++
 	// spawn new agents
+	tserv.SpawnNewAgents()
 }
 
 // ---------------------- Helper Functions ----------------------
@@ -433,6 +434,59 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 			agent.UpdateEsteem(neighbourID, false)
 		}
 	}
+}
+
+func (tserv *TMTServer) SpawnNewAgents() {
+	agentMap := tserv.GetAgentMap()
+
+	parentIDs := make([]uuid.UUID, 0, len(agentMap))
+	for id := range agentMap {
+		parentIDs = append(parentIDs, id)
+	}
+
+	rand.Shuffle(len(parentIDs), func(i, j int) { parentIDs[i], parentIDs[j] = parentIDs[j], parentIDs[i] })
+
+	for i := 0; i+1 < len(parentIDs); i += 2 {
+		parent1, _ := tserv.GetAgentByID(parentIDs[i])
+		parent2, _ := tserv.GetAgentByID(parentIDs[i+1])
+
+		if !parent1.IsAlive() || !parent2.IsAlive() {
+			continue
+		}
+
+		newWorldview := tserv.MixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
+			randVal := rand.Float32()
+
+			var newAgent infra.IExtendedAgent
+
+			switch {
+			case randVal < 0.25:
+				newAgent = agents.CreateSecureAgent(tserv, tserv.Grid)
+			case randVal < 0.5:
+				newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid)
+			case randVal < 0.75:
+				newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid)
+			default:
+				newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid)
+			}
+
+			//create new agent
+			//newAgent := agents.CreateSecureAgent(tserv, tserv.Grid)
+
+			newAgent.SetWorldviewBinary(newWorldview)
+			newAgent.SetParents(parent1.GetID(), parent2.GetID())
+			parent1.AddDescendant(newAgent.GetID())
+			parent2.AddDescendant(newAgent.GetID())
+
+			//add new agent to server
+			tserv.AddAgent(newAgent)
+			fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
+	}
+}
+
+func (tserv *TMTServer) MixWorldviews(wv1, wv2 uint32) uint32 {
+	mask := uint32(rand.Int31()) // or rand.Uint32() for full 32-bit mask
+	return (wv1 & mask) | (wv2 &^ mask)
 }
 
 // ---------------------- Recording Turn Data ----------------------

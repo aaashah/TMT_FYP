@@ -48,9 +48,9 @@ func main() {
 
 	//BEGIN
 	// agent configuration:
-	agentConfig := agents.AgentConfig{
-		InitSacrificeWillingness: 0.2,
-	}
+	// agentConfig := agents.AgentConfig{
+	// 	InitSacrificeWillingness: 0.2,
+	// }
 	grid := infra.NewGrid(70, 30) // Create grid
 
 	serv := &tmtServer.TMTServer{
@@ -76,10 +76,10 @@ func main() {
 	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
 
 	for i := 0; i < numAgents; i += 4 {
-		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, agentConfig, grid))
-		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, agentConfig, grid))
-		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, agentConfig, grid))
-		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, agentConfig, grid))
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, grid))
+		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, grid))
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, grid))
+		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, grid))
 	}
 
 	// Set probability p for Erdős–Rényi network

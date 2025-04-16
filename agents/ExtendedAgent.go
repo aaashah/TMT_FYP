@@ -35,6 +35,8 @@ type ExtendedAgent struct {
 	// Social network and kinship group
 	Network      map[uuid.UUID]float32 // stores relationship strengths
 	KinshipGroup []uuid.UUID           // Descendants
+	Parent1      uuid.UUID
+	Parent2      uuid.UUID
 
 	Attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
 
@@ -58,13 +60,13 @@ type ExtendedAgent struct {
 	SelfSacrificeWillingness float32 //ASP result
 }
 
-type AgentConfig struct {
-	InitSacrificeWillingness float32
-}
+// type AgentConfig struct {
+// 	InitSacrificeWillingness float32
+// }
 
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *infra.Grid) *ExtendedAgent {
+func CreateExtendedAgent(server infra.IServer, grid *infra.Grid) *ExtendedAgent {
 	A := rand.Intn(25) + 40     // (40-65)
 	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
@@ -79,7 +81,7 @@ func CreateExtendedAgent(server infra.IServer, configParam AgentConfig, grid *in
 		Worldview:                rand.Uint32(),
 		Ysterofimia:              rand.Float32(),
 		AgentIsAlive:             true,
-		SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
+		//SelfSacrificeWillingness: configParam.InitSacrificeWillingness,
 		Position:                 infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
 }
@@ -188,6 +190,19 @@ func (ea *ExtendedAgent) GetHeroism() int {
 // GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
 func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
 	return ea.Worldview
+}
+
+func (ea *ExtendedAgent) SetWorldviewBinary(worldview uint32) {
+	ea.Worldview = worldview
+}
+
+func (ea *ExtendedAgent) AddDescendant(childID uuid.UUID) {
+	ea.KinshipGroup = append(ea.KinshipGroup, childID)
+}
+
+func (ea *ExtendedAgent) SetParents(parent1, parent2 uuid.UUID) {
+	ea.Parent1 = parent1
+	ea.Parent2 = parent2
 }
 
 // func (ea *ExtendedAgent) GetYsterofimia() float32 {

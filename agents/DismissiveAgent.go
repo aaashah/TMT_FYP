@@ -12,8 +12,8 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *DismissiveAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreateDismissiveAgent(server infra.IServer, grid *infra.Grid) *DismissiveAgent {
+	extendedAgent := CreateExtendedAgent(server, grid)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{

@@ -43,6 +43,9 @@ type IExtendedAgent interface {
 	//SetContextSacrifice(context string)
 	MarkAsDead()
 	UpdateEsteem(id uuid.UUID, isCheck bool)
+	SetWorldviewBinary(worldview uint32)
+	SetParents(parent1, parent2 uuid.UUID)
+	AddDescendant(descendant uuid.UUID)
 
 	//Message functions
 	CreateWellbeingCheckMessage() *WellbeingCheckMessage

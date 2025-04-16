@@ -12,8 +12,8 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *PreoccupiedAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreatePreoccupiedAgent(server infra.IServer, grid *infra.Grid) *PreoccupiedAgent {
+	extendedAgent := CreateExtendedAgent(server, grid)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{
