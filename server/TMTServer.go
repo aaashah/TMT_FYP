@@ -99,6 +99,12 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 		}
 	}
 
+	// add self to network
+	for _, agent := range tserv.GetAgentMap() {
+		agentID := agent.GetID()
+		agent.UpdateRelationship(agentID, 1.0) 
+	}
+
 	fmt.Printf("Social Network Initialized with %d connections.\n", edgeCount)
 }
 
@@ -480,7 +486,7 @@ func (tserv *TMTServer) SpawnNewAgents() {
 
 			//add new agent to server
 			tserv.AddAgent(newAgent)
-			fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
+			//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
 	}
 }
 
