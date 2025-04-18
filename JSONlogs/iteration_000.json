@@ -1,0 +1,1360 @@
+{
+  "Iteration": 0,
+  "Turns": [
+    {
+      "Iteration": 0,
+      "TurnNumber": 0,
+      "Agents": [
+        {
+          "ID": "1cb688a0-27b5-40f7-97e4-4bbef3252081",
+          "IsAlive": true,
+          "Age": 33,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.2978257,
+          "AttachmentAvoidance": 0.22622174,
+          "ClusterID": 0,
+          "Position": {
+            "X": 43,
+            "Y": 29
+          },
+          "Worldview": 3484246031,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "3d2f64fd-0355-4213-b58c-fcbb1c62c4fe",
+          "IsAlive": true,
+          "Age": 36,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5724553,
+          "AttachmentAvoidance": 0.31343552,
+          "ClusterID": 2,
+          "Position": {
+            "X": 40,
+            "Y": 1
+          },
+          "Worldview": 2913658460,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "bc277b94-39b7-4c4a-b971-b877b27e38d8",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.69053185,
+          "AttachmentAvoidance": 0.60539186,
+          "ClusterID": 0,
+          "Position": {
+            "X": 25,
+            "Y": 30
+          },
+          "Worldview": 850056537,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "821253b0-c3d9-4c48-bb1b-69e9e93ca84e",
+          "IsAlive": true,
+          "Age": 37,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.23098844,
+          "AttachmentAvoidance": 0.823735,
+          "ClusterID": 2,
+          "Position": {
+            "X": 43,
+            "Y": 14
+          },
+          "Worldview": 372297614,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "2aea7d23-0ce9-4651-83a0-7049a3de7df1",
+          "IsAlive": true,
+          "Age": 17,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.11163222,
+          "AttachmentAvoidance": 0.849522,
+          "ClusterID": 0,
+          "Position": {
+            "X": 38,
+            "Y": 17
+          },
+          "Worldview": 1255059558,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "d49a3011-0367-436b-8a6f-0a3205c3292f",
+          "IsAlive": true,
+          "Age": 22,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.075244516,
+          "AttachmentAvoidance": 0.17465414,
+          "ClusterID": 1,
+          "Position": {
+            "X": 7,
+            "Y": 16
+          },
+          "Worldview": 688026059,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4e0509b9-a42f-4761-8139-617ba625a8a3",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.9775073,
+          "AttachmentAvoidance": 0.027917983,
+          "ClusterID": 2,
+          "Position": {
+            "X": 69,
+            "Y": 17
+          },
+          "Worldview": 2471043123,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4dc93f15-b870-4f79-b409-13699d02491f",
+          "IsAlive": true,
+          "Age": 3,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.25747,
+          "AttachmentAvoidance": 0.27461007,
+          "ClusterID": 0,
+          "Position": {
+            "X": 32,
+            "Y": 22
+          },
+          "Worldview": 621202136,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1427797c-60ea-45bf-958c-c0b1acfc05ff",
+          "IsAlive": true,
+          "Age": 32,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.19364275,
+          "AttachmentAvoidance": 0.19619352,
+          "ClusterID": 1,
+          "Position": {
+            "X": 9,
+            "Y": 13
+          },
+          "Worldview": 2794492104,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "0ea5323b-7c7c-4842-b8a0-fd4bc5d083b7",
+          "IsAlive": true,
+          "Age": 23,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.6216234,
+          "AttachmentAvoidance": 0.52580893,
+          "ClusterID": 1,
+          "Position": {
+            "X": 1,
+            "Y": 28
+          },
+          "Worldview": 3605276280,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "aae6271c-cccb-4071-b2b3-61e56bdc1dbe",
+          "IsAlive": true,
+          "Age": 2,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.17289576,
+          "AttachmentAvoidance": 0.6430931,
+          "ClusterID": 0,
+          "Position": {
+            "X": 33,
+            "Y": 30
+          },
+          "Worldview": 1997329290,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "92eaf850-8836-488c-b583-d89fb4955db7",
+          "IsAlive": true,
+          "Age": 39,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5330482,
+          "AttachmentAvoidance": 0.04604582,
+          "ClusterID": 0,
+          "Position": {
+            "X": 18,
+            "Y": 29
+          },
+          "Worldview": 2875540234,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "81d3e54c-97f9-41ae-bc77-1faf35d8ae8e",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8573061,
+          "AttachmentAvoidance": 0.29725698,
+          "ClusterID": 2,
+          "Position": {
+            "X": 69,
+            "Y": 11
+          },
+          "Worldview": 3646604138,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "524f8c0f-d7f5-4619-8d60-3d8e0be53013",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8021985,
+          "AttachmentAvoidance": 0.9203076,
+          "ClusterID": 2,
+          "Position": {
+            "X": 52,
+            "Y": 6
+          },
+          "Worldview": 1127373377,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "86c8f1f5-bbb3-4899-b04e-7c8c5ce8aef9",
+          "IsAlive": true,
+          "Age": 25,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.62160385,
+          "AttachmentAvoidance": 0.589784,
+          "ClusterID": 2,
+          "Position": {
+            "X": 54,
+            "Y": 28
+          },
+          "Worldview": 1939905127,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        }
+      ],
+      "NumberOfAgents": 15,
+      "EliminatedAgents": null,
+      "EliminatedBySelfSacrifice": null,
+      "TombstoneLocations": [
+        {
+          "X": 62,
+          "Y": 0
+        }
+      ],
+      "TempleLocations": []
+    },
+    {
+      "Iteration": 0,
+      "TurnNumber": 1,
+      "Agents": [
+        {
+          "ID": "aae6271c-cccb-4071-b2b3-61e56bdc1dbe",
+          "IsAlive": true,
+          "Age": 2,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.17289576,
+          "AttachmentAvoidance": 0.6430931,
+          "ClusterID": 2,
+          "Position": {
+            "X": 30,
+            "Y": 30
+          },
+          "Worldview": 1997329290,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "92eaf850-8836-488c-b583-d89fb4955db7",
+          "IsAlive": true,
+          "Age": 39,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5330482,
+          "AttachmentAvoidance": 0.04604582,
+          "ClusterID": 0,
+          "Position": {
+            "X": 21,
+            "Y": 30
+          },
+          "Worldview": 2875540234,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "81d3e54c-97f9-41ae-bc77-1faf35d8ae8e",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8573061,
+          "AttachmentAvoidance": 0.29725698,
+          "ClusterID": 1,
+          "Position": {
+            "X": 63,
+            "Y": 1
+          },
+          "Worldview": 3646604138,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "524f8c0f-d7f5-4619-8d60-3d8e0be53013",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8021985,
+          "AttachmentAvoidance": 0.9203076,
+          "ClusterID": 1,
+          "Position": {
+            "X": 56,
+            "Y": 15
+          },
+          "Worldview": 1127373377,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "86c8f1f5-bbb3-4899-b04e-7c8c5ce8aef9",
+          "IsAlive": true,
+          "Age": 25,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.62160385,
+          "AttachmentAvoidance": 0.589784,
+          "ClusterID": 1,
+          "Position": {
+            "X": 56,
+            "Y": 29
+          },
+          "Worldview": 1939905127,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "821253b0-c3d9-4c48-bb1b-69e9e93ca84e",
+          "IsAlive": true,
+          "Age": 37,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.23098844,
+          "AttachmentAvoidance": 0.823735,
+          "ClusterID": 1,
+          "Position": {
+            "X": 46,
+            "Y": 0
+          },
+          "Worldview": 372297614,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "2aea7d23-0ce9-4651-83a0-7049a3de7df1",
+          "IsAlive": true,
+          "Age": 17,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.11163222,
+          "AttachmentAvoidance": 0.849522,
+          "ClusterID": 2,
+          "Position": {
+            "X": 33,
+            "Y": 0
+          },
+          "Worldview": 1255059558,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "d49a3011-0367-436b-8a6f-0a3205c3292f",
+          "IsAlive": true,
+          "Age": 22,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.075244516,
+          "AttachmentAvoidance": 0.17465414,
+          "ClusterID": 0,
+          "Position": {
+            "X": 10,
+            "Y": 13
+          },
+          "Worldview": 688026059,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1cb688a0-27b5-40f7-97e4-4bbef3252081",
+          "IsAlive": true,
+          "Age": 33,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.2978257,
+          "AttachmentAvoidance": 0.22622174,
+          "ClusterID": 1,
+          "Position": {
+            "X": 46,
+            "Y": 30
+          },
+          "Worldview": 3484246031,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "3d2f64fd-0355-4213-b58c-fcbb1c62c4fe",
+          "IsAlive": true,
+          "Age": 36,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5724553,
+          "AttachmentAvoidance": 0.31343552,
+          "ClusterID": 2,
+          "Position": {
+            "X": 38,
+            "Y": 1
+          },
+          "Worldview": 2913658460,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "bc277b94-39b7-4c4a-b971-b877b27e38d8",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.69053185,
+          "AttachmentAvoidance": 0.60539186,
+          "ClusterID": 2,
+          "Position": {
+            "X": 35,
+            "Y": 17
+          },
+          "Worldview": 850056537,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4dc93f15-b870-4f79-b409-13699d02491f",
+          "IsAlive": true,
+          "Age": 3,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.25747,
+          "AttachmentAvoidance": 0.27461007,
+          "ClusterID": 2,
+          "Position": {
+            "X": 27,
+            "Y": 23
+          },
+          "Worldview": 621202136,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1427797c-60ea-45bf-958c-c0b1acfc05ff",
+          "IsAlive": true,
+          "Age": 32,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.19364275,
+          "AttachmentAvoidance": 0.19619352,
+          "ClusterID": 0,
+          "Position": {
+            "X": 7,
+            "Y": 17
+          },
+          "Worldview": 2794492104,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "0ea5323b-7c7c-4842-b8a0-fd4bc5d083b7",
+          "IsAlive": true,
+          "Age": 23,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.6216234,
+          "AttachmentAvoidance": 0.52580893,
+          "ClusterID": 0,
+          "Position": {
+            "X": 1,
+            "Y": 18
+          },
+          "Worldview": 3605276280,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        }
+      ],
+      "NumberOfAgents": 14,
+      "EliminatedAgents": null,
+      "EliminatedBySelfSacrifice": null,
+      "TombstoneLocations": [
+        {
+          "X": 62,
+          "Y": 0
+        },
+        {
+          "X": 69,
+          "Y": 25
+        }
+      ],
+      "TempleLocations": []
+    },
+    {
+      "Iteration": 0,
+      "TurnNumber": 2,
+      "Agents": [
+        {
+          "ID": "aae6271c-cccb-4071-b2b3-61e56bdc1dbe",
+          "IsAlive": true,
+          "Age": 2,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.17289576,
+          "AttachmentAvoidance": 0.6430931,
+          "ClusterID": 1,
+          "Position": {
+            "X": 26,
+            "Y": 30
+          },
+          "Worldview": 1997329290,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "92eaf850-8836-488c-b583-d89fb4955db7",
+          "IsAlive": true,
+          "Age": 39,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5330482,
+          "AttachmentAvoidance": 0.04604582,
+          "ClusterID": 1,
+          "Position": {
+            "X": 28,
+            "Y": 28
+          },
+          "Worldview": 2875540234,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "524f8c0f-d7f5-4619-8d60-3d8e0be53013",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8021985,
+          "AttachmentAvoidance": 0.9203076,
+          "ClusterID": 2,
+          "Position": {
+            "X": 54,
+            "Y": 15
+          },
+          "Worldview": 1127373377,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "86c8f1f5-bbb3-4899-b04e-7c8c5ce8aef9",
+          "IsAlive": true,
+          "Age": 25,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.62160385,
+          "AttachmentAvoidance": 0.589784,
+          "ClusterID": 1,
+          "Position": {
+            "X": 55,
+            "Y": 29
+          },
+          "Worldview": 1939905127,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "d49a3011-0367-436b-8a6f-0a3205c3292f",
+          "IsAlive": true,
+          "Age": 22,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.075244516,
+          "AttachmentAvoidance": 0.17465414,
+          "ClusterID": 0,
+          "Position": {
+            "X": 10,
+            "Y": 13
+          },
+          "Worldview": 688026059,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1cb688a0-27b5-40f7-97e4-4bbef3252081",
+          "IsAlive": true,
+          "Age": 33,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.2978257,
+          "AttachmentAvoidance": 0.22622174,
+          "ClusterID": 1,
+          "Position": {
+            "X": 48,
+            "Y": 30
+          },
+          "Worldview": 3484246031,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "3d2f64fd-0355-4213-b58c-fcbb1c62c4fe",
+          "IsAlive": true,
+          "Age": 36,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5724553,
+          "AttachmentAvoidance": 0.31343552,
+          "ClusterID": 2,
+          "Position": {
+            "X": 32,
+            "Y": 0
+          },
+          "Worldview": 2913658460,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "bc277b94-39b7-4c4a-b971-b877b27e38d8",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.69053185,
+          "AttachmentAvoidance": 0.60539186,
+          "ClusterID": 1,
+          "Position": {
+            "X": 38,
+            "Y": 15
+          },
+          "Worldview": 850056537,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "821253b0-c3d9-4c48-bb1b-69e9e93ca84e",
+          "IsAlive": true,
+          "Age": 37,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.23098844,
+          "AttachmentAvoidance": 0.823735,
+          "ClusterID": 2,
+          "Position": {
+            "X": 37,
+            "Y": 1
+          },
+          "Worldview": 372297614,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "2aea7d23-0ce9-4651-83a0-7049a3de7df1",
+          "IsAlive": true,
+          "Age": 17,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.11163222,
+          "AttachmentAvoidance": 0.849522,
+          "ClusterID": 2,
+          "Position": {
+            "X": 38,
+            "Y": 1
+          },
+          "Worldview": 1255059558,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4dc93f15-b870-4f79-b409-13699d02491f",
+          "IsAlive": true,
+          "Age": 3,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.25747,
+          "AttachmentAvoidance": 0.27461007,
+          "ClusterID": 1,
+          "Position": {
+            "X": 31,
+            "Y": 23
+          },
+          "Worldview": 621202136,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1427797c-60ea-45bf-958c-c0b1acfc05ff",
+          "IsAlive": true,
+          "Age": 32,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.19364275,
+          "AttachmentAvoidance": 0.19619352,
+          "ClusterID": 0,
+          "Position": {
+            "X": 5,
+            "Y": 19
+          },
+          "Worldview": 2794492104,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "0ea5323b-7c7c-4842-b8a0-fd4bc5d083b7",
+          "IsAlive": true,
+          "Age": 23,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.6216234,
+          "AttachmentAvoidance": 0.52580893,
+          "ClusterID": 0,
+          "Position": {
+            "X": 1,
+            "Y": 28
+          },
+          "Worldview": 3605276280,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        }
+      ],
+      "NumberOfAgents": 13,
+      "EliminatedAgents": null,
+      "EliminatedBySelfSacrifice": null,
+      "TombstoneLocations": [
+        {
+          "X": 62,
+          "Y": 0
+        },
+        {
+          "X": 69,
+          "Y": 25
+        },
+        {
+          "X": 63,
+          "Y": 2
+        }
+      ],
+      "TempleLocations": []
+    },
+    {
+      "Iteration": 0,
+      "TurnNumber": 3,
+      "Agents": [
+        {
+          "ID": "86c8f1f5-bbb3-4899-b04e-7c8c5ce8aef9",
+          "IsAlive": true,
+          "Age": 25,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.62160385,
+          "AttachmentAvoidance": 0.589784,
+          "ClusterID": 1,
+          "Position": {
+            "X": 58,
+            "Y": 29
+          },
+          "Worldview": 1939905127,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "524f8c0f-d7f5-4619-8d60-3d8e0be53013",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8021985,
+          "AttachmentAvoidance": 0.9203076,
+          "ClusterID": 0,
+          "Position": {
+            "X": 56,
+            "Y": 15
+          },
+          "Worldview": 1127373377,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "3d2f64fd-0355-4213-b58c-fcbb1c62c4fe",
+          "IsAlive": true,
+          "Age": 36,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5724553,
+          "AttachmentAvoidance": 0.31343552,
+          "ClusterID": 0,
+          "Position": {
+            "X": 42,
+            "Y": 0
+          },
+          "Worldview": 2913658460,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "bc277b94-39b7-4c4a-b971-b877b27e38d8",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.69053185,
+          "AttachmentAvoidance": 0.60539186,
+          "ClusterID": 1,
+          "Position": {
+            "X": 41,
+            "Y": 17
+          },
+          "Worldview": 850056537,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "821253b0-c3d9-4c48-bb1b-69e9e93ca84e",
+          "IsAlive": true,
+          "Age": 37,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.23098844,
+          "AttachmentAvoidance": 0.823735,
+          "ClusterID": 2,
+          "Position": {
+            "X": 25,
+            "Y": 0
+          },
+          "Worldview": 372297614,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "2aea7d23-0ce9-4651-83a0-7049a3de7df1",
+          "IsAlive": true,
+          "Age": 17,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.11163222,
+          "AttachmentAvoidance": 0.849522,
+          "ClusterID": 0,
+          "Position": {
+            "X": 55,
+            "Y": 1
+          },
+          "Worldview": 1255059558,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "d49a3011-0367-436b-8a6f-0a3205c3292f",
+          "IsAlive": true,
+          "Age": 22,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.075244516,
+          "AttachmentAvoidance": 0.17465414,
+          "ClusterID": 2,
+          "Position": {
+            "X": 18,
+            "Y": 13
+          },
+          "Worldview": 688026059,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1427797c-60ea-45bf-958c-c0b1acfc05ff",
+          "IsAlive": true,
+          "Age": 32,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.19364275,
+          "AttachmentAvoidance": 0.19619352,
+          "ClusterID": 2,
+          "Position": {
+            "X": 2,
+            "Y": 18
+          },
+          "Worldview": 2794492104,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "0ea5323b-7c7c-4842-b8a0-fd4bc5d083b7",
+          "IsAlive": true,
+          "Age": 23,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.6216234,
+          "AttachmentAvoidance": 0.52580893,
+          "ClusterID": 2,
+          "Position": {
+            "X": 1,
+            "Y": 29
+          },
+          "Worldview": 3605276280,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4dc93f15-b870-4f79-b409-13699d02491f",
+          "IsAlive": true,
+          "Age": 3,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.25747,
+          "AttachmentAvoidance": 0.27461007,
+          "ClusterID": 2,
+          "Position": {
+            "X": 28,
+            "Y": 24
+          },
+          "Worldview": 621202136,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "92eaf850-8836-488c-b583-d89fb4955db7",
+          "IsAlive": true,
+          "Age": 39,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5330482,
+          "AttachmentAvoidance": 0.04604582,
+          "ClusterID": 2,
+          "Position": {
+            "X": 25,
+            "Y": 30
+          },
+          "Worldview": 2875540234,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "aae6271c-cccb-4071-b2b3-61e56bdc1dbe",
+          "IsAlive": true,
+          "Age": 2,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.17289576,
+          "AttachmentAvoidance": 0.6430931,
+          "ClusterID": 2,
+          "Position": {
+            "X": 23,
+            "Y": 29
+          },
+          "Worldview": 1997329290,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        }
+      ],
+      "NumberOfAgents": 12,
+      "EliminatedAgents": null,
+      "EliminatedBySelfSacrifice": null,
+      "TombstoneLocations": [
+        {
+          "X": 62,
+          "Y": 0
+        },
+        {
+          "X": 69,
+          "Y": 25
+        },
+        {
+          "X": 63,
+          "Y": 2
+        },
+        {
+          "X": 46,
+          "Y": 28
+        }
+      ],
+      "TempleLocations": []
+    },
+    {
+      "Iteration": 0,
+      "TurnNumber": 4,
+      "Agents": [
+        {
+          "ID": "86c8f1f5-bbb3-4899-b04e-7c8c5ce8aef9",
+          "IsAlive": true,
+          "Age": 25,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.62160385,
+          "AttachmentAvoidance": 0.589784,
+          "ClusterID": 2,
+          "Position": {
+            "X": 67,
+            "Y": 26
+          },
+          "Worldview": 1939905127,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "524f8c0f-d7f5-4619-8d60-3d8e0be53013",
+          "IsAlive": true,
+          "Age": 35,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.8021985,
+          "AttachmentAvoidance": 0.9203076,
+          "ClusterID": 2,
+          "Position": {
+            "X": 56,
+            "Y": 15
+          },
+          "Worldview": 1127373377,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "3d2f64fd-0355-4213-b58c-fcbb1c62c4fe",
+          "IsAlive": true,
+          "Age": 36,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5724553,
+          "AttachmentAvoidance": 0.31343552,
+          "ClusterID": 0,
+          "Position": {
+            "X": 48,
+            "Y": 0
+          },
+          "Worldview": 2913658460,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "bc277b94-39b7-4c4a-b971-b877b27e38d8",
+          "IsAlive": true,
+          "Age": 41,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.69053185,
+          "AttachmentAvoidance": 0.60539186,
+          "ClusterID": 0,
+          "Position": {
+            "X": 41,
+            "Y": 13
+          },
+          "Worldview": 850056537,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "821253b0-c3d9-4c48-bb1b-69e9e93ca84e",
+          "IsAlive": true,
+          "Age": 37,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.23098844,
+          "AttachmentAvoidance": 0.823735,
+          "ClusterID": 0,
+          "Position": {
+            "X": 25,
+            "Y": 0
+          },
+          "Worldview": 372297614,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "2aea7d23-0ce9-4651-83a0-7049a3de7df1",
+          "IsAlive": true,
+          "Age": 17,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.11163222,
+          "AttachmentAvoidance": 0.849522,
+          "ClusterID": 0,
+          "Position": {
+            "X": 55,
+            "Y": 0
+          },
+          "Worldview": 1255059558,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "1427797c-60ea-45bf-958c-c0b1acfc05ff",
+          "IsAlive": true,
+          "Age": 32,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.19364275,
+          "AttachmentAvoidance": 0.19619352,
+          "ClusterID": 1,
+          "Position": {
+            "X": 3,
+            "Y": 19
+          },
+          "Worldview": 2794492104,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "0ea5323b-7c7c-4842-b8a0-fd4bc5d083b7",
+          "IsAlive": true,
+          "Age": 23,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.6216234,
+          "AttachmentAvoidance": 0.52580893,
+          "ClusterID": 1,
+          "Position": {
+            "X": 5,
+            "Y": 29
+          },
+          "Worldview": 3605276280,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "4dc93f15-b870-4f79-b409-13699d02491f",
+          "IsAlive": true,
+          "Age": 3,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.25747,
+          "AttachmentAvoidance": 0.27461007,
+          "ClusterID": 2,
+          "Position": {
+            "X": 31,
+            "Y": 23
+          },
+          "Worldview": 621202136,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "92eaf850-8836-488c-b583-d89fb4955db7",
+          "IsAlive": true,
+          "Age": 39,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.5330482,
+          "AttachmentAvoidance": 0.04604582,
+          "ClusterID": 1,
+          "Position": {
+            "X": 22,
+            "Y": 28
+          },
+          "Worldview": 2875540234,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        },
+        {
+          "ID": "aae6271c-cccb-4071-b2b3-61e56bdc1dbe",
+          "IsAlive": true,
+          "Age": 2,
+          "AttachmentStyle": "",
+          "AttachmentAnxiety": 0.17289576,
+          "AttachmentAvoidance": 0.6430931,
+          "ClusterID": 1,
+          "Position": {
+            "X": 3,
+            "Y": 9
+          },
+          "Worldview": 1997329290,
+          "Heroism": 0,
+          "MortalitySalience": 0,
+          "WorldviewValidation": 0,
+          "RelationshipValidation": 0,
+          "ASPDecision": ""
+        }
+      ],
+      "NumberOfAgents": 11,
+      "EliminatedAgents": null,
+      "EliminatedBySelfSacrifice": null,
+      "TombstoneLocations": [
+        {
+          "X": 62,
+          "Y": 0
+        },
+        {
+          "X": 69,
+          "Y": 25
+        },
+        {
+          "X": 63,
+          "Y": 2
+        },
+        {
+          "X": 46,
+          "Y": 28
+        },
+        {
+          "X": 20,
+          "Y": 13
+        }
+      ],
+      "TempleLocations": []
+    }
+  ]
+}

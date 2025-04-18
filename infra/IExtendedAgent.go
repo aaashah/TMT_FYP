@@ -66,6 +66,7 @@ type IExtendedAgent interface {
 
 	// Data Recording
 	RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
+	RecordAgentJSON(instance IExtendedAgent) gameRecorder.JSONAgentRecord
 
 	// Updaters
 	UpdateSocialNetwork(uuid.UUID, float32)

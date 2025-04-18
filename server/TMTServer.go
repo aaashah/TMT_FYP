@@ -31,6 +31,7 @@ type TMTServer struct {
 
 	// data recorder
 	DataRecorder *gameRecorder.ServerDataRecorder
+	JSONTurnLogs []gameRecorder.TurnJSONRecord
 
 	//server internal state
 	turn      int
@@ -217,11 +218,13 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.GetAgentMap()))
 	tserv.RecordTurnInfo()
+	tserv.RecordTurnJSON()
+
 }
 
 func (tserv *TMTServer) RunEndOfIteration(int) {
 	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
-	//tserv.iteration++
+	tserv.WriteIterationJSONLog()
 	// spawn new agents
 	tserv.SpawnNewAgents()
 }
@@ -628,4 +631,91 @@ func (tserv *TMTServer) RecordTurnInfo() {
 
 	// Save the recorded turn in the data recorder
 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
+}
+
+
+// func (tserv *TMTServer) RecordTurnJSON() {
+// 	// Prepare container for JSON agent records
+
+// 	var allAgentRecords []gameRecorder.JSONAgentRecord
+// 	for _, agent := range tserv.GetAgentMap() {
+// 		record := agent.RecordAgentJSON(agent)
+// 		record.IsAlive = true
+// 		allAgentRecords = append(allAgentRecords, record)
+// 	}
+
+// 	// Tombstone + Temple Positions
+// 	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
+// 	for i, pos := range tserv.Grid.Tombstones {
+// 		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
+// 	}
+
+// 	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
+// 	for i, pos := range tserv.Grid.Temples {
+// 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
+// 	}
+
+// 	// Collect final log
+// 	jsonLog := gameRecorder.TurnJSONRecord{
+// 		Iteration:            tserv.iteration,
+// 		Turn:                 tserv.turn,
+// 		NumberOfAgents:       len(tserv.GetAgentMap()),
+// 		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
+// 		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
+// 		TombstoneLocations:   tombstonePositions,
+// 		TempleLocations:      templePositions,
+// 	}
+
+// 	// Write to file
+// 	err := gameRecorder.WriteTurnJSONRecord("JSONlogs", jsonLog)
+// 	if err != nil {
+// 		fmt.Printf("Error writing JSON log: %v\n", err)
+// 	}
+// }
+
+func (tserv *TMTServer) RecordTurnJSON() {
+	var allAgentRecords []gameRecorder.JSONAgentRecord
+	for _, agent := range tserv.GetAgentMap() {
+		record := agent.RecordAgentJSON(agent)
+		record.IsAlive = true
+		allAgentRecords = append(allAgentRecords, record)
+	}
+
+	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
+	for i, pos := range tserv.Grid.Tombstones {
+		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
+	}
+
+	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
+	for i, pos := range tserv.Grid.Temples {
+		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
+	}
+
+	jsonLog := gameRecorder.TurnJSONRecord{
+		Iteration:            tserv.iteration,
+		Turn:                 tserv.turn,
+		Agents:			      allAgentRecords,
+		NumberOfAgents:       len(tserv.GetAgentMap()),
+		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
+		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
+		TombstoneLocations:   tombstonePositions,
+		TempleLocations:      templePositions,
+	}
+
+	tserv.JSONTurnLogs = append(tserv.JSONTurnLogs, jsonLog)
+}
+
+func (tserv *TMTServer) WriteIterationJSONLog() {
+	log := gameRecorder.IterationJSONRecord{
+		Iteration: tserv.iteration,
+		Turns:     tserv.JSONTurnLogs,
+	}
+
+	err := gameRecorder.WriteIterationJSONLog("JSONlogs", log)
+	if err != nil {
+		fmt.Printf("Error writing iteration log: %v\n", err)
+	}
+
+	// Clear memory for next iteration
+	tserv.JSONTurnLogs = nil
 }

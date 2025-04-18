@@ -528,3 +528,21 @@ func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRe
 	)
 	return record
 }
+func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameRecorder.JSONAgentRecord {
+	return gameRecorder.JSONAgentRecord{
+		ID:                  ea.GetID().String(),
+		IsAlive:             ea.IsAlive(),
+		Age:                 ea.GetAge(),
+		//AttachmentStyle:     ea.AttachmentStyle.String(),
+		AttachmentAnxiety:   ea.Attachment.Anxiety,
+		AttachmentAvoidance: ea.Attachment.Avoidance,
+		ClusterID:           ea.ClusterID,
+		Position:            gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
+		Worldview:           ea.worldview,
+		Heroism:             ea.Heroism,
+		//MortalitySalience:   ea.ComputeMortalitySalience(),
+		//WorldviewValidation: ea.ComputeWorldviewValidation(),
+		//RelationshipValidation: ea.ComputeRelationshipValidation(),
+		//ASPDecison: ea.GetASPDecision(nil).String(),
+	}
+}
