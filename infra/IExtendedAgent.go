@@ -19,6 +19,7 @@ type IExtendedAgent interface {
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
+	GetYsterofimia() *Ysterofimia 
 	//GetMortality() bool
 	GetTelomere() float32
 	IsAlive() bool
@@ -31,13 +32,13 @@ type IExtendedAgent interface {
 	GetASPDecision(grid *Grid) ASPDecison
 	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)
-	//IncrementNetworkEliminations(n int)
+	IncrementNetworkEliminations(n int)
 	IncrementHeroism()
 	GetHeroism() int
-	IncrementSelfSacrificeCount()
-	AddSelfSacrificeEsteems(esteem float32)
-	IncrementOtherEliminationCount()
-	AddOtherEliminationsEsteems(esteem float32)
+	// IncrementSelfSacrificeCount()
+	// AddSelfSacrificeEsteems(esteem float32)
+	// IncrementOtherEliminationCount()
+	// AddOtherEliminationsEsteems(esteem float32)
 
 	//Setters
 	// SetName(name uuid.UUID)
@@ -49,8 +50,8 @@ type IExtendedAgent interface {
 	//SetContextSacrifice(context string)
 	MarkAsDead()
 	UpdateEsteem(id uuid.UUID, isCheck bool)
-	SetWorldviewBinary(worldview uint32)
-	SetParents(parent1, parent2 uuid.UUID)
+	//SetWorldviewBinary(worldview uint32)
+	//SetParents(parent1, parent2 uuid.UUID)
 	AddDescendant(descendant uuid.UUID)
 
 	//Message functions

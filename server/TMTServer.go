@@ -407,26 +407,27 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 
 		// social network eliminations
-		//networkEliminationCount := 0
+		networkEliminationCount := 0
 		for friendID, esteem := range agent.GetNetwork() {
 			if agentsToRemove[friendID] {
 				eliminatedAgent, exists := tserv.GetAgentByID(friendID)
 				if !exists {
 					continue
 				}
-				//networkEliminationCount++
+				networkEliminationCount++
 				
 				if eliminatedAgent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-					agent.IncrementSelfSacrificeCount()
-					agent.AddSelfSacrificeEsteems(esteem)
+					ysterofimia := agent.GetYsterofimia()
+					ysterofimia.IncrementSelfSacrificeCount()
+					ysterofimia.AddSelfSacrificeEsteems(esteem)
 				} else {
-					agent.IncrementOtherEliminationCount()
-					agent.AddOtherEliminationsEsteems(esteem)
+					ysterofimia := agent.GetYsterofimia()
+					ysterofimia.IncrementOtherEliminationCount()
+					ysterofimia.AddOtherEliminationsEsteems(esteem)
 				}
-
 			}
 		}
-		//agent.IncrementNetworkEliminations(networkEliminationCount)
+		agent.IncrementNetworkEliminations(networkEliminationCount)
 
 		//track eliminations and esteems for ysterofimia
 	}
@@ -543,20 +544,20 @@ func (tserv *TMTServer) SpawnNewAgents() {
 
 			switch {
 			case randVal < 0.25:
-				newAgent = agents.CreateSecureAgent(tserv, tserv.Grid)
+				newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
 			case randVal < 0.5:
-				newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid)
+				newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
 			case randVal < 0.75:
-				newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid)
+				newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
 			default:
-				newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid)
+				newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
 			}
 
 			//create new agent
 			//newAgent := agents.CreateSecureAgent(tserv, tserv.Grid)
 
-			newAgent.SetWorldviewBinary(newWorldview)
-			newAgent.SetParents(parent1.GetID(), parent2.GetID())
+			//newAgent.SetWorldviewBinary(newWorldview)
+			//newAgent.SetParents(parent1.GetID(), parent2.GetID())
 			parent1.AddDescendant(newAgent.GetID())
 			parent2.AddDescendant(newAgent.GetID())
 
@@ -567,8 +568,6 @@ func (tserv *TMTServer) SpawnNewAgents() {
 			// add relationships in social network
 			tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
 			tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
-			tserv.AddRelationship(newAgent.GetID(), parent1.GetID(), 0.5)
-			tserv.AddRelationship(newAgent.GetID(), parent2.GetID(), 0.5)
 	}
 }
 

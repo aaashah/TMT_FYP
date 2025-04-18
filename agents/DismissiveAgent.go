@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/google/uuid"
+
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -12,8 +14,8 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server infra.IServer, grid *infra.Grid) *DismissiveAgent {
-	extendedAgent := CreateExtendedAgent(server, grid)
+func CreateDismissiveAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *DismissiveAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{
@@ -52,7 +54,7 @@ func (da *DismissiveAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVe
 		if otherAgent.GetID() == da.GetID() {
 			continue // Skip self
 		}
-		if _, known := da.Network[otherAgent.GetID()]; known {
+		if _, known := da.network[otherAgent.GetID()]; known {
 			// friend so:
 			dist := da.Position.Dist(otherAgent.GetPosition())
 			if dist < minDist {

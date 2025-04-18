@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/google/uuid"
+
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 )
@@ -12,8 +14,8 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server infra.IServer, grid *infra.Grid) *PreoccupiedAgent {
-	extendedAgent := CreateExtendedAgent(server, grid)
+func CreatePreoccupiedAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *PreoccupiedAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{
@@ -52,7 +54,7 @@ func (pa *PreoccupiedAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionV
 		if otherAgent.GetID() == pa.GetID() {
 			continue // Skip self
 		}
-		if _, known := pa.Network[otherAgent.GetID()]; known {
+		if _, known := pa.network[otherAgent.GetID()]; known {
 			// friend so:
 			dist := pa.Position.Dist(otherAgent.GetPosition())
 			if dist < minDist {

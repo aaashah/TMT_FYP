@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	// "github.com/google/uuid"
+	"github.com/google/uuid"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -14,8 +14,8 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server infra.IServer, grid *infra.Grid) *FearfulAgent {
-	extendedAgent := CreateExtendedAgent(server, grid)
+func CreateFearfulAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *FearfulAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{
@@ -51,7 +51,7 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 		if otherAgent.GetID() == fa.GetID() {
 			continue // Skip self
 		}
-		if _, known := fa.Network[otherAgent.GetID()]; known {
+		if _, known := fa.network[otherAgent.GetID()]; known {
 			continue // Skip friends
 		}
 

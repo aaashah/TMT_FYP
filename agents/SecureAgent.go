@@ -2,7 +2,8 @@ package agents
 
 import (
 	"fmt"
-	// "github.com/google/uuid"
+
+	"github.com/google/uuid"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -12,8 +13,8 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server infra.IServer, grid *infra.Grid) *SecureAgent {
-	extendedAgent := CreateExtendedAgent(server, grid)
+func CreateSecureAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *SecureAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{

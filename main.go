@@ -9,13 +9,14 @@ import (
 	"os"
 	"time"
 
-	//"math/rand"
+	"math/rand"
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 	agents "github.com/aaashah/TMT_Attachment/agents"
 	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	tmtServer "github.com/aaashah/TMT_Attachment/server"
+	"github.com/google/uuid"
 )
 
 // "go run ."
@@ -74,12 +75,13 @@ func main() {
 	//grid := infra.NewGrid(70, 30) // Create grid
 
 	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
-
+	parent1ID := uuid.Nil
+	parent2ID := uuid.Nil
 	for i := 0; i < numAgents; i += 4 {
-		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, grid))
-		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, grid))
-		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, grid))
-		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, grid))
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, grid, parent1ID, parent2ID, rand.Uint32()))
+		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, grid, parent1ID, parent2ID, rand.Uint32()))
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, grid, parent1ID, parent2ID, rand.Uint32()))
+		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, grid, parent1ID, parent2ID, rand.Uint32()))
 	}
 
 	// Set probability p for Erdős–Rényi network
