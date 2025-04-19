@@ -356,31 +356,49 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			}
 		}
 	} else {
-		// voluntary self-sacrifice
+		//allAgents := tserv.GetAgentMap()
+		var volunteers []infra.IExtendedAgent
+		var nonVolunteers []infra.IExtendedAgent
+
+		// Separate volunteers and non-volunteers
 		for _, agent := range tserv.GetAgentMap() {
 			if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-				// 4.1 Place temples/monuments for self-sacrificed agents
-				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
+				volunteers = append(volunteers, agent)
+			} else {
+				nonVolunteers = append(nonVolunteers, agent)
+			}
+		}
+		v := len(volunteers)
+		n := 1 // number of volunteers to eliminate
+
+		if v >= n {
+			//randomly select n volunteers to eliminate
+			rand.Shuffle(v, func(i, j int) { volunteers[i], volunteers[j] = volunteers[j], volunteers[i] })
+			for i := 0; i < n; i++ {
+				agent := volunteers[i]
 				pos := agent.GetPosition()
 				tserv.Grid.PlaceTemple(pos.X, pos.Y)
 				agent.IncrementHeroism()
 				agentsToRemove[agent.GetID()] = true
 			}
-		}
-		// pick random agent to eliminate if no one self-sacrificed
-		if len(agentsToRemove) == 0 {
-			livingAgents := []infra.IExtendedAgent{}
-			for _, agent := range tserv.GetAgentMap() {
-				if agent.IsAlive() {
-					livingAgents = append(livingAgents, agent)
-				}
+		} else {
+			//eliminate all volunteers plus 2(n-v) random non-volunteers
+			for _, agent := range volunteers {
+				pos := agent.GetPosition()
+				tserv.Grid.PlaceTemple(pos.X, pos.Y)
+				agent.IncrementHeroism()
+				agentsToRemove[agent.GetID()] = true
 			}
-			if len(livingAgents) > 0 {
-				victim := livingAgents[rand.Intn(len(livingAgents))]
-				fmt.Printf("No self-sacrifices this turn — randomly eliminating Agent %v\n", victim.GetID())
-				pos := victim.GetPosition()
+			// Pick 2(n-v) random non-volunteers
+			numToKill := 2 * (n - v)
+			rand.Shuffle(len(nonVolunteers), func(i, j int) {
+				nonVolunteers[i], nonVolunteers[j] = nonVolunteers[j], nonVolunteers[i]
+			})
+			for i := 0; i < numToKill && i < len(nonVolunteers); i++ {
+				agent := nonVolunteers[i]
+				pos := agent.GetPosition()
 				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[victim.GetID()] = true
+				agentsToRemove[agent.GetID()] = true
 			}
 		}
 	}
@@ -414,21 +432,17 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 					continue
 				}
 				networkEliminationCount++
-				
+				ysterofimia := agent.GetYsterofimia()
 				if eliminatedAgent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-					ysterofimia := agent.GetYsterofimia()
 					ysterofimia.IncrementSelfSacrificeCount()
 					ysterofimia.AddSelfSacrificeEsteems(esteem)
 				} else {
-					ysterofimia := agent.GetYsterofimia()
 					ysterofimia.IncrementOtherEliminationCount()
 					ysterofimia.AddOtherEliminationsEsteems(esteem)
 				}
 			}
 		}
 		agent.IncrementNetworkEliminations(networkEliminationCount)
-
-		//track eliminations and esteems for ysterofimia
 	}
 
 }
