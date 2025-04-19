@@ -7,12 +7,12 @@ import (
 
 type WellbeingCheckMessage struct {
 	message.BaseMessage
-	WellbeingMessage string
+	//WellbeingMessage string
 }
 
 type ReplyMessage struct {
 	message.BaseMessage
-	AckMessage string
+	//AckMessage string
 }
 
 func (msg *WellbeingCheckMessage) InvokeMessageHandler(agent IExtendedAgent) {

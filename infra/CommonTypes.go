@@ -29,6 +29,13 @@ type Telomere struct {
 	lifespanDecay  float32
 }
 
+type PTSParams struct {
+	CheckProb    float32 // prob of sending a wellbeing check
+	ReplyProb    float32 // prob of replying to a check
+	Alpha        float32 // reinforcement param
+	Beta         float32 // reinforcement param
+}
+
 func NewTelomere(age, ageA, ageB int, lifeSpan float32) *Telomere {
 	return &Telomere{age, ageA, ageB, lifeSpan}
 }
@@ -53,3 +60,65 @@ func (t *Telomere) GetProbabilityOfDeath() float32 {
 }
 
 type SocialNetwork map[uuid.UUID]float32
+
+type Ysterofimia struct {
+	SelfSacrificeCount		    int // number of times agent volunteered self-sacrifices
+	SelfSacrificeEsteems        float32 // total esteems from agents who self-sacrificed
+	OtherEliminationCount       int // number of times agent was eliminated by other than self-sacrifice
+	OtherEliminationsEsteems    float32 // total esteems from agents who eliminated other than self-sacrifice
+}
+
+func NewYsterofimia() *Ysterofimia {
+	return &Ysterofimia{
+		SelfSacrificeCount:         0,
+		SelfSacrificeEsteems:       0.0,
+		OtherEliminationCount:      0,
+		OtherEliminationsEsteems:   0.0,
+	}
+}
+func (y *Ysterofimia) IncrementSelfSacrificeCount() {
+	y.SelfSacrificeCount++
+}
+
+func (y *Ysterofimia) AddSelfSacrificeEsteems(esteem float32) {
+	y.SelfSacrificeEsteems += esteem
+}
+func (y *Ysterofimia) IncrementOtherEliminationCount() {
+	y.OtherEliminationCount++
+}
+func (y *Ysterofimia) AddOtherEliminationsEsteems(esteem float32) {
+	y.OtherEliminationsEsteems += esteem
+}
+
+func (y *Ysterofimia) ComputeYsterofimia() float32 {
+	totalEliminations := y.SelfSacrificeCount + y.OtherEliminationCount
+	totalEsteem := y.SelfSacrificeEsteems + y.OtherEliminationsEsteems
+
+	if totalEliminations == 0 || totalEsteem == 0 {
+        return 0.5 // no eliminations or no esteem data
+    }
+
+	//esteemRatio := float32(y.SelfSacrificeEsteems) / float32(totalEsteem)
+	sacrificeEsteemRatio := float32(y.SelfSacrificeEsteems) / float32(y.SelfSacrificeCount)
+	otherEsteemRatio := float32(y.OtherEliminationsEsteems) / float32(y.OtherEliminationCount)
+
+	if sacrificeEsteemRatio > otherEsteemRatio {
+		return float32(y.SelfSacrificeCount) / float32(totalEliminations)
+	} else {
+		return float32(y.OtherEliminationCount) / float32(totalEliminations)
+	}
+}
+
+type ProximityArray []float32
+
+func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
+	var totInvProx float32 = 0.0
+	for _, prox := range pa {
+		totInvProx += 1 / prox
+	}
+	for idx, prox := range pa {
+		invProx := 1 / prox
+		pa[idx] = invProx / totInvProx
+	}
+	return pa
+}

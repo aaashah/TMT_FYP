@@ -2,7 +2,8 @@ package agents
 
 import (
 	"fmt"
-	// "github.com/google/uuid"
+
+	"github.com/google/uuid"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -12,13 +13,20 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *SecureAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreateSecureAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *SecureAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.0, 0.5),
+	}
+	// these ranges to be tweaked
+	extendedAgent.PTW = infra.PTSParams{
+		CheckProb: randInRange(0.0, 0.5), 
+		ReplyProb: randInRange(0.5, 1.0),
+		Alpha:     randInRange(0.5, 1.0), 
+		Beta:      randInRange(0.0, 0.5), 
 	}
 
 	return &SecureAgent{
@@ -37,13 +45,4 @@ func (sa *SecureAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector
 	return infra.PositionVector{}, false
 }
 
-// func (sa *SecureAgent) Move(grid *infra.Grid) {
-// 	newX, newY := grid.GetValidMove(sa.Position[0], sa.Position[1]) // Get a valid move
-// 	grid.UpdateAgentPosition(sa, newX, newY)    // Update position in the grid
-// 	sa.Position = [2]int{newX, newY}             // Assign new position
-// 	fmt.Printf("Secure Agent %v moved to (%d, %d)\n", sa.GetID(), newX, newY)
-// }
 
-//secure agent pts protocol
-//low probability of checking on other agents
-//high probability of responding to other agents

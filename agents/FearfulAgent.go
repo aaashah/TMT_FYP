@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	// "github.com/google/uuid"
+	"github.com/google/uuid"
 
 	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
@@ -14,13 +14,20 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server infra.IServer, agentConfig AgentConfig, grid *infra.Grid) *FearfulAgent {
-	extendedAgent := CreateExtendedAgent(server, agentConfig, grid)
+func CreateFearfulAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *FearfulAgent {
+	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.5, 1.0),
 		Avoidance: randInRange(0.5, 1.0),
+	}
+	// these ranges to be tweaked
+	extendedAgent.PTW = infra.PTSParams{
+		CheckProb: randInRange(0.5, 1.0), 
+		ReplyProb: randInRange(0.0, 0.5),
+		Alpha:     randInRange(0.0, 0.5), 
+		Beta:      randInRange(0.5, 1.0), 
 	}
 
 	return &FearfulAgent{
@@ -44,7 +51,7 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 		if otherAgent.GetID() == fa.GetID() {
 			continue // Skip self
 		}
-		if _, known := fa.Network[otherAgent.GetID()]; known {
+		if _, known := fa.network[otherAgent.GetID()]; known {
 			continue // Skip friends
 		}
 
@@ -63,52 +70,3 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 
 }
 
-// func (fa *FearfulAgent) Move(grid *infra.Grid) {
-// 	occupied := grid.GetAllOccupiedAgentPositions()
-
-// 	var closestStrangerID uuid.UUID
-// 	var found bool
-// 	minDist := math.MaxFloat32
-
-// 	for _, otherAgent := range occupied {
-// 		if otherAgent.GetID() == fa.GetID() {
-// 			continue // Skip self
-// 		}
-// 		if _, known := fa.Network[otherAgent.GetID()]; known {
-// 			continue // Skip friends
-// 		}
-
-// 		dist := fa.Position.Dist(otherAgent.GetPosition())
-// 		if dist < minDist {
-// 			minDist = dist
-// 			closestStrangerID = otherAgent.GetID()
-// 			found = true
-// 		}
-// 	}
-
-// 	if found {
-// 		stranger, ok := fa.Server.GetAgentMap()[closestStrangerID]
-// 		if ok {
-// 			targetPos := stranger.GetPosition()
-// 			moveX := fa.Position.X + getStep(fa.Position.X, targetPos.X)
-// 			moveY := fa.Position.Y + getStep(fa.Position.Y, targetPos.Y)
-
-// 			if moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY) {
-// 				grid.UpdateAgentPosition(fa, moveX, moveY)
-// 				fa.Position = infra.PositionVector{X: moveX, Y: moveY}
-// 				fmt.Printf("FearfulAgent %v moved toward stranger %v to (%d, %d)\n", fa.GetID(), closestStrangerID, moveX, moveY)
-// 				return
-// 			}
-// 		}
-// 	}
-
-// 	// Fallback: move randomly if no strangers found
-// 	newX, newY := grid.GetValidMove(fa.Position.X, fa.Position.Y)
-// 	grid.UpdateAgentPosition(fa, newX, newY)
-// 	fa.Position = infra.PositionVector{X: newX, Y: newY}
-// 	fmt.Printf("FearfulAgent %v fallback random move to (%d, %d)\n", fa.GetID(), newX, newY)
-// }
-
-//fearful agent pts protocol
-//low probability of checking
-// high probability of responding
