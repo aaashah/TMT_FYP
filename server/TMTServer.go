@@ -145,15 +145,6 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 		tserv.InitialiseRandomNetwork(connectionProbability)
 	}
 
-	// Age up all agents at the start of each iteration (except start of game)
-	// if iteration > 0 {
-	for _, agent := range tserv.GetAgentMap() {
-		agent.IncrementAge()
-		fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
-	}
-	// }
-
-
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	// Ensure DataRecorder starts recording a new iteration
 	//tserv.DataRecorder.RecordNewIteration()
@@ -202,9 +193,14 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 	//tserv.ApplyAPS()
 	tserv.ApplyElimination(j)
 
+	// Age up all agents 
+	for _, agent := range tserv.GetAgentMap() {
+		agent.IncrementAge()
+		fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
+	}
+
 	// 5. After eliminations for agents in each cluster:
 	for _, agents := range tserv.clusterMap {
-		// age up agents here??
 
 		// 5.1 Update social network (create/ cut links)
 		tserv.UpdateSocialNetwork(agents)
