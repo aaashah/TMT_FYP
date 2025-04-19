@@ -508,26 +508,27 @@ func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 
 
 // ----------------------- Data Recording Functions -----------------------
-func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
-	//fmt.Printf("[DEBUG] Fetching Age in RecordAgentStatus: %d for Agent %v\n", instance.GetAge(), instance.GetID())
-	agentPos := instance.GetPosition()
-	agentAttach := instance.GetAttachment()
-	record := gameRecorder.NewAgentRecord(
-		instance.GetID(),
-		instance.GetAge(),
-		agentPos.X,
-		agentPos.Y,
-		instance.GetSelfSacrificeWillingness(),
-		agentAttach.Anxiety,
-		agentAttach.Avoidance,
-		instance.GetWorldviewBinary(),
-		"1",
-		//instance.GetWorldviewValidation(),
-		//instance.GetRelationshipValidation(),
+// func (mi *ExtendedAgent) RecordAgentStatus(instance infra.IExtendedAgent) gameRecorder.AgentRecord {
+// 	//fmt.Printf("[DEBUG] Fetching Age in RecordAgentStatus: %d for Agent %v\n", instance.GetAge(), instance.GetID())
+// 	agentPos := instance.GetPosition()
+// 	agentAttach := instance.GetAttachment()
+// 	record := gameRecorder.NewAgentRecord(
+// 		instance.GetID(),
+// 		instance.GetAge(),
+// 		agentPos.X,
+// 		agentPos.Y,
+// 		instance.GetSelfSacrificeWillingness(),
+// 		agentAttach.Anxiety,
+// 		agentAttach.Avoidance,
+// 		instance.GetWorldviewBinary(),
+// 		"1",
+// 		//instance.GetWorldviewValidation(),
+// 		//instance.GetRelationshipValidation(),
 
-	)
-	return record
-}
+// 	)
+// 	return record
+// }
+
 func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameRecorder.JSONAgentRecord {
 	return gameRecorder.JSONAgentRecord{
 		ID:                  ea.GetID().String(),

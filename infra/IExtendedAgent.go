@@ -65,7 +65,7 @@ type IExtendedAgent interface {
 	AgentInitialised()
 
 	// Data Recording
-	RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
+	//RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
 	RecordAgentJSON(instance IExtendedAgent) gameRecorder.JSONAgentRecord
 
 	// Updaters

@@ -4,16 +4,15 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"os"
+	//"io"
+	//"log"
+	//"os"
 	"time"
 
 	"math/rand"
 
 	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 	agents "github.com/aaashah/TMT_Attachment/agents"
-	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	tmtServer "github.com/aaashah/TMT_Attachment/server"
 	"github.com/google/uuid"
@@ -22,28 +21,28 @@ import (
 // "go run ."
 func main() {
 	// Create logs directory if it doesn't exist
-	if err := os.MkdirAll("logs", 0755); err != nil {
-		log.Fatalf("Failed to create logs directory: %v", err)
-	}
+	// if err := os.MkdirAll("logs", 0755); err != nil {
+	// 	log.Fatalf("Failed to create logs directory: %v", err)
+	// }
 
 	// Create log file with timestamp in name
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	logFile, err := os.OpenFile("logs/log_"+timestamp+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Failed to open log file: %v", err)
-	}
-	defer logFile.Close()
+	// timestamp := time.Now().Format("2006-01-02_15-04-05")
+	// logFile, err := os.OpenFile("logs/log_"+timestamp+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	log.Fatalf("Failed to open log file: %v", err)
+	// }
+	// defer logFile.Close()
 
-	// Create a MultiWriter to write to both the log file and stdout
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	// // Create a MultiWriter to write to both the log file and stdout
+	// multiWriter := io.MultiWriter(os.Stdout, logFile)
 
-	// Set log output to multiWriter
-	log.SetOutput(multiWriter)
+	// // Set log output to multiWriter
+	// log.SetOutput(multiWriter)
 
-	// Remove date and time prefix from log entries
-	log.SetFlags(0)
+	// // Remove date and time prefix from log entries
+	// log.SetFlags(0)
 
-	log.Println("main function started.")
+	// log.Println("main function started.")
 	//rand.Seed(time.Now().UnixNano()) // Seed random number generator
 	// Other initialization
 
@@ -100,7 +99,7 @@ func main() {
 	//serv.InitialiseRandomNetwork(connectionProbability)
 
 	// Initialize data recorder
-	serv.DataRecorder = gameRecorder.CreateRecorder()
+	//serv.DataRecorder = gameRecorder.CreateRecorder()
 
 	// Start server
 	fmt.Println("Starting server")
@@ -110,7 +109,7 @@ func main() {
 	//serv.LogAgentStatus()
 
 	// record data
-	serv.DataRecorder.GamePlaybackSummary()
-	gameRecorder.ExportToCSV(serv.DataRecorder, "visualisation_output/csv_data")
+	//serv.DataRecorder.GamePlaybackSummary()
+	//gameRecorder.ExportToCSV(serv.DataRecorder, "visualisation_output/csv_data")
 	//gameRecorder.CreateGridHTML(serv.DataRecorder, "visualisation_output/csv_data")
 }

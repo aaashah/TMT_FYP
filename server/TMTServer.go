@@ -30,7 +30,7 @@ type TMTServer struct {
 	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
 
 	// data recorder
-	DataRecorder *gameRecorder.ServerDataRecorder
+	//DataRecorder *gameRecorder.ServerDataRecorder
 	JSONTurnLogs []gameRecorder.TurnJSONRecord
 
 	//server internal state
@@ -156,7 +156,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	// Ensure DataRecorder starts recording a new iteration
-	tserv.DataRecorder.RecordNewIteration()
+	//tserv.DataRecorder.RecordNewIteration()
 }
 
 func getStep(current, target int) int {
@@ -217,7 +217,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 
 	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.GetAgentMap()))
-	tserv.RecordTurnInfo()
+	//tserv.RecordTurnInfo()
 	tserv.RecordTurnJSON()
 
 }
@@ -580,58 +580,58 @@ func (tserv *TMTServer) MixWorldviews(wv1, wv2 uint32) uint32 {
 }
 
 // ---------------------- Recording Turn Data ----------------------
-func (tserv *TMTServer) RecordTurnInfo() {
-	// Create a new infra record
-	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
+// func (tserv *TMTServer) RecordTurnInfo() {
+// 	// Create a new infra record
+// 	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
 
-	// Record agent positions
-	for _, agent := range tserv.GetAgentMap() {
-		pos := agent.GetPosition()
-		newInfraRecord.AgentPositions[[2]int{pos.X, pos.Y}] = true
-	}
+// 	// Record agent positions
+// 	for _, agent := range tserv.GetAgentMap() {
+// 		pos := agent.GetPosition()
+// 		newInfraRecord.AgentPositions[[2]int{pos.X, pos.Y}] = true
+// 	}
 
-	// Record tombstone locations
-	for _, tombstonePos := range tserv.Grid.Tombstones {
-		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
-	}
+// 	// Record tombstone locations
+// 	for _, tombstonePos := range tserv.Grid.Tombstones {
+// 		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
+// 	}
 
-	for _, templePos := range tserv.Grid.Temples {
-		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
-	}
+// 	for _, templePos := range tserv.Grid.Temples {
+// 		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
+// 	}
 
-	// Collect agent records
-	agentRecords := []gameRecorder.AgentRecord{}
-	for _, agent := range tserv.GetAgentMap() {
-		newAgentRecord := agent.RecordAgentStatus(agent)
-		newAgentRecord.IsAlive = true
-		newAgentRecord.TurnNumber = tserv.turn
-		newAgentRecord.IterationNumber = tserv.iteration
-		// Explicitly fetch the latest age instead of using stale data
-		newAgentRecord.AgentAge = agent.GetAge()
-		//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-		agentRecords = append(agentRecords, newAgentRecord)
-	}
+// 	// Collect agent records
+// 	agentRecords := []gameRecorder.AgentRecord{}
+// 	for _, agent := range tserv.GetAgentMap() {
+// 		newAgentRecord := agent.RecordAgentStatus(agent)
+// 		newAgentRecord.IsAlive = true
+// 		newAgentRecord.TurnNumber = tserv.turn
+// 		newAgentRecord.IterationNumber = tserv.iteration
+// 		// Explicitly fetch the latest age instead of using stale data
+// 		newAgentRecord.AgentAge = agent.GetAge()
+// 		//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
+// 		agentRecords = append(agentRecords, newAgentRecord)
+// 	}
 
-	// Record eliminated agents
-	for _, agent := range tserv.GetAgentMap() {
-		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive {
-			newAgentRecord := agent.RecordAgentStatus(agent)
-			newAgentRecord.IsAlive = false
-			newAgentRecord.TurnNumber = tserv.turn
-			newAgentRecord.IterationNumber = tserv.iteration
-			//newAgentRecord.Died = agent.GetMortality()
-			newAgentRecord.SpecialNote = "Eliminated"
+// 	// Record eliminated agents
+// 	for _, agent := range tserv.GetAgentMap() {
+// 		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive {
+// 			newAgentRecord := agent.RecordAgentStatus(agent)
+// 			newAgentRecord.IsAlive = false
+// 			newAgentRecord.TurnNumber = tserv.turn
+// 			newAgentRecord.IterationNumber = tserv.iteration
+// 			//newAgentRecord.Died = agent.GetMortality()
+// 			newAgentRecord.SpecialNote = "Eliminated"
 
-			// Explicitly store the last known age before elimination
-			newAgentRecord.AgentAge = agent.GetAge()
-			//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-			agentRecords = append(agentRecords, newAgentRecord)
-		}
-	}
+// 			// Explicitly store the last known age before elimination
+// 			newAgentRecord.AgentAge = agent.GetAge()
+// 			//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
+// 			agentRecords = append(agentRecords, newAgentRecord)
+// 		}
+// 	}
 
-	// Save the recorded turn in the data recorder
-	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
-}
+// 	// Save the recorded turn in the data recorder
+// 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
+// }
 
 
 // func (tserv *TMTServer) RecordTurnJSON() {
