@@ -22,14 +22,13 @@ import (
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
 
-	//agentInfoList []infra.IExtendedAgent
-	//mu     sync.Mutex
-
 	Grid        *infra.Grid
 	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
 	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
 	totalRequiredEliminations int
 	totalVoluntaryEliminations int
+	LastEliminatedAgents []uuid.UUID
+	LastSelfSacrificedAgents []uuid.UUID
 
 	// data recorder
 	//DataRecorder *gameRecorder.ServerDataRecorder
@@ -38,9 +37,6 @@ type TMTServer struct {
 	//server internal state
 	turn      int
 	iteration int
-	//allAgentsDead bool
-	//gameRunner infra.GameRunner
-
 }
 
 func init() {
@@ -355,6 +351,8 @@ func (tserv *TMTServer) ApplyClustering() {
 
 func (tserv *TMTServer) ApplyElimination(turn int) {
 	agentsToRemove := make(map[uuid.UUID]bool)
+	tserv.LastEliminatedAgents = nil
+	tserv.LastSelfSacrificedAgents = nil
 
 	
 	tserv.updateAgentMortality()
@@ -364,6 +362,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			pos := agent.GetPosition()
 			tserv.Grid.PlaceTombstone(pos.X, pos.Y)
 			agentsToRemove[agent.GetID()] = true
+			tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent.GetID())
 		}
 		
 	}
@@ -380,7 +379,7 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 	}
 	v := len(volunteers)
-	n := 1 // number of volunteers to eliminate
+	n := 2 // number of volunteers to eliminate
 
 	if v >= n {
 		//randomly select n volunteers to eliminate
@@ -391,6 +390,9 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			tserv.Grid.PlaceTemple(pos.X, pos.Y)
 			agent.IncrementHeroism()
 			agentsToRemove[agent.GetID()] = true
+			fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
+			tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent.GetID())
+			tserv.LastSelfSacrificedAgents = append(tserv.LastSelfSacrificedAgents, agent.GetID())
 		}
 	} else {
 		//eliminate all volunteers plus 2(n-v) random non-volunteers
@@ -399,6 +401,9 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			tserv.Grid.PlaceTemple(pos.X, pos.Y)
 			agent.IncrementHeroism()
 			agentsToRemove[agent.GetID()] = true
+			fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
+			tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent.GetID())
+			tserv.LastSelfSacrificedAgents = append(tserv.LastSelfSacrificedAgents, agent.GetID())
 		}
 		// Pick 2(n-v) random non-volunteers
 		numToKill := 2 * (n - v)
@@ -410,6 +415,8 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 			pos := agent.GetPosition()
 			tserv.Grid.PlaceTombstone(pos.X, pos.Y)
 			agentsToRemove[agent.GetID()] = true
+			fmt.Printf("Agent %v has been eliminated (non-voluntary)\n", agent.GetID())
+			tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent.GetID())
 		}
 	}
 	
@@ -605,98 +612,6 @@ func (tserv *TMTServer) MixWorldviews(wv1, wv2 uint32) uint32 {
 }
 
 // ---------------------- Recording Turn Data ----------------------
-// func (tserv *TMTServer) RecordTurnInfo() {
-// 	// Create a new infra record
-// 	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
-
-// 	// Record agent positions
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		pos := agent.GetPosition()
-// 		newInfraRecord.AgentPositions[[2]int{pos.X, pos.Y}] = true
-// 	}
-
-// 	// Record tombstone locations
-// 	for _, tombstonePos := range tserv.Grid.Tombstones {
-// 		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
-// 	}
-
-// 	for _, templePos := range tserv.Grid.Temples {
-// 		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
-// 	}
-
-// 	// Collect agent records
-// 	agentRecords := []gameRecorder.AgentRecord{}
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		newAgentRecord := agent.RecordAgentStatus(agent)
-// 		newAgentRecord.IsAlive = true
-// 		newAgentRecord.TurnNumber = tserv.turn
-// 		newAgentRecord.IterationNumber = tserv.iteration
-// 		// Explicitly fetch the latest age instead of using stale data
-// 		newAgentRecord.AgentAge = agent.GetAge()
-// 		//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-// 		agentRecords = append(agentRecords, newAgentRecord)
-// 	}
-
-// 	// Record eliminated agents
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive {
-// 			newAgentRecord := agent.RecordAgentStatus(agent)
-// 			newAgentRecord.IsAlive = false
-// 			newAgentRecord.TurnNumber = tserv.turn
-// 			newAgentRecord.IterationNumber = tserv.iteration
-// 			//newAgentRecord.Died = agent.GetMortality()
-// 			newAgentRecord.SpecialNote = "Eliminated"
-
-// 			// Explicitly store the last known age before elimination
-// 			newAgentRecord.AgentAge = agent.GetAge()
-// 			//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-// 			agentRecords = append(agentRecords, newAgentRecord)
-// 		}
-// 	}
-
-// 	// Save the recorded turn in the data recorder
-// 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
-// }
-
-
-// func (tserv *TMTServer) RecordTurnJSON() {
-// 	// Prepare container for JSON agent records
-
-// 	var allAgentRecords []gameRecorder.JSONAgentRecord
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		record := agent.RecordAgentJSON(agent)
-// 		record.IsAlive = true
-// 		allAgentRecords = append(allAgentRecords, record)
-// 	}
-
-// 	// Tombstone + Temple Positions
-// 	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
-// 	for i, pos := range tserv.Grid.Tombstones {
-// 		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
-// 	}
-
-// 	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
-// 	for i, pos := range tserv.Grid.Temples {
-// 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
-// 	}
-
-// 	// Collect final log
-// 	jsonLog := gameRecorder.TurnJSONRecord{
-// 		Iteration:            tserv.iteration,
-// 		Turn:                 tserv.turn,
-// 		NumberOfAgents:       len(tserv.GetAgentMap()),
-// 		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
-// 		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
-// 		TombstoneLocations:   tombstonePositions,
-// 		TempleLocations:      templePositions,
-// 	}
-
-// 	// Write to file
-// 	err := gameRecorder.WriteTurnJSONRecord("JSONlogs", jsonLog)
-// 	if err != nil {
-// 		fmt.Printf("Error writing JSON log: %v\n", err)
-// 	}
-// }
 
 func (tserv *TMTServer) RecordTurnJSON() {
 	var allAgentRecords []gameRecorder.JSONAgentRecord
@@ -721,8 +636,8 @@ func (tserv *TMTServer) RecordTurnJSON() {
 		Turn:                 tserv.turn,
 		Agents:			      allAgentRecords,
 		NumberOfAgents:       len(tserv.GetAgentMap()),
-		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
-		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
+		EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminatedAgents),
+		SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificedAgents),
 		TombstoneLocations:   tombstonePositions,
 		TempleLocations:      templePositions,
 	}

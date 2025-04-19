@@ -20,6 +20,7 @@ func CreateSecureAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UU
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.0, 0.5),
+		Type:      "Secure",
 	}
 	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{

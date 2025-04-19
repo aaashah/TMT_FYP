@@ -20,6 +20,7 @@ func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 type Attachment struct {
 	Anxiety   float32
 	Avoidance float32
+	Type	  string
 }
 
 type Telomere struct {
