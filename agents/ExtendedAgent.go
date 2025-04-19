@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math"
 	"math/bits"
 	"math/rand"
@@ -505,21 +504,23 @@ func (ea *ExtendedAgent) CreateReplyMessage() *infra.ReplyMessage {
 }
 
 func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMessage) {
-	fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
-	// not receiving??
+	//fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
 	if rand.Float32() < ea.PTW.ReplyProb {
-		reply := infra.ReplyMessage{BaseMessage: ea.CreateBaseMessage()}
-		ea.SendMessage(&reply, msg.Sender)
+		reply := ea.CreateReplyMessage()
+		//ea.SendMessage(reply, msg.Sender)
+		ea.SendSynchronousMessage(reply, msg.Sender)
 		//fmt.Printf("Agent %v sending reply message to %v\n", ea.GetID(), msg.Sender)
 
 		//then update alpha
-		//ea.UpdateEsteem(msg.Sender, true, ea.PTW.Alpha, ea.PTW.Beta)
+		//fmt.Printf("Agent esteem before: %f\n", ea.network[msg.Sender])
+		ea.UpdateEsteem(msg.Sender, true)
+		//fmt.Printf("Agent esteem after: %f\n", ea.network[msg.Sender])
 	}
 }
 
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 	// update alpha
-	//ea.UpdateEsteem(msg.Sender, true, ea.PTW.Alpha, ea.PTW.Beta)
+	ea.UpdateEsteem(msg.Sender, true)
 	ea.SignalMessagingComplete()
 }
 

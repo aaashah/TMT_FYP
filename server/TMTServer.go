@@ -496,7 +496,8 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 				}
 				// send wellbeing check message
 				msg := sender.CreateWellbeingCheckMessage()
-				sender.SendMessage(msg, receiver.GetID())
+				//sender.SendMessage(msg, receiver.GetID())
+				sender.SendSynchronousMessage(msg, receiver.GetID())
 				//fmt.Printf("Agent %v sent wellbeing check to %v\n", sender.GetID(), receiverID)
 
 				//make agent as getting checked on
