@@ -28,6 +28,8 @@ type TMTServer struct {
 	Grid        *infra.Grid
 	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
 	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
+	totalRequiredEliminations int
+	totalVoluntaryEliminations int
 
 	// data recorder
 	//DataRecorder *gameRecorder.ServerDataRecorder
@@ -222,7 +224,16 @@ func (tserv *TMTServer) RunEndOfIteration(int) {
 	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
 	tserv.WriteIterationJSONLog()
 	// spawn new agents
-	tserv.SpawnNewAgents()
+	v := tserv.totalVoluntaryEliminations
+	n := tserv.totalRequiredEliminations
+
+	var m int
+	if v == n {
+		m = n
+	} else {
+		m = n - int(math.Abs(float64(v-n)))
+	}
+	tserv.SpawnNewAgents(m)
 }
 
 // ---------------------- Helper Functions ----------------------
@@ -345,63 +356,63 @@ func (tserv *TMTServer) ApplyClustering() {
 func (tserv *TMTServer) ApplyElimination(turn int) {
 	agentsToRemove := make(map[uuid.UUID]bool)
 
-	if turn == 0 {
-		tserv.updateAgentMortality()
-		for _, agent := range tserv.GetAgentMap() {
-			if !agent.IsAlive() {
-				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[agent.GetID()] = true
-			}
+	
+	tserv.updateAgentMortality()
+	for _, agent := range tserv.GetAgentMap() {
+		if !agent.IsAlive() {
+			fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
+			pos := agent.GetPosition()
+			tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+			agentsToRemove[agent.GetID()] = true
 		}
-	} else {
-		//allAgents := tserv.GetAgentMap()
-		var volunteers []infra.IExtendedAgent
-		var nonVolunteers []infra.IExtendedAgent
+		
+	}
+	//allAgents := tserv.GetAgentMap()
+	var volunteers []infra.IExtendedAgent
+	var nonVolunteers []infra.IExtendedAgent
 
-		// Separate volunteers and non-volunteers
-		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-				volunteers = append(volunteers, agent)
-			} else {
-				nonVolunteers = append(nonVolunteers, agent)
-			}
-		}
-		v := len(volunteers)
-		n := 1 // number of volunteers to eliminate
-
-		if v >= n {
-			//randomly select n volunteers to eliminate
-			rand.Shuffle(v, func(i, j int) { volunteers[i], volunteers[j] = volunteers[j], volunteers[i] })
-			for i := 0; i < n; i++ {
-				agent := volunteers[i]
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTemple(pos.X, pos.Y)
-				agent.IncrementHeroism()
-				agentsToRemove[agent.GetID()] = true
-			}
+	// Separate volunteers and non-volunteers
+	for _, agent := range tserv.GetAgentMap() {
+		if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
+			volunteers = append(volunteers, agent)
 		} else {
-			//eliminate all volunteers plus 2(n-v) random non-volunteers
-			for _, agent := range volunteers {
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTemple(pos.X, pos.Y)
-				agent.IncrementHeroism()
-				agentsToRemove[agent.GetID()] = true
-			}
-			// Pick 2(n-v) random non-volunteers
-			numToKill := 2 * (n - v)
-			rand.Shuffle(len(nonVolunteers), func(i, j int) {
-				nonVolunteers[i], nonVolunteers[j] = nonVolunteers[j], nonVolunteers[i]
-			})
-			for i := 0; i < numToKill && i < len(nonVolunteers); i++ {
-				agent := nonVolunteers[i]
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[agent.GetID()] = true
-			}
+			nonVolunteers = append(nonVolunteers, agent)
 		}
 	}
+	v := len(volunteers)
+	n := 1 // number of volunteers to eliminate
+
+	if v >= n {
+		//randomly select n volunteers to eliminate
+		rand.Shuffle(v, func(i, j int) { volunteers[i], volunteers[j] = volunteers[j], volunteers[i] })
+		for i := 0; i < n; i++ {
+			agent := volunteers[i]
+			pos := agent.GetPosition()
+			tserv.Grid.PlaceTemple(pos.X, pos.Y)
+			agent.IncrementHeroism()
+			agentsToRemove[agent.GetID()] = true
+		}
+	} else {
+		//eliminate all volunteers plus 2(n-v) random non-volunteers
+		for _, agent := range volunteers {
+			pos := agent.GetPosition()
+			tserv.Grid.PlaceTemple(pos.X, pos.Y)
+			agent.IncrementHeroism()
+			agentsToRemove[agent.GetID()] = true
+		}
+		// Pick 2(n-v) random non-volunteers
+		numToKill := 2 * (n - v)
+		rand.Shuffle(len(nonVolunteers), func(i, j int) {
+			nonVolunteers[i], nonVolunteers[j] = nonVolunteers[j], nonVolunteers[i]
+		})
+		for i := 0; i < numToKill && i < len(nonVolunteers); i++ {
+			agent := nonVolunteers[i]
+			pos := agent.GetPosition()
+			tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+			agentsToRemove[agent.GetID()] = true
+		}
+	}
+	
 
 	// also track eliminations per cluster and in network
 	clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
@@ -444,7 +455,8 @@ func (tserv *TMTServer) ApplyElimination(turn int) {
 		}
 		agent.IncrementNetworkEliminations(networkEliminationCount)
 	}
-
+	tserv.totalRequiredEliminations += n
+	tserv.totalVoluntaryEliminations += v
 }
 
 func (tserv *TMTServer) updateAgentMortality() {
@@ -533,55 +545,57 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 	}
 }
 
-func (tserv *TMTServer) SpawnNewAgents() {
-	agentMap := tserv.GetAgentMap()
-
-	parentIDs := make([]uuid.UUID, 0, len(agentMap))
-	for id := range agentMap {
-		parentIDs = append(parentIDs, id)
+func (tserv *TMTServer) SpawnNewAgents(m int) {
+	if m <= 0 {
+		return // no agents to spawn
 	}
 
-	rand.Shuffle(len(parentIDs), func(i, j int) { parentIDs[i], parentIDs[j] = parentIDs[j], parentIDs[i] })
-
-	for i := 0; i+1 < len(parentIDs); i += 2 {
-		parent1, _ := tserv.GetAgentByID(parentIDs[i])
-		parent2, _ := tserv.GetAgentByID(parentIDs[i+1])
-
-		if !parent1.IsAlive() || !parent2.IsAlive() {
-			continue
+	var parentPool []infra.IExtendedAgent
+	for _, agent := range tserv.GetAgentMap() {
+		if agent.IsAlive() {
+			parentPool = append(parentPool, agent)
 		}
+	}
+
+	if len(parentPool) < 2 {
+		fmt.Println("Not enough parents available to spawn new agents.")
+		return
+	}
+
+	rand.Shuffle(len(parentPool), func(i, j int) {parentPool[i], parentPool[j] = parentPool[j], parentPool[i]})
+
+	spawned := 0
+
+	for i := 0; i+1 < len(parentPool) && spawned < m; i += 2 {
+		parent1 := parentPool[i]
+		parent2 := parentPool[i+1]
 
 		newWorldview := tserv.MixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
-			randVal := rand.Float32()
+		
+		randVal := rand.Float32()
+		var newAgent infra.IExtendedAgent
+		switch {
+		case randVal < 0.25:
+			newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		case randVal < 0.5:
+			newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		case randVal < 0.75:
+			newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		default:
+			newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		}
 
-			var newAgent infra.IExtendedAgent
+		parent1.AddDescendant(newAgent.GetID())
+		parent2.AddDescendant(newAgent.GetID())
 
-			switch {
-			case randVal < 0.25:
-				newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			case randVal < 0.5:
-				newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			case randVal < 0.75:
-				newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			default:
-				newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			}
+		//add new agent to server
+		tserv.AddAgent(newAgent)
+		//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
 
-			//create new agent
-			//newAgent := agents.CreateSecureAgent(tserv, tserv.Grid)
-
-			//newAgent.SetWorldviewBinary(newWorldview)
-			//newAgent.SetParents(parent1.GetID(), parent2.GetID())
-			parent1.AddDescendant(newAgent.GetID())
-			parent2.AddDescendant(newAgent.GetID())
-
-			//add new agent to server
-			tserv.AddAgent(newAgent)
-			//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
-
-			// add relationships in social network
-			tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-			tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+		// add relationships in social network
+		tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
+		tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+		spawned++
 	}
 }
 
