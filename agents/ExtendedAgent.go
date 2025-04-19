@@ -253,14 +253,20 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 		return 0 // no memorials
 	}
 
-	//numerator - distance from self to all memorials
-	var selfMemorialDistanceSum float64
+	//numerator - inverse proximity from self to all memorials
+	selfProx := make(infra.ProximityArray, 0, len(memorials))
+	//var selfMemorialDistanceSum float64
 	for _, mem := range memorials {
-		selfMemorialDistanceSum += selfPosition.Dist(mem)
+		//selfMemorialDistanceSum += selfPosition.Dist(mem)
+		dist := selfPosition.Dist(mem)
+		if dist > 0 {
+			selfProx = append(selfProx, float32(dist))
+		}
 	}
 
 	//denominator- distance from memorials and distance from cluster agents to memorials
-	denominator := selfMemorialDistanceSum
+	otherProx := make(infra.ProximityArray, 0)
+	//denominator := selfMemorialDistanceSum
 	for _, otherAgent := range agentMap {
 		if otherAgent.GetID() == ea.GetID() {
 			continue // skip self
@@ -268,12 +274,23 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 		if otherAgent.GetClusterID() == clusterID {
 			otherPosition := otherAgent.GetPosition()
 			for _, mem := range memorials {
-				denominator += otherPosition.Dist(mem)
+				//denominator += otherPosition.Dist(mem)
+				dist := otherPosition.Dist(mem)
+				if dist > 0 {
+					otherProx = append(otherProx, float32(dist))
+				}
 			}
 		}
 	}
 
-	return float32(selfMemorialDistanceSum / denominator)
+	totalProx := append([]float32{}, selfProx...)
+	totalProx = append(totalProx, otherProx...)
+	relativeProx := infra.ProximityArray(totalProx).MapToRelativeProximities()
+	sum := float32(0)
+	for i := 0; i < len(selfProx); i++ {
+		sum += relativeProx[i]
+	}
+	return sum
 }
 
 func worldviewAlignment(a, b uint32) float32 {
