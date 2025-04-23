@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math"
 	"math/bits"
 	"math/rand"
@@ -16,27 +15,27 @@ import (
 type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	Server infra.IServer
-	
+
 	Telomere *infra.Telomere
 
 	Position       infra.PositionVector
 	MovementPolicy string // Defines how movement is determined
 
 	//History Tracking
-	ClusterID                   int
+	ClusterID int
 	//ClusterHistory			    []int // the cluster ID the agent belonged to at each turn
-	ClusterSizeHistory		    []int // the size of the cluster at each turn
-	NetworkSizeHistory		    []int // the size of the network at each turn
+	ClusterSizeHistory          []int // the size of the cluster at each turn
+	NetworkSizeHistory          []int // the size of the network at each turn
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
 	Heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
-	network      map[uuid.UUID]float32 // stores relationship strengths
+	network       map[uuid.UUID]float32 // stores relationship strengths
 	networkLength int
-	kinshipGroup []uuid.UUID           // Descendants
-	parent1      uuid.UUID
-	parent2      uuid.UUID
+	kinshipGroup  []uuid.UUID // Descendants
+	parent1       uuid.UUID
+	parent2       uuid.UUID
 
 	Attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
 
@@ -68,18 +67,18 @@ func CreateExtendedAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.
 	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
 	return &ExtendedAgent{
-		BaseAgent:     agent.CreateBaseAgent(server),
-		Server:        server,                                                               // Type assert the server functions to IServer interface
-		Attachment:    infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
-		Heroism:       0,                                                                    //start at 0 increment if chose to self-sacrifice
-		network:       make(map[uuid.UUID]float32),
-		parent1: 	   parent1ID,
-		parent2: 	   parent2ID,
-		Telomere:      infra.NewTelomere(rand.Intn(50), A, B, 0.5),
-		worldview:     worldview,
-		Ysterofimia:   infra.NewYsterofimia(),
-		AgentIsAlive:  true,
-		Position:      infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
+		BaseAgent:    agent.CreateBaseAgent(server),
+		Server:       server,                                                               // Type assert the server functions to IServer interface
+		Attachment:   infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
+		Heroism:      0,                                                                    //start at 0 increment if chose to self-sacrifice
+		network:      make(map[uuid.UUID]float32),
+		parent1:      parent1ID,
+		parent2:      parent2ID,
+		Telomere:     infra.NewTelomere(rand.Intn(50), A, B, 0.5),
+		worldview:    worldview,
+		Ysterofimia:  infra.NewYsterofimia(),
+		AgentIsAlive: true,
+		Position:     infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
 	}
 }
 
@@ -462,7 +461,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 	//w5, w6, w7 := float32(0.25), float32(0.25), float32(0.5) // tweak
 
 	cpr := ea.GetCPR()
-	npr := ea.GetNPR() // compute NPR
+	npr := ea.GetNPR()                                      // compute NPR
 	ysterofimia := ea.GetYsterofimia().ComputeYsterofimia() // compute ysterofimia
 	//fmt.Printf("Agent %v WV Scores: CPR=%.2f, NPR=%.2f, Ysterofimia=%.2f\n", ea.GetID(), cpr, npr, ysterofimia)
 	//ea.WorldviewValidation = infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
@@ -482,7 +481,6 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }
 
-
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	threshold := float32(0.15) //random threshold
@@ -492,7 +490,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
+	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {
@@ -504,7 +502,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	}
 
 	if sum > 0 {
-		fmt.Printf("✅ Agent %v decided to SELF-SACRIFICE\n", ea.GetID())
+		// fmt.Printf("✅ Agent %v decided to SELF-SACRIFICE\n", ea.GetID())
 		return infra.SELF_SACRIFICE // Self-sacrifice
 	} else if sum < 0 {
 		return infra.NOT_SELF_SACRIFICE // Reject self-sacrifice
@@ -543,7 +541,6 @@ func (ea *ExtendedAgent) CreateWellbeingCheckMessage() *infra.WellbeingCheckMess
 	}
 }
 
-
 func (ea *ExtendedAgent) CreateReplyMessage() *infra.ReplyMessage {
 	return &infra.ReplyMessage{
 		BaseMessage: ea.CreateBaseMessage(),
@@ -571,21 +568,20 @@ func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 	ea.SignalMessagingComplete()
 }
 
-
 // ----------------------- Data Recording Functions -----------------------
 
 func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameRecorder.JSONAgentRecord {
 	return gameRecorder.JSONAgentRecord{
-		ID:                     ea.GetID().String(),
-		IsAlive:                ea.IsAlive(),
-		Age:                    ea.GetAge(),
-		AttachmentStyle:        ea.Attachment.Type,
-		AttachmentAnxiety:      ea.Attachment.Anxiety,
-		AttachmentAvoidance:    ea.Attachment.Avoidance,
-		ClusterID:              ea.ClusterID,
-		Position:               gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
-		Worldview:              ea.worldview,
-		Heroism:                ea.Heroism,
+		ID:                  ea.GetID().String(),
+		IsAlive:             ea.IsAlive(),
+		Age:                 ea.GetAge(),
+		AttachmentStyle:     ea.Attachment.Type,
+		AttachmentAnxiety:   ea.Attachment.Anxiety,
+		AttachmentAvoidance: ea.Attachment.Avoidance,
+		ClusterID:           ea.ClusterID,
+		Position:            gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
+		Worldview:           ea.worldview,
+		Heroism:             ea.Heroism,
 		//MortalitySalience:      ea.MortalitySalience,
 		//WorldviewValidation:    ea.WorldviewValidation,
 		//RelationshipValidation: ea.RelationshipValidation,

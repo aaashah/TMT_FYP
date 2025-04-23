@@ -20,16 +20,32 @@ func (tserv *TMTServer) updateAgentMortality() {
 	}
 }
 
+func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
+	pos := agent.GetPosition()
+	tserv.Grid.PlaceTemple(pos.X, pos.Y)
+	agent.IncrementHeroism()
+	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
+	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
+	// fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
+}
+
+func (tserv *TMTServer) involuntarilySacrificeAgent(agent infra.IExtendedAgent) {
+	pos := agent.GetPosition()
+	tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
+	// fmt.Printf("Agent %v has been eliminated (non-voluntary)\n", agent.GetID())
+}
+
 func (tserv *TMTServer) getNaturalEliminations() map[uuid.UUID]infra.IExtendedAgent {
 	naturalElims := make(map[uuid.UUID]infra.IExtendedAgent)
 	for agentID, agent := range tserv.GetAgentMap() {
 		if !agent.IsAlive() {
-			fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
-			pos := agent.GetPosition()
-			tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-			// naturalElims = append(naturalElims, agent)
+			// fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
 			naturalElims[agentID] = agent
-			tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent)
+			tserv.involuntarilySacrificeAgent(agent)
+			// pos := agent.GetPosition()
+			// tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+			// tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent)
 		}
 	}
 	return naturalElims
@@ -41,6 +57,10 @@ func (tserv *TMTServer) stratifyVolunteers() ([]infra.IExtendedAgent, []infra.IE
 
 	// Separate volunteers and non-volunteers
 	for _, agent := range tserv.GetAgentMap() {
+		// don't allow naturally-dead agents to sacrifice
+		if !agent.IsAlive() {
+			continue
+		}
 		// check if agent volunteered
 		if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
 			volunteers = append(volunteers, agent)
@@ -51,27 +71,13 @@ func (tserv *TMTServer) stratifyVolunteers() ([]infra.IExtendedAgent, []infra.IE
 	return volunteers, nonVolunteers
 }
 
-func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
-	pos := agent.GetPosition()
-	tserv.Grid.PlaceTemple(pos.X, pos.Y)
-	agent.IncrementHeroism()
-	tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent)
-	tserv.LastSelfSacrificedAgents = append(tserv.LastSelfSacrificedAgents, agent)
-	fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
-}
-
-func (tserv *TMTServer) involuntarilySacrificeAgent(agent infra.IExtendedAgent) {
-	pos := agent.GetPosition()
-	tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-	tserv.LastEliminatedAgents = append(tserv.LastEliminatedAgents, agent)
-	fmt.Printf("Agent %v has been eliminated (non-voluntary)\n", agent.GetID())
-}
-
 func (tserv *TMTServer) getSacrificialEliminations(volunteers, nonVolunteers []infra.IExtendedAgent) map[uuid.UUID]infra.IExtendedAgent {
 	sacrificialElims := make(map[uuid.UUID]infra.IExtendedAgent)
 	totalAgents := float64(len(tserv.GetAgentMap()))
 	neededVolunteers := int(tserv.neededProportionEliminations * totalAgents)
 	actualVolunteers := len(volunteers)
+
+	fmt.Printf("VOLUNTEER STATS: %d NEEDED, %d GOT\n", neededVolunteers, actualVolunteers)
 
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate
@@ -96,6 +102,8 @@ func (tserv *TMTServer) getSacrificialEliminations(volunteers, nonVolunteers []i
 		rand.Shuffle(numNonVol, func(i, j int) {
 			nonVolunteers[i], nonVolunteers[j] = nonVolunteers[j], nonVolunteers[i]
 		})
+
+		fmt.Printf("FUCKED IT: WE'RE ELIMINATING: %d\n", min(numNonVol, 2*(neededVolunteers-actualVolunteers)))
 
 		for i := range min(numNonVol, 2*(neededVolunteers-actualVolunteers)) {
 			agent := nonVolunteers[i]
@@ -130,8 +138,8 @@ func updateAgentYsterofimia(agent infra.IExtendedAgent, agentsToRemove map[uuid.
 }
 
 func (tserv *TMTServer) ApplyElimination() {
-	tserv.LastEliminatedAgents = make([]infra.IExtendedAgent, 0)
-	tserv.LastSelfSacrificedAgents = make([]infra.IExtendedAgent, 0)
+	tserv.lastEliminatedAgents = nil
+	tserv.lastSelfSacrificedAgents = nil
 	clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
 	agentsToRemove := make(map[uuid.UUID]infra.IExtendedAgent)
 
@@ -145,11 +153,12 @@ func (tserv *TMTServer) ApplyElimination() {
 	maps.Copy(agentsToRemove, naturalElims)
 	maps.Copy(agentsToRemove, sacrificialElims)
 
+	fmt.Println("AAAGH", len(naturalElims), len(volunteers), len(nonVolunteers), len(sacrificialElims), len(agentsToRemove))
 	// also track eliminations per cluster and in network
-	for agentID, agent := range agentsToRemove {
+	for _, agent := range agentsToRemove {
 		clusterID := agent.GetClusterID()    // get the cluster ID of the agent
 		clusterEliminationCount[clusterID]++ // increment the count for that cluster
-		fmt.Print("Removing agent from server: ", agentID)
+		// fmt.Print("Removing agent from server: ", agentID)
 		tserv.RemoveAgent(agent)
 	}
 
