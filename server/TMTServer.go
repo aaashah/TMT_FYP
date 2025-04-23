@@ -50,8 +50,8 @@ func CreateTMTServer(grid *infra.Grid) *TMTServer {
 		totalVoluntaryEliminations:   0,
 		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
 		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
-		expectedChildren:             0.9,
-		neededProportionEliminations: 1.9,
+		expectedChildren:             1.9,
+		neededProportionEliminations: 0.2,
 		//DataRecorder: gameRecorder.CreateServerDataRecorder(),
 		JSONTurnLogs: make([]gameRecorder.TurnJSONRecord, 0),
 	}
@@ -499,11 +499,11 @@ func (tserv *TMTServer) UpdateProbabilityOfChildren() {
 	roundEliminations := len(tserv.lastSelfSacrificedAgents)
 	totalAgents := len(tserv.GetAgentMap())
 	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
-	alpha := 0.05
+	alpha := 0.2
 	beta := 0.1
 
 	if proportionOfEliminations >= tserv.neededProportionEliminations {
-		tserv.expectedChildren = math.Min(tserv.expectedChildren+alpha*(1-tserv.expectedChildren), 2.1)
+		tserv.expectedChildren = math.Min(tserv.expectedChildren+alpha*(1-tserv.expectedChildren), 2.5)
 	} else {
 		tserv.expectedChildren = math.Max(tserv.expectedChildren-beta*tserv.expectedChildren, 1.5)
 	}

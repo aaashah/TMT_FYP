@@ -60,9 +60,7 @@ func main() {
 	const numAgents int = 40
 	// create and initialise agents
 	agentPopulation := make([]infra.IExtendedAgent, 0)
-	//grid := infra.NewGrid(70, 30) // Create grid
 
-	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
 	parent1ID := uuid.Nil
 	parent2ID := uuid.Nil
 	for i := 0; i < numAgents; i += 4 {
