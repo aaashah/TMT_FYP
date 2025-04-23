@@ -62,6 +62,11 @@ func (t *Telomere) GetProbabilityOfDeath() float32 {
 
 type SocialNetwork map[uuid.UUID]float32
 
+type ClusterEliminations struct {
+    TotalEliminations []int // eliminations in this cluster per turn
+    ClusterSizes      []int // size of this cluster per turn
+}
+
 type Ysterofimia struct {
 	SelfSacrificeCount		    int // number of times agent volunteered self-sacrifices
 	SelfSacrificeEsteems        float32 // total esteems from agents who self-sacrificed

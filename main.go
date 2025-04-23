@@ -7,11 +7,9 @@ import (
 	//"io"
 	//"log"
 	//"os"
-	"time"
 
 	"math/rand"
 
-	baseServer "github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 	agents "github.com/aaashah/TMT_Attachment/agents"
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	tmtServer "github.com/aaashah/TMT_Attachment/server"
@@ -51,23 +49,15 @@ func main() {
 	// agentConfig := agents.AgentConfig{
 	// 	InitSacrificeWillingness: 0.2,
 	// }
-	grid := infra.NewGrid(70, 30) // Create grid
+ 	// Create grid
+	grid := infra.NewGrid(70, 30)
 
-	serv := &tmtServer.TMTServer{
-		BaseServer: baseServer.CreateBaseServer[infra.IExtendedAgent](
-			3,                   //iterations
-			5,                   //turns per iteration
-			50*time.Millisecond, //max duration
-			0,                   //message bandwidth
-		),
-		//ActiveAgents: make(map[uuid.UUID]*agents.ExtendedAgent), // Initialize the activeAgents map
-		Grid: grid,
-	}
+	serv := tmtServer.CreateTMTServer(grid)
 
 	// Set game runner
 	serv.SetGameRunner(serv)
 
-	const numAgents int = 80
+	const numAgents int = 40
 
 	// create and initialise agents
 	agentPopulation := []infra.IExtendedAgent{}

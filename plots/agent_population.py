@@ -22,17 +22,17 @@ for filename in sorted(os.listdir(log_dir)):
 iterations.sort(key=lambda x: (x["Iteration"], x["Turn"]))
 
 # Extract data for plotting
-x = [f"i{entry['Iteration']}_t{entry['Turn']}" for entry in iterations]
-y = [entry["AgentCount"] for entry in iterations]
+rounds = list(range(len(iterations)))
+agent_counts = [entry["AgentCount"] for entry in iterations]
 
 # Plot
-plt.figure(figsize=(12, 5))
-plt.plot(x, y, marker="o", label="Agent Count")
-plt.xticks(rotation=90, fontsize=8)
-plt.xlabel("Iteration_Turn")
+plt.figure(figsize=(14, 5))
+plt.plot(rounds, agent_counts, marker="o", label="Agent Count")
+plt.xticks(ticks=rounds, labels=[str(r) for r in rounds], rotation=90, fontsize=8)
+plt.xlabel("Rounds")
 plt.ylabel("Number of Agents")
 plt.title("Total Agent Population Over Time")
-plt.tight_layout()
 plt.grid(True)
 plt.legend()
+plt.tight_layout()
 plt.show()

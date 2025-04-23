@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"fmt"
 	"math"
 	"math/bits"
 	"math/rand"
@@ -23,12 +24,16 @@ type ExtendedAgent struct {
 
 	//History Tracking
 	ClusterID                   int
+	//ClusterHistory			    []int // the cluster ID the agent belonged to at each turn
+	ClusterSizeHistory		    []int // the size of the cluster at each turn
+	NetworkSizeHistory		    []int // the size of the network at each turn
 	ObservedEliminationsCluster int
 	ObservedEliminationsNetwork int
 	Heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
 	network      map[uuid.UUID]float32 // stores relationship strengths
+	networkLength int
 	kinshipGroup []uuid.UUID           // Descendants
 	parent1      uuid.UUID
 	parent2      uuid.UUID
@@ -47,11 +52,9 @@ type ExtendedAgent struct {
 
 	AgentIsAlive bool // True if agent is alive
 
-	MortalitySalience      float32 //section in ASP module
-	WorldviewValidation    float32 //section in ASP module
-	RelationshipValidation float32 //section in ASP module
-
-	SelfSacrificeWillingness float32 //ASP result
+	//MortalitySalience      float32 //section in ASP module
+	//WorldviewValidation    float32 //section in ASP module
+	//RelationshipValidation float32 //section in ASP module
 }
 
 // type AgentConfig struct {
@@ -168,12 +171,25 @@ func (ea *ExtendedAgent) SetClusterID(id int) {
 	ea.ClusterID = id
 }
 
+func (ea *ExtendedAgent) AppendClusterHistory(clusterID int, clusterSize int) {
+	//ea.ClusterHistory = append(ea.ClusterHistory, clusterID)
+	ea.ClusterSizeHistory = append(ea.ClusterSizeHistory, clusterSize)
+}
+
 func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
 	ea.ObservedEliminationsCluster += n
 }
 
+func (ea *ExtendedAgent) AppendNetworkSizeHistory(networkSize int) {
+	ea.NetworkSizeHistory = append(ea.NetworkSizeHistory, networkSize)
+}
+
 func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
 	ea.ObservedEliminationsNetwork += n
+}
+
+func (ea *ExtendedAgent) SetPreEliminationNetworkLength(length int) {
+	ea.networkLength = length
 }
 
 func (ea *ExtendedAgent) IncrementHeroism() {
@@ -216,6 +232,32 @@ func (ea *ExtendedAgent) MarkAsDead() {
 
 func (ea *ExtendedAgent) IsAlive() bool {
 	return ea.AgentIsAlive
+}
+
+func (ea *ExtendedAgent) ClusterEliminations() float32 {
+	totalExposure := 0
+	for _, size := range ea.ClusterSizeHistory {
+		if size > 1 {
+			totalExposure += size
+		}
+	}
+	if totalExposure == 0 {
+		return 0
+	}
+	return float32(ea.ObservedEliminationsCluster) / float32(totalExposure)
+}
+
+func (ea *ExtendedAgent) NetworkEliminations() float32 {
+	totalExposure := 0
+	for _, size := range ea.NetworkSizeHistory {
+		if size > 1 {
+			totalExposure += size
+		}
+	}
+	if totalExposure == 0 {
+		return 0
+	}
+	return float32(ea.ObservedEliminationsNetwork) / float32(totalExposure)
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
@@ -353,6 +395,7 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 func (ea *ExtendedAgent) GetEstrangement() float32 {
 	kin := ea.kinshipGroup
 	network := ea.network
+	//fmt.Print("Number of kin: ", len(kin), " ")
 
 	if len(kin) == 0 {
 		return 0.0 // no descendants
@@ -383,12 +426,10 @@ func (ea *ExtendedAgent) GetProSocialEsteem() float32 {
 
 func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 	agentMap := ea.Server.GetAgentMap()
+	selfHeroism := ea.GetHeroism()
 	network := ea.network
-	if len(network) == 0 {
-		return 0.0 // No neighbors, no tendency
-	}
 
-	heroismScores := []int{}
+	heroismScores := []int{selfHeroism}
 
 	for id := range network {
 		if agent, ok := agentMap[id]; ok {
@@ -399,7 +440,6 @@ func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 	// Sort heroism scores in ascending order
 	sort.Ints(heroismScores)
 
-	selfHeroism := ea.GetHeroism()
 	index := sort.SearchInts(heroismScores, selfHeroism)
 
 	return float32(index) / float32(len(heroismScores))
@@ -408,10 +448,12 @@ func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	//w1, w2, w3, w4 := float32(0.25), float32(0.25), float32(0.25), float32(0.25) // tweak
 
-	ce := float32(ea.ObservedEliminationsCluster)
-	ne := float32(ea.ObservedEliminationsNetwork)
+	ce := float32(ea.ClusterEliminations())
+	ne := float32(ea.NetworkEliminations())
 	ra := float32(ea.RelativeAgeToNetwork())
 	mp := float32(ea.GetMemorialProximity(grid))
+	//fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
+	//ea.MortalitySalience = infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 
 	return infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 }
@@ -422,6 +464,8 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 	cpr := ea.GetCPR()
 	npr := ea.GetNPR() // compute NPR
 	ysterofimia := ea.GetYsterofimia().ComputeYsterofimia() // compute ysterofimia
+	//fmt.Printf("Agent %v WV Scores: CPR=%.2f, NPR=%.2f, Ysterofimia=%.2f\n", ea.GetID(), cpr, npr, ysterofimia)
+	//ea.WorldviewValidation = infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 
 	return infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 }
@@ -432,21 +476,23 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	est := ea.GetEstrangement()                // compute EST
 	pse := ea.GetProSocialEsteem()             // compute PSE
 	heroismTendency := ea.GetHeroismTendency() // compute heroism tendency
+	//fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
+	//ea.RelationshipValidation = infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }
 
-func (ea *ExtendedAgent) GetSelfSacrificeWillingness() float32 {
-	return ea.SelfSacrificeWillingness
-}
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := float32(0.75) //random threshold
+	threshold := float32(0.15) //random threshold
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
+
+	// Debug log
+	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {
@@ -458,6 +504,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	}
 
 	if sum > 0 {
+		fmt.Printf("✅ Agent %v decided to SELF-SACRIFICE\n", ea.GetID())
 		return infra.SELF_SACRIFICE // Self-sacrifice
 	} else if sum < 0 {
 		return infra.NOT_SELF_SACRIFICE // Reject self-sacrifice
@@ -529,19 +576,19 @@ func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 
 func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameRecorder.JSONAgentRecord {
 	return gameRecorder.JSONAgentRecord{
-		ID:                  ea.GetID().String(),
-		IsAlive:             ea.IsAlive(),
-		Age:                 ea.GetAge(),
-		AttachmentStyle:     ea.Attachment.Type,
-		AttachmentAnxiety:   ea.Attachment.Anxiety,
-		AttachmentAvoidance: ea.Attachment.Avoidance,
-		ClusterID:           ea.ClusterID,
-		Position:            gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
-		Worldview:           ea.worldview,
-		Heroism:             ea.Heroism,
-		//MortalitySalience:   ea.ComputeMortalitySalience(),
-		//WorldviewValidation: ea.ComputeWorldviewValidation(),
-		//RelationshipValidation: ea.ComputeRelationshipValidation(),
-		//ASPDecison: ea.GetASPDecision(nil).String(),
+		ID:                     ea.GetID().String(),
+		IsAlive:                ea.IsAlive(),
+		Age:                    ea.GetAge(),
+		AttachmentStyle:        ea.Attachment.Type,
+		AttachmentAnxiety:      ea.Attachment.Anxiety,
+		AttachmentAvoidance:    ea.Attachment.Avoidance,
+		ClusterID:              ea.ClusterID,
+		Position:               gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
+		Worldview:              ea.worldview,
+		Heroism:                ea.Heroism,
+		//MortalitySalience:      ea.MortalitySalience,
+		//WorldviewValidation:    ea.WorldviewValidation,
+		//RelationshipValidation: ea.RelationshipValidation,
+		//ASPDecison: 		    ea.GetASPDecision(nil),
 	}
 }
