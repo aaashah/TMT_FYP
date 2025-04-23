@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"math/rand"
 
 	"maps"
@@ -77,8 +76,6 @@ func (tserv *TMTServer) getSacrificialEliminations(volunteers, nonVolunteers []i
 	neededVolunteers := int(tserv.neededProportionEliminations * totalAgents)
 	actualVolunteers := len(volunteers)
 
-	fmt.Printf("VOLUNTEER STATS: %d NEEDED, %d GOT\n", neededVolunteers, actualVolunteers)
-
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate
 		rand.Shuffle(actualVolunteers, func(i, j int) {
@@ -102,8 +99,6 @@ func (tserv *TMTServer) getSacrificialEliminations(volunteers, nonVolunteers []i
 		rand.Shuffle(numNonVol, func(i, j int) {
 			nonVolunteers[i], nonVolunteers[j] = nonVolunteers[j], nonVolunteers[i]
 		})
-
-		fmt.Printf("FUCKED IT: WE'RE ELIMINATING: %d\n", min(numNonVol, 2*(neededVolunteers-actualVolunteers)))
 
 		for i := range min(numNonVol, 2*(neededVolunteers-actualVolunteers)) {
 			agent := nonVolunteers[i]
@@ -153,7 +148,6 @@ func (tserv *TMTServer) ApplyElimination() {
 	maps.Copy(agentsToRemove, naturalElims)
 	maps.Copy(agentsToRemove, sacrificialElims)
 
-	fmt.Println("AAAGH", len(naturalElims), len(volunteers), len(nonVolunteers), len(sacrificialElims), len(agentsToRemove))
 	// also track eliminations per cluster and in network
 	for _, agent := range agentsToRemove {
 		clusterID := agent.GetClusterID()    // get the cluster ID of the agent
