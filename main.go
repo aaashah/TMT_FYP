@@ -49,7 +49,7 @@ func main() {
 	// agentConfig := agents.AgentConfig{
 	// 	InitSacrificeWillingness: 0.2,
 	// }
- 	// Create grid
+	// Create grid
 	grid := infra.NewGrid(70, 30)
 
 	serv := tmtServer.CreateTMTServer(grid)
@@ -58,12 +58,9 @@ func main() {
 	serv.SetGameRunner(serv)
 
 	const numAgents int = 40
-
 	// create and initialise agents
-	agentPopulation := []infra.IExtendedAgent{}
-	//grid := infra.NewGrid(70, 30) // Create grid
+	agentPopulation := make([]infra.IExtendedAgent, 0)
 
-	//funcs:= &IExposedServerFunctions[infra.IExtendedAgent]
 	parent1ID := uuid.Nil
 	parent2ID := uuid.Nil
 	for i := 0; i < numAgents; i += 4 {
@@ -87,6 +84,8 @@ func main() {
 	//const connectionProbability = 0.3 // Adjust as needed
 	// Initialize social network after agents are created
 	//serv.InitialiseRandomNetwork(connectionProbability)
+	const connectionProbability = 0.35
+	serv.InitialiseRandomNetwork(connectionProbability)
 
 	// Initialize data recorder
 	//serv.DataRecorder = gameRecorder.CreateRecorder()
