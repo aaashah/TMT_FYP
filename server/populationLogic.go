@@ -22,7 +22,7 @@ func (tserv *TMTServer) updateAgentMortality() {
 func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
 	tserv.Grid.PlaceTemple(pos.X, pos.Y)
-	agent.IncrementHeroism()
+	//agent.IncrementHeroism()
 
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
@@ -120,8 +120,8 @@ func (tserv *TMTServer) updateAgentYsterofimia(deathReport map[uuid.UUID]infra.D
 		}
 	}
 
-	networkEliminationCount := 0
 	for _, agent := range tserv.GetAgentMap() {
+		networkEliminationCount := 0
 		for friendID, esteem := range agent.GetNetwork() {
 			// friend was not eliminated
 			if _, dead := deathReport[friendID]; dead {
@@ -165,6 +165,22 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 	}
 }
 
+func (tserv *TMTServer) updateAgentHeroism(deathReport map[uuid.UUID]infra.DeathInfo) {
+	for _, deathInfo := range deathReport {
+		agent := deathInfo.Agent
+		if deathInfo.WasVoluntary {
+			agent.IncrementHeroism()
+		}
+	}
+}
+
+func (tserv *TMTServer) removeAgents(deathReport map[uuid.UUID]infra.DeathInfo) {
+	for _, deathInfo := range deathReport {
+		agent := deathInfo.Agent
+		tserv.RemoveAgent(agent)
+	}
+}
+
 func (tserv *TMTServer) ApplyElimination() {
 	tserv.lastEliminatedAgents = nil
 	tserv.lastSelfSacrificedAgents = nil
@@ -180,8 +196,10 @@ func (tserv *TMTServer) ApplyElimination() {
 	deathReport := tserv.compileDeathReport(naturalElims, sacrificialElims)
 	tserv.updateClusterEliminations(deathReport)
 	tserv.updateAgentYsterofimia(deathReport)
+	tserv.updateAgentHeroism(deathReport)
 
 	//now remove agents:
+	tserv.removeAgents(deathReport)
 
 
 	// combine maps into one
