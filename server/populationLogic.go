@@ -3,7 +3,7 @@ package server
 import (
 	"math/rand"
 
-	"maps"
+	//"maps"
 
 	infra "github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
@@ -23,6 +23,7 @@ func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
 	tserv.Grid.PlaceTemple(pos.X, pos.Y)
 	agent.IncrementHeroism()
+
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
@@ -111,25 +112,32 @@ func (tserv *TMTServer) getSacrificialEliminations(volunteers, nonVolunteers []i
 	return sacrificialElims
 }
 
-func updateAgentYsterofimia(agent infra.IExtendedAgent, agentsToRemove map[uuid.UUID]infra.IExtendedAgent, volunteerLookup map[uuid.UUID]struct{}) {
-	networkEliminationCount := 0
-	for friendID, esteem := range agent.GetNetwork() {
-		// friend was not eliminated
-		if _, ok := agentsToRemove[friendID]; !ok {
-			continue
+func (tserv *TMTServer) updateAgentYsterofimia(deathReport map[uuid.UUID]infra.DeathInfo) {
+	volunteerIDs := make(map[uuid.UUID]struct{})
+	for id, info := range deathReport {
+		if info.WasVoluntary {
+			volunteerIDs[id] = struct{}{}
 		}
-		networkEliminationCount++
-		ysterofimia := agent.GetYsterofimia()
-		if _, ok := volunteerLookup[friendID]; ok {
-			ysterofimia.IncrementSelfSacrificeCount()
-			ysterofimia.AddSelfSacrificeEsteems(esteem)
-		} else {
-			ysterofimia.IncrementOtherEliminationCount()
-			ysterofimia.AddOtherEliminationsEsteems(esteem)
-		}
-
 	}
-	agent.IncrementNetworkEliminations(networkEliminationCount)
+
+	networkEliminationCount := 0
+	for _, agent := range tserv.GetAgentMap() {
+		for friendID, esteem := range agent.GetNetwork() {
+			// friend was not eliminated
+			if _, dead := deathReport[friendID]; dead {
+				networkEliminationCount++
+				ysterofimia := agent.GetYsterofimia()
+				if _, ok := volunteerIDs[friendID]; ok {
+					ysterofimia.IncrementSelfSacrificeCount()
+					ysterofimia.AddSelfSacrificeEsteems(esteem)
+				} else {
+					ysterofimia.IncrementOtherEliminationCount()
+					ysterofimia.AddOtherEliminationsEsteems(esteem)
+				}
+			}
+		}
+		agent.IncrementNetworkEliminations(networkEliminationCount)
+	}
 }
 
 func (tserv *TMTServer) compileDeathReport(naturalElims, sacrificialElims map[uuid.UUID]infra.IExtendedAgent) map[uuid.UUID]infra.DeathInfo {
@@ -138,8 +146,7 @@ func (tserv *TMTServer) compileDeathReport(naturalElims, sacrificialElims map[uu
 		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: false}
 	}
 	for agentID, agent := range sacrificialElims {
-		isVolunteer := agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE
-		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: isVolunteer}
+		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: true}
 	}
 	return deathReport
 }
@@ -162,7 +169,7 @@ func (tserv *TMTServer) ApplyElimination() {
 	tserv.lastEliminatedAgents = nil
 	tserv.lastSelfSacrificedAgents = nil
 	//clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
-	agentsToRemove := make(map[uuid.UUID]infra.IExtendedAgent)
+	//agentsToRemove := make(map[uuid.UUID]infra.IExtendedAgent)
 
 	tserv.updateAgentMortality()
 
@@ -172,10 +179,14 @@ func (tserv *TMTServer) ApplyElimination() {
 
 	deathReport := tserv.compileDeathReport(naturalElims, sacrificialElims)
 	tserv.updateClusterEliminations(deathReport)
+	tserv.updateAgentYsterofimia(deathReport)
+
+	//now remove agents:
+
 
 	// combine maps into one
-	maps.Copy(agentsToRemove, naturalElims)
-	maps.Copy(agentsToRemove, sacrificialElims)
+	// maps.Copy(agentsToRemove, naturalElims)
+	// maps.Copy(agentsToRemove, sacrificialElims)
 
 	// also track eliminations per cluster and in network
 	// for _, agent := range agentsToRemove {
@@ -186,11 +197,11 @@ func (tserv *TMTServer) ApplyElimination() {
 	// }
 
 	// create hashset of volunteer IDs for ysterofimia
-	volunteerLookup := make(map[uuid.UUID]struct{})
-	for _, agent := range volunteers {
-		agentID := agent.GetID()
-		volunteerLookup[agentID] = struct{}{}
-	}
+	// volunteerLookup := make(map[uuid.UUID]struct{})
+	// for _, agent := range volunteers {
+	// 	agentID := agent.GetID()
+	// 	volunteerLookup[agentID] = struct{}{}
+	// }
 
 	// for _, agent := range tserv.GetAgentMap() {
 	// 	clusterID := agent.GetClusterID()
