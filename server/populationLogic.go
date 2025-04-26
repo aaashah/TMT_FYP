@@ -132,7 +132,7 @@ func updateAgentYsterofimia(agent infra.IExtendedAgent, agentsToRemove map[uuid.
 	agent.IncrementNetworkEliminations(networkEliminationCount)
 }
 
-func compileDeathReport(tserv *TMTServer, naturalElims, sacrificialElims map[uuid.UUID]infra.IExtendedAgent) map[uuid.UUID]infra.DeathInfo {
+func (tserv *TMTServer) compileDeathReport(naturalElims, sacrificialElims map[uuid.UUID]infra.IExtendedAgent) map[uuid.UUID]infra.DeathInfo {
 	deathReport := make(map[uuid.UUID]infra.DeathInfo)
 	for agentID, agent := range naturalElims {
 		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: false}
@@ -144,10 +144,24 @@ func compileDeathReport(tserv *TMTServer, naturalElims, sacrificialElims map[uui
 	return deathReport
 }
 
+func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infra.DeathInfo) {
+	counts := make(map[int]int)
+	for _, deathInfo := range deathReport {
+		clusterID := deathInfo.Agent.GetClusterID()
+		counts[clusterID]++
+	}
+	for _, agent := range tserv.GetAgentMap() {
+		clusterID := agent.GetClusterID()
+		if count, exists := counts[clusterID]; exists {
+			agent.IncrementClusterEliminations(count)
+		}
+	}
+}
+
 func (tserv *TMTServer) ApplyElimination() {
 	tserv.lastEliminatedAgents = nil
 	tserv.lastSelfSacrificedAgents = nil
-	clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
+	//clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
 	agentsToRemove := make(map[uuid.UUID]infra.IExtendedAgent)
 
 	tserv.updateAgentMortality()
@@ -156,19 +170,20 @@ func (tserv *TMTServer) ApplyElimination() {
 	volunteers, nonVolunteers := tserv.stratifyVolunteers()
 	sacrificialElims := tserv.getSacrificialEliminations(volunteers, nonVolunteers)
 
-	//deathReport := compileDeathReport(tserv, naturalElims, sacrificialElims)
+	deathReport := tserv.compileDeathReport(naturalElims, sacrificialElims)
+	tserv.updateClusterEliminations(deathReport)
 
 	// combine maps into one
 	maps.Copy(agentsToRemove, naturalElims)
 	maps.Copy(agentsToRemove, sacrificialElims)
 
 	// also track eliminations per cluster and in network
-	for _, agent := range agentsToRemove {
-		clusterID := agent.GetClusterID()    // get the cluster ID of the agent
-		clusterEliminationCount[clusterID]++ // increment the count for that cluster
-		// fmt.Print("Removing agent from server: ", agentID)
-		tserv.RemoveAgent(agent)
-	}
+	// for _, agent := range agentsToRemove {
+	// 	clusterID := agent.GetClusterID()    // get the cluster ID of the agent
+	// 	clusterEliminationCount[clusterID]++ // increment the count for that cluster
+	// 	// fmt.Print("Removing agent from server: ", agentID)
+	// 	tserv.RemoveAgent(agent)
+	// }
 
 	// create hashset of volunteer IDs for ysterofimia
 	volunteerLookup := make(map[uuid.UUID]struct{})
@@ -177,11 +192,11 @@ func (tserv *TMTServer) ApplyElimination() {
 		volunteerLookup[agentID] = struct{}{}
 	}
 
-	for _, agent := range tserv.GetAgentMap() {
-		clusterID := agent.GetClusterID()
-		if eliminatedInCluster, exists := clusterEliminationCount[clusterID]; exists {
-			agent.IncrementClusterEliminations(eliminatedInCluster)
-		}
-		updateAgentYsterofimia(agent, agentsToRemove, volunteerLookup)
-	}
+	// for _, agent := range tserv.GetAgentMap() {
+	// 	clusterID := agent.GetClusterID()
+	// 	if eliminatedInCluster, exists := clusterEliminationCount[clusterID]; exists {
+	// 		agent.IncrementClusterEliminations(eliminatedInCluster)
+	// 	}
+	// 	updateAgentYsterofimia(agent, agentsToRemove, volunteerLookup)
+	// }
 }
