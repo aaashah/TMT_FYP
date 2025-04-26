@@ -128,3 +128,8 @@ func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
 	}
 	return pa
 }
+
+type DeathInfo struct {
+	Agent         IExtendedAgent
+	WasVoluntary  bool
+}

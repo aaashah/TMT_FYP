@@ -132,6 +132,18 @@ func updateAgentYsterofimia(agent infra.IExtendedAgent, agentsToRemove map[uuid.
 	agent.IncrementNetworkEliminations(networkEliminationCount)
 }
 
+func compileDeathReport(tserv *TMTServer, naturalElims, sacrificialElims map[uuid.UUID]infra.IExtendedAgent) map[uuid.UUID]infra.DeathInfo {
+	deathReport := make(map[uuid.UUID]infra.DeathInfo)
+	for agentID, agent := range naturalElims {
+		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: false}
+	}
+	for agentID, agent := range sacrificialElims {
+		isVolunteer := agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE
+		deathReport[agentID] = infra.DeathInfo{Agent: agent, WasVoluntary: isVolunteer}
+	}
+	return deathReport
+}
+
 func (tserv *TMTServer) ApplyElimination() {
 	tserv.lastEliminatedAgents = nil
 	tserv.lastSelfSacrificedAgents = nil
@@ -143,6 +155,8 @@ func (tserv *TMTServer) ApplyElimination() {
 	naturalElims := tserv.getNaturalEliminations()
 	volunteers, nonVolunteers := tserv.stratifyVolunteers()
 	sacrificialElims := tserv.getSacrificialEliminations(volunteers, nonVolunteers)
+
+	//deathReport := compileDeathReport(tserv, naturalElims, sacrificialElims)
 
 	// combine maps into one
 	maps.Copy(agentsToRemove, naturalElims)
