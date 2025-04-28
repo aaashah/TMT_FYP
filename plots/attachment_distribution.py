@@ -1,57 +1,52 @@
 import json
-import os
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
-log_dir = "JSONlogs"
-attachment_data = []
+log_dir = "JSONlogs/output.json"
+attachment_data = {"Secure": [], "Dismissive": [], "Preoccupied": [], "Fearful": []}
+turn_numbers = []
 
-# Step 1: Parse each turn's agent list and count attachment styles
-for filename in sorted(os.listdir(log_dir)):
-    if filename.startswith("iteration_") and filename.endswith(".json"):
-        with open(os.path.join(log_dir, filename), "r") as f:
-            data = json.load(f)
-            iteration_num = data["Iteration"]
-            for turn in data["Turns"]:
-                turn_num = turn["TurnNumber"]
 
-                # Handle missing or null agent list
-                agents = turn.get("Agents")
-                if agents is None:
-                    agents = []
+with open(log_dir, "r") as file:
+    GAME_DATA = json.load(file)
+    config = GAME_DATA["Config"]
+    rho = config["PopulationRho"]
+    turn_number = 0
+    for ITER in GAME_DATA["Iterations"]:
+        for TURN in ITER["Turns"]:
+            agents = TURN.get("Agents", [])
+            total = max(len(agents), 1)
+            counter = defaultdict(int)
+            for agent in agents:
+                style = agent.get("AttachmentStyle", "Unknown")
+                counter[style] += 1
 
-                total = len(agents)
-                counter = defaultdict(int)
-                for agent in agents:
-                    style = agent.get("AttachmentStyle", "Unknown")
-                    counter[style] += 1
+            assert counter["Unknown"] == 0
 
-                # Always append, even when total == 0, to ensure we show 0s
-                attachment_data.append({
-                    "Label": f"i{iteration_num}_t{turn_num}",
-                    "Secure": counter["Secure"] / total if total > 0 else 0,
-                    "Dismissive": counter["Dismissive"] / total if total > 0 else 0,
-                    "Preoccupied": counter["Preoccupied"] / total if total > 0 else 0,
-                    "Fearful": counter["Fearful"] / total if total > 0 else 0
-                })
+            for style in attachment_data.keys():
+                attachment_data[style].append(counter[style] / total)
+
+            turn_numbers.append(turn_number)
+            turn_number += 1
+
 
 # Step 2: Plot each style over time
-rounds = list(range(len(attachment_data)))
-styles = ["Secure", "Dismissive", "Preoccupied", "Fearful"]
-colors = {
+total_turns = len(turn_numbers)
+simplified_x_ticks = range(0, total_turns + 1, 5)
+color_map = {
     "Secure": "green",
     "Dismissive": "red",
     "Preoccupied": "blue",
-    "Fearful": "purple"
+    "Fearful": "purple",
 }
 
 plt.figure(figsize=(14, 6))
-for style in styles:
-    y = [entry.get(style, 0) for entry in attachment_data]
-    plt.plot(rounds, y, label=style, marker='o', color=colors[style])
+for style, color in color_map.items():
+    style_prop = attachment_data[style]
+    plt.plot(turn_numbers, style_prop, label=style, marker="o", color=color)
 
 # Show all round numbers on x-axis
-plt.xticks(ticks=rounds, labels=rounds, rotation=90, fontsize=8)
+plt.xticks(ticks=simplified_x_ticks)
 
 plt.ylim(0, 1)
 plt.ylabel("Proportion of Population")
