@@ -14,8 +14,8 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *PreoccupiedAgent {
-	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
+func CreatePreoccupiedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *PreoccupiedAgent {
+	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
 	extendedAgent.Attachment = infra.Attachment{
@@ -25,10 +25,10 @@ func CreatePreoccupiedAgent(server infra.IServer, grid *infra.Grid, parent1ID uu
 	}
 	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{
-		CheckProb: randInRange(0.5, 1.0), 
+		CheckProb: randInRange(0.5, 1.0),
 		ReplyProb: randInRange(0.5, 1.0),
-		Alpha:     randInRange(0.5, 1.0), 
-		Beta:      randInRange(0.5, 1.0), 
+		Alpha:     randInRange(0.5, 1.0),
+		Beta:      randInRange(0.5, 1.0),
 	}
 
 	return &PreoccupiedAgent{

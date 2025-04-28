@@ -22,7 +22,7 @@ import (
 
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
-
+	isVerbose                    bool
 	Grid                         *infra.Grid
 	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
 	ClusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
@@ -34,7 +34,10 @@ type TMTServer struct {
 	JSONTurnLogs                 []gameRecorder.TurnJSONRecord
 }
 
-func CreateTMTServer(grid *infra.Grid) *TMTServer {
+func CreateTMTServer() *TMTServer {
+
+	grid := infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT)
+
 	tservConfig := gameRecorder.ConfigJSONRecord{
 		ProportionAgentsNeeded: 0.2,
 	}
@@ -116,7 +119,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 		agent.UpdateRelationship(agentID, 1.0)
 	}
 
-	fmt.Printf("Social Network Initialized with %d connections.\n", edgeCount)
+	fmt.Printf("Social Network Initialized with %d connections\n", edgeCount)
 }
 
 func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength float32) {
@@ -144,11 +147,8 @@ func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
-	log.Printf("--------Start of iteration %v---------\n", iteration)
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
 	fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
-	// Ensure DataRecorder starts recording a new iteration
-	//tserv.DataRecorder.RecordNewIteration()
 }
 
 func getStep(current, target int) int {
@@ -161,7 +161,6 @@ func getStep(current, target int) int {
 }
 
 func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
-	// moveX >= 0 && moveX < grid.Width && moveY >= 0 && moveY < grid.Height && !grid.IsOccupied(moveX, moveY)
 	grid := tServ.Grid
 	if moveX < 0 || moveX >= grid.Width {
 		return false
@@ -173,7 +172,7 @@ func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
-	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
+	log.Printf("Iteration %d, Turn %d\n", i, j)
 	tserv.MoveAgents()
 	tserv.RecordTurnJSON(i, j)
 }
@@ -452,8 +451,6 @@ func (tserv *TMTServer) SpawnNewAgents() {
 	parentPool := tserv.lastEliminatedAgents
 	poolSize := len(parentPool)
 
-	fmt.Printf("Parent pool size: %d\n", poolSize)
-
 	if poolSize < 2 {
 		fmt.Println("Not enough parents available to spawn new agents.")
 		return
@@ -463,20 +460,15 @@ func (tserv *TMTServer) SpawnNewAgents() {
 		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
 	})
 
-	newKids := 0
-
 	for i := 1; i < poolSize; i += 2 {
 		parent1 := parentPool[i-1]
 		parent2 := parentPool[i]
 		childrenToSpawn := int(dist.Rand())
-		newKids += childrenToSpawn
 		for range childrenToSpawn {
 			tserv.SpawnChild(parent1, parent2)
 		}
-		// fmt.Printf("Spawned %d children from %v and %v\n", childrenToSpawn, parent1.GetID(), parent2.GetID())
 	}
 
-	fmt.Printf("SPAWNED %d NEW CHILDREN\n", newKids)
 }
 
 func (tserv *TMTServer) SpawnChild(parent1, parent2 infra.IExtendedAgent) {
@@ -486,13 +478,13 @@ func (tserv *TMTServer) SpawnChild(parent1, parent2 infra.IExtendedAgent) {
 	var newAgent infra.IExtendedAgent
 	switch {
 	case randVal < 0.25:
-		newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
 	case randVal < 0.5:
-		newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
 	case randVal < 0.75:
-		newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
 	default:
-		newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
 	}
 
 	parent1.AddDescendant(newAgent.GetID())

@@ -62,7 +62,7 @@ type ExtendedAgent struct {
 
 //var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
 
-func CreateExtendedAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *ExtendedAgent {
+func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *ExtendedAgent {
 	A := rand.Intn(25) + 40     // (40-65)
 	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
@@ -78,7 +78,7 @@ func CreateExtendedAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.
 		worldview:    worldview,
 		Ysterofimia:  infra.NewYsterofimia(),
 		AgentIsAlive: true,
-		Position:     infra.PositionVector{X: rand.Intn(grid.Width) + 1, Y: rand.Intn(grid.Height) + 1},
+		Position:     infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
 	}
 }
 
