@@ -20,7 +20,6 @@ func (tserv *TMTServer) updateAgentMortality() {
 func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
 	tserv.Grid.PlaceTemple(pos.X, pos.Y)
-
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())

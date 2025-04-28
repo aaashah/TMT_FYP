@@ -66,50 +66,6 @@ func MakeGameRecord(config ConfigJSONRecord) *GameJSONRecord {
 	}
 }
 
-// func WriteConfigJSONRecord(outputDir string, record ConfigJSONRecord) error {
-// 	err := os.MkdirAll(outputDir, os.ModePerm)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to create output directory: %w", err)
-// 	}
-
-// 	fileName := fmt.Sprintf("%s/turn_%03d.json", outputDir, record.Turn)
-// 	data, err := json.MarshalIndent(record, "", "  ")
-// 	if err != nil {
-// 		return fmt.Errorf("error marshalling JSON: %w", err)
-// 	}
-// 	return os.WriteFile(fileName, data, 0644)
-// }
-
-// func WriteTurnJSONRecord(outputDir string, record TurnJSONRecord) error {
-// 	// Create directory if it doesn't exist
-// 	err := os.MkdirAll(outputDir, os.ModePerm)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to create output directory: %w", err)
-// 	}
-
-// 	fileName := fmt.Sprintf("%s/turn_%03d.json", outputDir, record.Turn)
-// 	data, err := json.MarshalIndent(record, "", "  ")
-// 	if err != nil {
-// 		return fmt.Errorf("error marshalling JSON: %w", err)
-// 	}
-// 	return os.WriteFile(fileName, data, 0644)
-// }
-
-// func WriteIterationJSONLog(outputDir string, record IterationJSONRecord) error {
-// 	err := os.MkdirAll(outputDir, os.ModePerm)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to create output directory: %w", err)
-// 	}
-
-// 	fileName := fmt.Sprintf("%s/iteration_%03d.json", outputDir, record.Iteration)
-// 	data, err := json.MarshalIndent(record, "", "  ")
-// 	if err != nil {
-// 		return fmt.Errorf("error marshalling iteration JSON: %w", err)
-// 	}
-
-// 	return os.WriteFile(fileName, data, 0644)
-// }
-
 func WriteJSONLog(outputDir string, record *GameJSONRecord) error {
 	err := os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
