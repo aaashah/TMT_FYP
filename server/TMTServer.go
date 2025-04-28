@@ -26,34 +26,37 @@ type TMTServer struct {
 	Grid                         *infra.Grid
 	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
 	ClusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
-	totalRequiredEliminations    int
-	totalVoluntaryEliminations   int
 	lastEliminatedAgents         []infra.IExtendedAgent
 	lastSelfSacrificedAgents     []infra.IExtendedAgent
 	expectedChildren             float64
 	neededProportionEliminations float64
-
-	// data recorder
-	//DataRecorder *gameRecorder.ServerDataRecorder
-	JSONTurnLogs []gameRecorder.TurnJSONRecord
+	gameRecorder                 *gameRecorder.GameJSONRecord
+	JSONTurnLogs                 []gameRecorder.TurnJSONRecord
 }
 
 func CreateTMTServer(grid *infra.Grid) *TMTServer {
+	tservConfig := gameRecorder.ConfigJSONRecord{
+		ProportionAgentsNeeded: 0.2,
+	}
+
 	tserv := &TMTServer{
 		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](10, 10, 50*time.Millisecond, 0),
 		Grid:                         grid,
 		clusterMap:                   make(map[int][]uuid.UUID),
 		ClusterEliminationData:       make(map[int]*infra.ClusterEliminations),
-		totalRequiredEliminations:    0,
-		totalVoluntaryEliminations:   0,
 		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
 		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
 		expectedChildren:             1.9,
 		neededProportionEliminations: 0.2,
-		//DataRecorder: gameRecorder.CreateServerDataRecorder(),
-		JSONTurnLogs: make([]gameRecorder.TurnJSONRecord, 0),
+		gameRecorder:                 gameRecorder.MakeGameRecord(tservConfig),
+		JSONTurnLogs:                 make([]gameRecorder.TurnJSONRecord, 0),
 	}
 	return tserv
+}
+
+func (tserv *TMTServer) Start() {
+	tserv.BaseServer.Start()
+	gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
 }
 
 func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, bool) {
@@ -177,7 +180,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 
 func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	log.Printf("--------End of iteration %v---------\n", iter)
-	tserv.WriteIterationJSONLog(iter)
+	tserv.AddIterationJSON(iter)
 	// 2. Apply clustering (k-means)
 	tserv.ApplyClustering()
 
@@ -544,30 +547,35 @@ func (tserv *TMTServer) RecordTurnJSON(iter, turn int) {
 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
 	}
 
+	totalAgents := float64(len(tserv.GetAgentMap()))
+	reqElims := int(tserv.neededProportionEliminations * totalAgents)
+
 	jsonLog := gameRecorder.TurnJSONRecord{
-		Iteration:            iter,
-		Turn:                 turn,
-		Agents:               allAgentRecords,
-		NumberOfAgents:       len(tserv.GetAgentMap()),
-		EliminatedAgents:     AgentsToStrings(tserv.lastEliminatedAgents),
-		SelfSacrificedAgents: AgentsToStrings(tserv.lastSelfSacrificedAgents),
-		TombstoneLocations:   tombstonePositions,
-		TempleLocations:      templePositions,
+		Turn:                      turn,
+		Agents:                    allAgentRecords,
+		NumberOfAgents:            len(tserv.GetAgentMap()),
+		EliminatedAgents:          AgentsToStrings(tserv.lastEliminatedAgents),
+		TotalRequiredEliminations: reqElims,
+		SelfSacrificedAgents:      AgentsToStrings(tserv.lastSelfSacrificedAgents),
+		TombstoneLocations:        tombstonePositions,
+		TempleLocations:           templePositions,
 	}
 
 	tserv.JSONTurnLogs = append(tserv.JSONTurnLogs, jsonLog)
 }
 
-func (tserv *TMTServer) WriteIterationJSONLog(iter int) {
+func (tserv *TMTServer) AddIterationJSON(iter int) {
 	log := gameRecorder.IterationJSONRecord{
 		Iteration: iter,
 		Turns:     tserv.JSONTurnLogs,
 	}
 
-	err := gameRecorder.WriteIterationJSONLog("JSONlogs", log)
-	if err != nil {
-		fmt.Printf("Error writing iteration log: %v\n", err)
-	}
+	tserv.gameRecorder.AddIteration(log)
+
+	// err := gameRecorder.WriteIterationJSONLog("JSONlogs", log)
+	// if err != nil {
+	// 	fmt.Printf("Error writing iteration log: %v\n", err)
+	// }
 
 	// Clear memory for next iteration
 	tserv.JSONTurnLogs = nil

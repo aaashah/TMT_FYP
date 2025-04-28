@@ -1,45 +1,40 @@
 import json
-import os
 import matplotlib.pyplot as plt
 
-# Directory containing JSON logs
-log_dir = "JSONlogs"
-required_eliminations_per_turn = 1  # Change this to match your current 'n'
+log_dir = "JSONlogs/output.json"
+volunteers = []
+required = []
+turn_numbers = []
+rho = None
 
-# Container for parsed data
-volunteer_data = []
+with open(log_dir, "r") as file:
+    GAME_DATA = json.load(file)
+    config = GAME_DATA["Config"]
+    rho = config["PopulationRho"]
+    turn_number = 0
+    for ITER in GAME_DATA["Iterations"]:
+        for TURN in ITER["Turns"]:
+            num_vols = len(TURN.get("EliminatedBySelfSacrifice", []))
+            num_req = TURN["TotalRequiredEliminations"]
+            volunteers.append(num_vols)
+            required.append(num_req)
+            turn_numbers.append(turn_number)
+            turn_number += 1
 
-# Load and parse JSON files
-for filename in sorted(os.listdir(log_dir)):
-    if filename.startswith("iteration_") and filename.endswith(".json"):
-        with open(os.path.join(log_dir, filename), "r") as f:
-            data = json.load(f)
-            iteration_num = data["Iteration"]
-            for turn in data["Turns"]:
-                turn_num = turn["TurnNumber"]
-                
-                # Use correct key: "EliminatedBySelfSacrifice"
-                v = len(turn.get("EliminatedBySelfSacrifice", []) or [])
-                
-                volunteer_data.append({
-                    "Label": f"i{iteration_num}_t{turn_num}",
-                    "Volunteers": v,
-                    "Required": required_eliminations_per_turn
-                })
 
-# Prepare plot data
-rounds = list(range(len(volunteer_data)))
-volunteers = [entry["Volunteers"] for entry in volunteer_data]
-required = [entry["Required"] for entry in volunteer_data]
+total_turns = len(turn_numbers)
+simplified_x_ticks = range(0, total_turns + 1, 5)
 
 # Plot
 plt.figure(figsize=(14, 5))
-plt.plot(rounds, volunteers, marker='o', label="Volunteers (v)", color="green")
-plt.plot(rounds, required, linestyle="--", label="Required (n)", color="red")
-plt.xticks(ticks=rounds, labels=rounds, rotation=90, fontsize=8)
-plt.xlabel("Rounds")
+plt.plot(
+    turn_numbers, volunteers, marker="o", label="Number of Volunteers", color="green"
+)
+plt.plot(turn_numbers, required, linestyle="--", label="Number Required", color="red")
+plt.xticks(simplified_x_ticks)
+plt.xlabel("Turn")
 plt.ylabel("Number of Agents")
-plt.title("Volunteers vs Required Eliminations per Turn")
+plt.title(rf"Volunteers vs Required Eliminations per Turn ($\rho$={rho})")
 plt.ylim(0, max(volunteers + required) + 1)  # Auto-scaled y-axis
 plt.legend()
 plt.grid(True)
