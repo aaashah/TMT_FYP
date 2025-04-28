@@ -116,9 +116,7 @@ func WriteJSONLog(outputDir string, record *GameJSONRecord) error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	randomRunID := uuid.New()
-
-	fileName := fmt.Sprintf("%s/%s.json", outputDir, randomRunID)
+	fileName := fmt.Sprintf("%s/output.json", outputDir)
 	data, err := json.MarshalIndent(record, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshalling iteration JSON: %w", err)
