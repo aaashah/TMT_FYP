@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 
-	//"sync"
 	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
@@ -25,7 +24,6 @@ type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
 
 	Grid                         *infra.Grid
-	PositionMap                  map[[2]int]*agents.ExtendedAgent   // Map of agent positions
 	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
 	ClusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
 	totalRequiredEliminations    int
@@ -44,7 +42,6 @@ func CreateTMTServer(grid *infra.Grid) *TMTServer {
 	tserv := &TMTServer{
 		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](10, 10, 50*time.Millisecond, 0),
 		Grid:                         grid,
-		PositionMap:                  make(map[[2]int]*agents.ExtendedAgent),
 		clusterMap:                   make(map[int][]uuid.UUID),
 		ClusterEliminationData:       make(map[int]*infra.ClusterEliminations),
 		totalRequiredEliminations:    0,
@@ -518,7 +515,7 @@ func (tserv *TMTServer) UpdateProbabilityOfChildren() {
 	if proportionOfEliminations >= tserv.neededProportionEliminations {
 		tserv.expectedChildren = math.Min(tserv.expectedChildren+alpha*(1-tserv.expectedChildren), 2.5)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren-beta*tserv.expectedChildren, 1.5)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren-beta*tserv.expectedChildren, 1.8)
 	}
 }
 
