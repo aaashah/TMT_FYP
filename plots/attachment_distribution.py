@@ -9,8 +9,6 @@ turn_numbers = []
 
 with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
-    config = GAME_DATA["Config"]
-    rho = config["PopulationRho"]
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
         for TURN in ITER["Turns"]:
