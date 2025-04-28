@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"maps"
 	"math"
 	"math/rand"
 
@@ -190,22 +191,35 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	}
 
 	// 4. Check for agent elimination
-	//tserv.ApplyAPS()
-	fmt.Println("Size of map before: ", len(tserv.GetAgentMap()))
-	tserv.ApplyElimination()
-	fmt.Println("Size of map after: ", len(tserv.GetAgentMap()))
+	tserv.updateAgentMortality()
+	// 4.1 - natural deaths (old age)
+	naturalDeathReport := tserv.getNaturalEliminationReport()
+	tserv.applyElimination(naturalDeathReport)
+
+	// 4.2 - unnatural deaths (sacrifice)
+	sacrificialDeathReport := tserv.getSacrificialEliminationReport()
+	tserv.applyElimination(sacrificialDeathReport)
+
+	// 4.3 - create tombstones / temples
+	fullDeathReport := make(map[uuid.UUID]infra.DeathInfo, len(naturalDeathReport)+len(sacrificialDeathReport))
+	maps.Copy(fullDeathReport, naturalDeathReport)
+	maps.Copy(fullDeathReport, sacrificialDeathReport)
+	tserv.performSacrifices(fullDeathReport)
 
 	// 5. After eliminations for agents in each cluster:
 	for _, agents := range tserv.clusterMap {
-		// 5.1 Update social network (create/ cut links)
+		// 5.1 - Update social network (create/ cut links)
 		tserv.UpdateSocialNetwork(agents)
-		// 5.2 apply PTS protocol
+		// 5.2 - Apply PTS protocol
 		tserv.ApplyPTS(agents)
-		// 5.3 update heroism
-		//(done within ApplyElimination)
 	}
 
-	// spawn new agents
+	// 6. Update agent parameters
+	tserv.updateClusterEliminations(fullDeathReport)
+	tserv.updateAgentYsterofimia(fullDeathReport)
+	tserv.updateAgentHeroism(fullDeathReport)
+
+	// 7. Spawn new agents
 	tserv.SpawnNewAgents()
 
 	// Age up all agents
@@ -213,7 +227,6 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 		agent.IncrementAge()
 		// fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
 	}
-
 }
 
 // ---------------------- Helper Functions ----------------------
