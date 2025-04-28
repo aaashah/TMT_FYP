@@ -20,6 +20,7 @@ func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 type Attachment struct {
 	Anxiety   float32
 	Avoidance float32
+	Type	  string
 }
 
 type Telomere struct {
@@ -60,6 +61,11 @@ func (t *Telomere) GetProbabilityOfDeath() float32 {
 }
 
 type SocialNetwork map[uuid.UUID]float32
+
+type ClusterEliminations struct {
+    TotalEliminations []int // eliminations in this cluster per turn
+    ClusterSizes      []int // size of this cluster per turn
+}
 
 type Ysterofimia struct {
 	SelfSacrificeCount		    int // number of times agent volunteered self-sacrifices
@@ -121,4 +127,9 @@ func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
 		pa[idx] = invProx / totInvProx
 	}
 	return pa
+}
+
+type DeathInfo struct {
+	Agent         IExtendedAgent
+	WasVoluntary  bool
 }

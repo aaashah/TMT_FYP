@@ -3,13 +3,14 @@ package server
 import (
 	"fmt"
 	"log"
+	"maps"
 	"math"
 	"math/rand"
 
-	//"sync"
 	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
+	"gonum.org/v1/gonum/stat/distuv"
 
 	"slices"
 
@@ -22,47 +23,54 @@ import (
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
 
-	//agentInfoList []infra.IExtendedAgent
-	//mu     sync.Mutex
-
-	Grid        *infra.Grid
-	PositionMap map[[2]int]*agents.ExtendedAgent // Map of agent positions
-	clusterMap  map[int][]uuid.UUID              // Map of cluster IDs to agent IDs
+	Grid                         *infra.Grid
+	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
+	ClusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
+	totalRequiredEliminations    int
+	totalVoluntaryEliminations   int
+	lastEliminatedAgents         []infra.IExtendedAgent
+	lastSelfSacrificedAgents     []infra.IExtendedAgent
+	expectedChildren             float64
+	neededProportionEliminations float64
 
 	// data recorder
 	//DataRecorder *gameRecorder.ServerDataRecorder
 	JSONTurnLogs []gameRecorder.TurnJSONRecord
-
-	//server internal state
-	turn      int
-	iteration int
-	//allAgentsDead bool
-	//gameRunner infra.GameRunner
-
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
+func CreateTMTServer(grid *infra.Grid) *TMTServer {
+	tserv := &TMTServer{
+		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](10, 10, 50*time.Millisecond, 0),
+		Grid:                         grid,
+		clusterMap:                   make(map[int][]uuid.UUID),
+		ClusterEliminationData:       make(map[int]*infra.ClusterEliminations),
+		totalRequiredEliminations:    0,
+		totalVoluntaryEliminations:   0,
+		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
+		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
+		expectedChildren:             1.9,
+		neededProportionEliminations: 0.2,
+		//DataRecorder: gameRecorder.CreateServerDataRecorder(),
+		JSONTurnLogs: make([]gameRecorder.TurnJSONRecord, 0),
+	}
+	return tserv
 }
 
 func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, bool) {
-	agent, exists := tserv.GetAgentMap()[agentID]
+	agentMap := tserv.GetAgentMap()
+	agent, exists := agentMap[agentID]
 	return agent, exists
 }
 
 // Moved to TMTServer to avoid import cycle
 func (tserv *TMTServer) UpdateAgentRelationship(agentAID, agentBID uuid.UUID, change float32) {
-	agentA, existsA := tserv.GetAgentMap()[agentAID]
-	agentB, existsB := tserv.GetAgentMap()[agentBID]
+	agentA, existsA := tserv.GetAgentByID(agentAID)
+	agentB, existsB := tserv.GetAgentByID(agentBID)
 
-	if !existsA || !existsB {
-		return
+	if existsA && existsB {
+		agentA.UpdateSocialNetwork(agentBID, change)
+		agentB.UpdateSocialNetwork(agentAID, change)
 	}
-
-	agentA.UpdateSocialNetwork(agentBID, change)
-
-	agentB.UpdateSocialNetwork(agentAID, change)
-
 }
 
 // Erdős–Rényi (ER) Random Network
@@ -77,7 +85,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 	fmt.Printf("Initializing Erdős-Rényi (ER) Network with p = %.2f\n", p)
 
 	edgeCount := 0
-	for i := 0; i < len(agentIDs); i++ {
+	for i := range agentIDs {
 		for j := i + 1; j < len(agentIDs); j++ { // Avoid duplicate edges
 			probability := rand.Float32() // Generate a random number
 			// fmt.Printf("Checking link between %v and %v (p=%.2f, rolled=%.2f)\n",
@@ -101,17 +109,16 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float32) {
 	}
 
 	// add self to network
-	for _, agent := range tserv.GetAgentMap() {
-		agentID := agent.GetID()
-		agent.UpdateRelationship(agentID, 1.0) 
+	for agentID, agent := range tserv.GetAgentMap() {
+		agent.UpdateRelationship(agentID, 1.0)
 	}
 
 	fmt.Printf("Social Network Initialized with %d connections.\n", edgeCount)
 }
 
 func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength float32) {
-	agentA, existsA := tserv.GetAgentMap()[agentAID]
-	agentB, existsB := tserv.GetAgentMap()[agentBID]
+	agentA, existsA := tserv.GetAgentByID(agentAID)
+	agentB, existsB := tserv.GetAgentByID(agentBID)
 
 	if existsA && existsB {
 		agentA.UpdateRelationship(agentBID, strength)
@@ -119,7 +126,7 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 		//fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 	}
 
-	fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
+	// fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 }
 
 func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
@@ -129,32 +136,14 @@ func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
 	if okA && okB {
 		agentA.RemoveRelationship(agentBID)
 		agentB.RemoveRelationship(agentAID)
-
-		fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
+		// fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
 	}
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	log.Printf("--------Start of iteration %v---------\n", iteration)
-
-	tserv.iteration = iteration
-	tserv.turn = 0
-
-	if iteration == 0 {
-		const connectionProbability = 0.35
-		tserv.InitialiseRandomNetwork(connectionProbability)
-	}
-
-	// Age up all agents at the start of each iteration (except start of game)
-	// if iteration > 0 {
-	for _, agent := range tserv.GetAgentMap() {
-		agent.IncrementAge()
-		fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
-	}
-	// }
-
-
 	fmt.Printf("--------Start of iteration %d---------\n", iteration)
+	fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
 	// Ensure DataRecorder starts recording a new iteration
 	//tserv.DataRecorder.RecordNewIteration()
 }
@@ -180,53 +169,61 @@ func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
 	return !grid.IsOccupied(moveX, moveY)
 }
 
-const MOVEMENT_TURNS int = 20
-
 func (tserv *TMTServer) RunTurn(i, j int) {
 	log.Printf("\n\nIteration %v, Turn %v, current agent count: %v\n", i, j, len(tserv.GetAgentMap()))
-	tserv.turn = j
-	// if i == 0 && j == 0 {
-	// 	tserv.RecordTurnInfo()
-	// 	return
-	// }
+	tserv.MoveAgents()
+	tserv.RecordTurnJSON(i, j)
+}
 
-	// 1. Move agents
-	for range MOVEMENT_TURNS {
-		tserv.MoveAgents()
-	}
-
+func (tserv *TMTServer) RunEndOfIteration(iter int) {
+	log.Printf("--------End of iteration %v---------\n", iter)
+	tserv.WriteIterationJSONLog(iter)
 	// 2. Apply clustering (k-means)
 	tserv.ApplyClustering()
 
+	// snapshot of netowrk pre elimination
+	for _, agent := range tserv.GetAgentMap() {
+		networkLength := len(agent.GetNetwork())
+		agent.AppendNetworkSizeHistory(networkLength)
+	}
+
 	// 4. Check for agent elimination
-	//tserv.ApplyAPS()
-	tserv.ApplyElimination(j)
+	tserv.updateAgentMortality()
+	// 4.1 - natural deaths (old age)
+	naturalDeathReport := tserv.getNaturalEliminationReport()
+	tserv.applyElimination(naturalDeathReport)
+
+	// 4.2 - unnatural deaths (sacrifice)
+	sacrificialDeathReport := tserv.getSacrificialEliminationReport()
+	tserv.applyElimination(sacrificialDeathReport)
+
+	// 4.3 - create tombstones / temples
+	fullDeathReport := make(map[uuid.UUID]infra.DeathInfo, len(naturalDeathReport)+len(sacrificialDeathReport))
+	maps.Copy(fullDeathReport, naturalDeathReport)
+	maps.Copy(fullDeathReport, sacrificialDeathReport)
+	tserv.performSacrifices(fullDeathReport)
 
 	// 5. After eliminations for agents in each cluster:
 	for _, agents := range tserv.clusterMap {
-		// age up agents here??
-
-		// 5.1 Update social network (create/ cut links)
+		// 5.1 - Update social network (create/ cut links)
 		tserv.UpdateSocialNetwork(agents)
-		// 5.2 apply PTS protocol
+		// 5.2 - Apply PTS protocol
 		tserv.ApplyPTS(agents)
-		// 5.3 update heroism
-		//(done within ApplyElimination)
-		// 5.4 update worldview ??
 	}
 
+	// 6. Update agent parameters
+	tserv.updateClusterEliminations(fullDeathReport)
+	tserv.updateAgentYsterofimia(fullDeathReport)
+	tserv.updateAgentHeroism(fullDeathReport)
 
-	fmt.Printf("Turn %d: Ending with %d agents\n", tserv.turn, len(tserv.GetAgentMap()))
-	//tserv.RecordTurnInfo()
-	tserv.RecordTurnJSON()
-
-}
-
-func (tserv *TMTServer) RunEndOfIteration(int) {
-	log.Printf("--------End of iteration %v---------\n", tserv.iteration)
-	tserv.WriteIterationJSONLog()
-	// spawn new agents
+	// 7. Spawn new agents
 	tserv.SpawnNewAgents()
+
+	// Age up all agents
+	for _, agent := range tserv.GetAgentMap() {
+		agent.IncrementAge()
+		// fmt.Printf("Agent %v aged to %d\n", agent.GetID(), agent.GetAge())
+	}
 }
 
 // ---------------------- Helper Functions ----------------------
@@ -305,7 +302,6 @@ func (tserv *TMTServer) MoveAgents() {
 			}
 		}
 
-		//tserv.Grid.UpdateAgentPosition(agent, moveX, moveY)
 		newPos := infra.PositionVector{X: moveX, Y: moveY}
 		tserv.Grid.UpdateAgentPosition(agent, newPos)
 		agent.SetPosition(newPos)
@@ -340,110 +336,31 @@ func (tserv *TMTServer) ApplyClustering() {
 		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())
 	}
 
-	fmt.Println("Cluster assignments:")
+	// fmt.Println("Cluster assignments:")
+	// Initialize map if not done already
+	if tserv.ClusterEliminationData == nil {
+		tserv.ClusterEliminationData = make(map[int]*infra.ClusterEliminations)
+	}
+
+	// Record cluster sizes and set cluster history for each agent
 	for clusterID, agents := range tserv.clusterMap {
-		fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
-	}
-}
+		// Initialize if this cluster hasn't been tracked before
+		if _, exists := tserv.ClusterEliminationData[clusterID]; !exists {
+			tserv.ClusterEliminationData[clusterID] = &infra.ClusterEliminations{}
+		}
+		// Record size of cluster this turn
+		tserv.ClusterEliminationData[clusterID].ClusterSizes = append(
+			tserv.ClusterEliminationData[clusterID].ClusterSizes,
+			len(agents),
+		)
 
-func (tserv *TMTServer) ApplyElimination(turn int) {
-	agentsToRemove := make(map[uuid.UUID]bool)
-
-	if turn == 0 {
-		tserv.updateAgentMortality()
-		for _, agent := range tserv.GetAgentMap() {
-			if !agent.IsAlive() {
-				fmt.Printf("Agent %v has been eliminated (natural causes)\n", agent.GetID())
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[agent.GetID()] = true
+		// For each agent in this cluster, update their history
+		for _, agentID := range agents {
+			if agent, ok := tserv.GetAgentByID(agentID); ok {
+				agent.AppendClusterHistory(clusterID, len(agents))
 			}
 		}
-	} else {
-		// voluntary self-sacrifice
-		for _, agent := range tserv.GetAgentMap() {
-			if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-				// 4.1 Place temples/monuments for self-sacrificed agents
-				fmt.Printf("Agent %v has been eliminated (self-sacrificed)\n", agent.GetID())
-				pos := agent.GetPosition()
-				tserv.Grid.PlaceTemple(pos.X, pos.Y)
-				agent.IncrementHeroism()
-				agentsToRemove[agent.GetID()] = true
-			}
-		}
-		// pick random agent to eliminate if no one self-sacrificed
-		if len(agentsToRemove) == 0 {
-			livingAgents := []infra.IExtendedAgent{}
-			for _, agent := range tserv.GetAgentMap() {
-				if agent.IsAlive() {
-					livingAgents = append(livingAgents, agent)
-				}
-			}
-			if len(livingAgents) > 0 {
-				victim := livingAgents[rand.Intn(len(livingAgents))]
-				fmt.Printf("No self-sacrifices this turn — randomly eliminating Agent %v\n", victim.GetID())
-				pos := victim.GetPosition()
-				tserv.Grid.PlaceTombstone(pos.X, pos.Y)
-				agentsToRemove[victim.GetID()] = true
-			}
-		}
-	}
-
-	// also track eliminations per cluster and in network
-	clusterEliminationCount := make(map[int]int) // number of eliminations per cluster
-	for id := range agentsToRemove {
-		agent, ok := tserv.GetAgentByID(id)
-		if ok {
-			clusterID := agent.GetClusterID()    // get the cluster ID of the agent
-			clusterEliminationCount[clusterID]++ // increment the count for that cluster
-			tserv.RemoveAgent(agent)
-		}
-	}
-
-	// update history for remaining agents:
-	for _, agent := range tserv.GetAgentMap() {
-		//cluster eliminations
-		clusterID := agent.GetClusterID()
-		if eliminatedInCluster, exists := clusterEliminationCount[clusterID]; exists {
-			agent.IncrementClusterEliminations(eliminatedInCluster)
-			//fmt.Printf("Agent %v in cluster %d has %d eliminations in this cluster\n", agent.GetID(), clusterID, eliminatedInCluster)
-		}
-
-		// social network eliminations
-		networkEliminationCount := 0
-		for friendID, esteem := range agent.GetNetwork() {
-			if agentsToRemove[friendID] {
-				eliminatedAgent, exists := tserv.GetAgentByID(friendID)
-				if !exists {
-					continue
-				}
-				networkEliminationCount++
-				
-				if eliminatedAgent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
-					ysterofimia := agent.GetYsterofimia()
-					ysterofimia.IncrementSelfSacrificeCount()
-					ysterofimia.AddSelfSacrificeEsteems(esteem)
-				} else {
-					ysterofimia := agent.GetYsterofimia()
-					ysterofimia.IncrementOtherEliminationCount()
-					ysterofimia.AddOtherEliminationsEsteems(esteem)
-				}
-			}
-		}
-		agent.IncrementNetworkEliminations(networkEliminationCount)
-
-		//track eliminations and esteems for ysterofimia
-	}
-
-}
-
-func (tserv *TMTServer) updateAgentMortality() {
-	for _, agent := range tserv.GetAgentMap() {
-		probDeath := agent.GetTelomere()
-		randVal := rand.Float32()
-		if randVal < probDeath {
-			agent.MarkAsDead()
-		}
+		// fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
 	}
 }
 
@@ -496,7 +413,8 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 				}
 				// send wellbeing check message
 				msg := sender.CreateWellbeingCheckMessage()
-				sender.SendMessage(msg, receiver.GetID())
+				//sender.SendMessage(msg, receiver.GetID())
+				sender.SendSynchronousMessage(msg, receiver.GetID())
 				//fmt.Printf("Agent %v sent wellbeing check to %v\n", sender.GetID(), receiverID)
 
 				//make agent as getting checked on
@@ -523,157 +441,92 @@ func (tserv *TMTServer) ApplyPTS(cluster []uuid.UUID) {
 }
 
 func (tserv *TMTServer) SpawnNewAgents() {
-	agentMap := tserv.GetAgentMap()
-
-	parentIDs := make([]uuid.UUID, 0, len(agentMap))
-	for id := range agentMap {
-		parentIDs = append(parentIDs, id)
+	dist := distuv.Poisson{
+		Lambda: tserv.expectedChildren,
+		Src:    rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
-	rand.Shuffle(len(parentIDs), func(i, j int) { parentIDs[i], parentIDs[j] = parentIDs[j], parentIDs[i] })
+	parentPool := tserv.lastEliminatedAgents
+	poolSize := len(parentPool)
 
-	for i := 0; i+1 < len(parentIDs); i += 2 {
-		parent1, _ := tserv.GetAgentByID(parentIDs[i])
-		parent2, _ := tserv.GetAgentByID(parentIDs[i+1])
+	fmt.Printf("Parent pool size: %d\n", poolSize)
 
-		if !parent1.IsAlive() || !parent2.IsAlive() {
-			continue
+	if poolSize < 2 {
+		fmt.Println("Not enough parents available to spawn new agents.")
+		return
+	}
+
+	rand.Shuffle(poolSize, func(i, j int) {
+		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
+	})
+
+	newKids := 0
+
+	for i := 1; i < poolSize; i += 2 {
+		parent1 := parentPool[i-1]
+		parent2 := parentPool[i]
+		childrenToSpawn := int(dist.Rand())
+		newKids += childrenToSpawn
+		for range childrenToSpawn {
+			tserv.SpawnChild(parent1, parent2)
 		}
+		// fmt.Printf("Spawned %d children from %v and %v\n", childrenToSpawn, parent1.GetID(), parent2.GetID())
+	}
 
-		newWorldview := tserv.MixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
-			randVal := rand.Float32()
+	fmt.Printf("SPAWNED %d NEW CHILDREN\n", newKids)
+}
 
-			var newAgent infra.IExtendedAgent
+func (tserv *TMTServer) SpawnChild(parent1, parent2 infra.IExtendedAgent) {
+	newWorldview := tserv.MixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
 
-			switch {
-			case randVal < 0.25:
-				newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			case randVal < 0.5:
-				newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			case randVal < 0.75:
-				newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			default:
-				newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
-			}
+	randVal := rand.Float32()
+	var newAgent infra.IExtendedAgent
+	switch {
+	case randVal < 0.25:
+		newAgent = agents.CreateSecureAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+	case randVal < 0.5:
+		newAgent = agents.CreateDismissiveAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+	case randVal < 0.75:
+		newAgent = agents.CreatePreoccupiedAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+	default:
+		newAgent = agents.CreateFearfulAgent(tserv, tserv.Grid, parent1.GetID(), parent2.GetID(), newWorldview)
+	}
 
-			//create new agent
-			//newAgent := agents.CreateSecureAgent(tserv, tserv.Grid)
+	parent1.AddDescendant(newAgent.GetID())
+	// fmt.Printf("Agent type: %T\n", parent1)
+	parent2.AddDescendant(newAgent.GetID())
 
-			//newAgent.SetWorldviewBinary(newWorldview)
-			//newAgent.SetParents(parent1.GetID(), parent2.GetID())
-			parent1.AddDescendant(newAgent.GetID())
-			parent2.AddDescendant(newAgent.GetID())
+	//add new agent to server
+	tserv.AddAgent(newAgent)
+	//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
 
-			//add new agent to server
-			tserv.AddAgent(newAgent)
-			//fmt.Printf("New agent %v created from %v and %v with worldview %b\n", newAgent.GetID(), parent1.GetID(), parent2.GetID(), newWorldview)
+	// add relationships in social network
+	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
+	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+}
 
-			// add relationships in social network
-			tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-			tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+func (tserv *TMTServer) UpdateProbabilityOfChildren() {
+	roundEliminations := len(tserv.lastSelfSacrificedAgents)
+	totalAgents := len(tserv.GetAgentMap())
+	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
+	alpha := 0.2
+	beta := 0.1
+
+	if proportionOfEliminations >= tserv.neededProportionEliminations {
+		tserv.expectedChildren = math.Min(tserv.expectedChildren+alpha*(1-tserv.expectedChildren), 2.5)
+	} else {
+		tserv.expectedChildren = math.Max(tserv.expectedChildren-beta*tserv.expectedChildren, 1.8)
 	}
 }
 
 func (tserv *TMTServer) MixWorldviews(wv1, wv2 uint32) uint32 {
-	mask := uint32(rand.Int31()) // or rand.Uint32() for full 32-bit mask
+	mask := rand.Uint32() // or rand.Uint32() for full 32-bit mask
 	return (wv1 & mask) | (wv2 &^ mask)
 }
 
 // ---------------------- Recording Turn Data ----------------------
-// func (tserv *TMTServer) RecordTurnInfo() {
-// 	// Create a new infra record
-// 	newInfraRecord := gameRecorder.NewInfraRecord(tserv.turn, tserv.iteration)
 
-// 	// Record agent positions
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		pos := agent.GetPosition()
-// 		newInfraRecord.AgentPositions[[2]int{pos.X, pos.Y}] = true
-// 	}
-
-// 	// Record tombstone locations
-// 	for _, tombstonePos := range tserv.Grid.Tombstones {
-// 		newInfraRecord.Tombstones[[2]int{tombstonePos.X, tombstonePos.Y}] = true
-// 	}
-
-// 	for _, templePos := range tserv.Grid.Temples {
-// 		newInfraRecord.Temples[[2]int{templePos.X, templePos.Y}] = true
-// 	}
-
-// 	// Collect agent records
-// 	agentRecords := []gameRecorder.AgentRecord{}
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		newAgentRecord := agent.RecordAgentStatus(agent)
-// 		newAgentRecord.IsAlive = true
-// 		newAgentRecord.TurnNumber = tserv.turn
-// 		newAgentRecord.IterationNumber = tserv.iteration
-// 		// Explicitly fetch the latest age instead of using stale data
-// 		newAgentRecord.AgentAge = agent.GetAge()
-// 		//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-// 		agentRecords = append(agentRecords, newAgentRecord)
-// 	}
-
-// 	// Record eliminated agents
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		if _, alive := tserv.GetAgentMap()[agent.GetID()]; !alive {
-// 			newAgentRecord := agent.RecordAgentStatus(agent)
-// 			newAgentRecord.IsAlive = false
-// 			newAgentRecord.TurnNumber = tserv.turn
-// 			newAgentRecord.IterationNumber = tserv.iteration
-// 			//newAgentRecord.Died = agent.GetMortality()
-// 			newAgentRecord.SpecialNote = "Eliminated"
-
-// 			// Explicitly store the last known age before elimination
-// 			newAgentRecord.AgentAge = agent.GetAge()
-// 			//fmt.Printf("[DEBUG] Recorded Age for Agent %v: %d\n", agent.GetID(), newAgentRecord.AgentAge)
-// 			agentRecords = append(agentRecords, newAgentRecord)
-// 		}
-// 	}
-
-// 	// Save the recorded turn in the data recorder
-// 	tserv.DataRecorder.RecordNewTurn(agentRecords, newInfraRecord)
-// }
-
-
-// func (tserv *TMTServer) RecordTurnJSON() {
-// 	// Prepare container for JSON agent records
-
-// 	var allAgentRecords []gameRecorder.JSONAgentRecord
-// 	for _, agent := range tserv.GetAgentMap() {
-// 		record := agent.RecordAgentJSON(agent)
-// 		record.IsAlive = true
-// 		allAgentRecords = append(allAgentRecords, record)
-// 	}
-
-// 	// Tombstone + Temple Positions
-// 	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
-// 	for i, pos := range tserv.Grid.Tombstones {
-// 		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
-// 	}
-
-// 	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
-// 	for i, pos := range tserv.Grid.Temples {
-// 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
-// 	}
-
-// 	// Collect final log
-// 	jsonLog := gameRecorder.TurnJSONRecord{
-// 		Iteration:            tserv.iteration,
-// 		Turn:                 tserv.turn,
-// 		NumberOfAgents:       len(tserv.GetAgentMap()),
-// 		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
-// 		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
-// 		TombstoneLocations:   tombstonePositions,
-// 		TempleLocations:      templePositions,
-// 	}
-
-// 	// Write to file
-// 	err := gameRecorder.WriteTurnJSONRecord("JSONlogs", jsonLog)
-// 	if err != nil {
-// 		fmt.Printf("Error writing JSON log: %v\n", err)
-// 	}
-// }
-
-func (tserv *TMTServer) RecordTurnJSON() {
+func (tserv *TMTServer) RecordTurnJSON(iter, turn int) {
 	var allAgentRecords []gameRecorder.JSONAgentRecord
 	for _, agent := range tserv.GetAgentMap() {
 		record := agent.RecordAgentJSON(agent)
@@ -692,12 +545,12 @@ func (tserv *TMTServer) RecordTurnJSON() {
 	}
 
 	jsonLog := gameRecorder.TurnJSONRecord{
-		Iteration:            tserv.iteration,
-		Turn:                 tserv.turn,
-		Agents:			      allAgentRecords,
+		Iteration:            iter,
+		Turn:                 turn,
+		Agents:               allAgentRecords,
 		NumberOfAgents:       len(tserv.GetAgentMap()),
-		//EliminatedAgents:     gameRecorder.UUIDsToStrings(tserv.LastEliminated),
-		//SelfSacrificedAgents: gameRecorder.UUIDsToStrings(tserv.LastSelfSacrificed),
+		EliminatedAgents:     AgentsToStrings(tserv.lastEliminatedAgents),
+		SelfSacrificedAgents: AgentsToStrings(tserv.lastSelfSacrificedAgents),
 		TombstoneLocations:   tombstonePositions,
 		TempleLocations:      templePositions,
 	}
@@ -705,9 +558,9 @@ func (tserv *TMTServer) RecordTurnJSON() {
 	tserv.JSONTurnLogs = append(tserv.JSONTurnLogs, jsonLog)
 }
 
-func (tserv *TMTServer) WriteIterationJSONLog() {
+func (tserv *TMTServer) WriteIterationJSONLog(iter int) {
 	log := gameRecorder.IterationJSONRecord{
-		Iteration: tserv.iteration,
+		Iteration: iter,
 		Turns:     tserv.JSONTurnLogs,
 	}
 
@@ -718,4 +571,12 @@ func (tserv *TMTServer) WriteIterationJSONLog() {
 
 	// Clear memory for next iteration
 	tserv.JSONTurnLogs = nil
+}
+
+func AgentsToStrings(agents []infra.IExtendedAgent) []string {
+	result := make([]string, len(agents))
+	for i, agent := range agents {
+		result[i] = agent.GetID().String()
+	}
+	return result
 }

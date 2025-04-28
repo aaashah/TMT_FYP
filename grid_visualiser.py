@@ -36,7 +36,7 @@ for filename in sorted(os.listdir(LOG_DIR)):
 unique_agent_ids = set()
 for turns in iteration_logs.values():
     for turn in turns:
-        for agent in turn.get("Agents", []):
+        for agent in turn.get("Agents") or []:
             unique_agent_ids.add(agent["ID"])
 
 agent_colors = {
@@ -105,8 +105,8 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
 
     turn_data = iteration_logs[current_iteration][current_turn]
     agents = turn_data.get("Agents", [])
-    tombstones = turn_data.get("TombstoneLocations", [])
-    temples = turn_data.get("TempleLocations", [])
+    tombstones = turn_data.get("TombstoneLocations") or []
+    temples = turn_data.get("TempleLocations") or []
 
     fig = go.Figure()
 

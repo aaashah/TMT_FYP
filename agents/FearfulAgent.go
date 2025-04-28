@@ -21,6 +21,7 @@ func CreateFearfulAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.U
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.5, 1.0),
 		Avoidance: randInRange(0.5, 1.0),
+		Type:      "Fearful",
 	}
 	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{

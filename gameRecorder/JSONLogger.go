@@ -24,10 +24,10 @@ type JSONAgentRecord struct {
 	Position               Position          `json:"Position"`
 	Worldview              uint32            `json:"Worldview"`
 	Heroism                int               `json:"Heroism"`
-	MortalitySalience      float32           `json:"MortalitySalience"`
-	WorldviewValidation    float32           `json:"WorldviewValidation"`
-	RelationshipValidation float32           `json:"RelationshipValidation"`
-	ASPDecison		       string `json:"ASPDecision"`
+	//MortalitySalience      float32           `json:"MortalitySalience"`
+	//WorldviewValidation    float32           `json:"WorldviewValidation"`
+	//RelationshipValidation float32           `json:"RelationshipValidation"`
+	//ASPDecison		       string            `json:"ASPDecision"`
 }
 
 type TurnJSONRecord struct {

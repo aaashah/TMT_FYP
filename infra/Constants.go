@@ -21,3 +21,8 @@ const (
 	W9  float32 = 0.25
 	W10 float32 = 0.5
 )
+
+const (
+	// Agents to eliminate per turn
+	RequiredToEliminate = 1
+)

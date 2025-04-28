@@ -3,6 +3,8 @@ package infra
 import (
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	"github.com/aaashah/TMT_Attachment/gameRecorder"
+
+	//"github.com/aaashah/TMT_Attachment/gameRecorder"
 	"github.com/google/uuid"
 )
 
@@ -15,7 +17,6 @@ type IExtendedAgent interface {
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
 	//IsMortalitySalient() bool
-	GetSelfSacrificeWillingness() float32
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
@@ -47,6 +48,8 @@ type IExtendedAgent interface {
 	IncrementAge()
 	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
+	AppendClusterHistory(id int, size int)
+	AppendNetworkSizeHistory(size int)
 	//SetContextSacrifice(context string)
 	MarkAsDead()
 	UpdateEsteem(id uuid.UUID, isCheck bool)
