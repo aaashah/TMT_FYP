@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aaashah/TMT_Attachment/config"
 	"github.com/google/uuid"
 )
 
@@ -46,12 +47,8 @@ type IterationJSONRecord struct {
 	Turns     []TurnJSONRecord `json:"Turns"`
 }
 
-type ConfigJSONRecord struct {
-	ProportionAgentsNeeded float32 `json:"PopulationRho"`
-}
-
 type GameJSONRecord struct {
-	Config     ConfigJSONRecord      `json:"Config"`
+	Config     config.Config         `json:"Config"`
 	Iterations []IterationJSONRecord `json:"Iterations"`
 }
 
@@ -59,7 +56,7 @@ func (gjr *GameJSONRecord) AddIteration(record IterationJSONRecord) {
 	gjr.Iterations = append(gjr.Iterations, record)
 }
 
-func MakeGameRecord(config ConfigJSONRecord) *GameJSONRecord {
+func MakeGameRecord(config config.Config) *GameJSONRecord {
 	return &GameJSONRecord{
 		Config:     config,
 		Iterations: make([]IterationJSONRecord, 0),

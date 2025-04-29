@@ -20,7 +20,7 @@ func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 type Attachment struct {
 	Anxiety   float32
 	Avoidance float32
-	Type	  string
+	Type      string
 }
 
 type Telomere struct {
@@ -31,10 +31,10 @@ type Telomere struct {
 }
 
 type PTSParams struct {
-	CheckProb    float32 // prob of sending a wellbeing check
-	ReplyProb    float32 // prob of replying to a check
-	Alpha        float32 // reinforcement param
-	Beta         float32 // reinforcement param
+	CheckProb float32 // prob of sending a wellbeing check
+	ReplyProb float32 // prob of replying to a check
+	Alpha     float32 // reinforcement param
+	Beta      float32 // reinforcement param
 }
 
 func NewTelomere(age, ageA, ageB int, lifeSpan float32) *Telomere {
@@ -63,23 +63,23 @@ func (t *Telomere) GetProbabilityOfDeath() float32 {
 type SocialNetwork map[uuid.UUID]float32
 
 type ClusterEliminations struct {
-    TotalEliminations []int // eliminations in this cluster per turn
-    ClusterSizes      []int // size of this cluster per turn
+	TotalEliminations []int // eliminations in this cluster per turn
+	ClusterSizes      []int // size of this cluster per turn
 }
 
 type Ysterofimia struct {
-	SelfSacrificeCount		    int // number of times agent volunteered self-sacrifices
-	SelfSacrificeEsteems        float32 // total esteems from agents who self-sacrificed
-	OtherEliminationCount       int // number of times agent was eliminated by other than self-sacrifice
-	OtherEliminationsEsteems    float32 // total esteems from agents who eliminated other than self-sacrifice
+	SelfSacrificeCount       int     // number of times agent volunteered self-sacrifices
+	SelfSacrificeEsteems     float32 // total esteems from agents who self-sacrificed
+	OtherEliminationCount    int     // number of times agent was eliminated by other than self-sacrifice
+	OtherEliminationsEsteems float32 // total esteems from agents who eliminated other than self-sacrifice
 }
 
 func NewYsterofimia() *Ysterofimia {
 	return &Ysterofimia{
-		SelfSacrificeCount:         0,
-		SelfSacrificeEsteems:       0.0,
-		OtherEliminationCount:      0,
-		OtherEliminationsEsteems:   0.0,
+		SelfSacrificeCount:       0,
+		SelfSacrificeEsteems:     0.0,
+		OtherEliminationCount:    0,
+		OtherEliminationsEsteems: 0.0,
 	}
 }
 func (y *Ysterofimia) IncrementSelfSacrificeCount() {
@@ -101,8 +101,8 @@ func (y *Ysterofimia) ComputeYsterofimia() float32 {
 	totalEsteem := y.SelfSacrificeEsteems + y.OtherEliminationsEsteems
 
 	if totalEliminations == 0 || totalEsteem == 0 {
-        return 0.5 // no eliminations or no esteem data
-    }
+		return 0.5 // no eliminations or no esteem data
+	}
 
 	//esteemRatio := float32(y.SelfSacrificeEsteems) / float32(totalEsteem)
 	sacrificeEsteemRatio := float32(y.SelfSacrificeEsteems) / float32(y.SelfSacrificeCount)
@@ -130,6 +130,6 @@ func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
 }
 
 type DeathInfo struct {
-	Agent         IExtendedAgent
-	WasVoluntary  bool
+	Agent        IExtendedAgent
+	WasVoluntary bool
 }
