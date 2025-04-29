@@ -1,7 +1,6 @@
 package infra
 
 import (
-	//"math"
 	"math/rand"
 	"sync"
 )

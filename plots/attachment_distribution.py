@@ -44,13 +44,30 @@ for style, color in color_map.items():
     plt.plot(turn_numbers, style_prop, label=style, marker="o", color=color)
 
 # Show all round numbers on x-axis
-plt.xticks(ticks=simplified_x_ticks)
-
+plt.xticks(ticks=simplified_x_ticks, rotation=-45)
 plt.ylim(0, 1)
 plt.ylabel("Proportion of Population")
-plt.xlabel("Rounds")
+plt.xlabel("Turn")
 plt.title("Attachment Type Distribution Over Time")
 plt.legend()
-plt.grid(True)
 plt.tight_layout()
+plt.show()
+
+# stacked area plot (primer special)
+plt.figure(figsize=(14, 6))
+plt.stackplot(
+    turn_numbers,
+    attachment_data.values(),  # unpack all the arrays
+    labels=attachment_data.keys(),  # use the keys as labels
+    alpha=0.8,
+    edgecolor="white",
+)
+
+plt.ylim(bottom=0, top=1)
+plt.xlim(left=0, right=len(simplified_x_ticks))
+plt.ylabel("Proportion of Population")
+plt.xlabel("Turn")
+plt.xticks(ticks=simplified_x_ticks, rotation=-45)
+plt.title("Attachment Type Distribution Over Time")
+plt.legend()
 plt.show()

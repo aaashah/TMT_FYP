@@ -22,7 +22,7 @@ simplified_x_ticks = range(0, total_turns + 1, 5)
 # Plot
 plt.figure(figsize=(14, 5))
 plt.plot(turn_numbers, pop_count, marker="o", label="Agent Count")
-plt.xticks(simplified_x_ticks)
+plt.xticks(simplified_x_ticks, rotation=-45)
 plt.xlabel("Turn")
 plt.ylabel("Number of Alive Agents")
 plt.title("Agent Population Over Time")

@@ -9,6 +9,6 @@ require (
 	github.com/google/uuid v1.6.0
 )
 
-require gonum.org/v1/gonum v0.16.0 
+require gonum.org/v1/gonum v0.16.0
 
 //require github.com/go-echarts/go-echarts/v2 v2.5.1

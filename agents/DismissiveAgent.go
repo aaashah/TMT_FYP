@@ -6,29 +6,28 @@ import (
 
 	"github.com/google/uuid"
 
-	//gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
-	infra "github.com/aaashah/TMT_Attachment/infra"
+	"github.com/aaashah/TMT_Attachment/infra"
 )
 
 type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server infra.IServer, grid *infra.Grid, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *DismissiveAgent {
-	extendedAgent := CreateExtendedAgent(server, grid, parent1ID, parent2ID, worldview)
+func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *DismissiveAgent {
+	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.5, 1.0),
-		Type:	   "Dismissive",
+		Type:      "Dismissive",
 	}
 	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{
 		CheckProb: randInRange(0.0, 0.5),
 		ReplyProb: randInRange(0.0, 0.5),
-		Alpha:     randInRange(0.0, 0.5), 
-		Beta:      randInRange(0.0, 0.5), 
+		Alpha:     randInRange(0.0, 0.5),
+		Beta:      randInRange(0.0, 0.5),
 	}
 
 	return &DismissiveAgent{
@@ -71,5 +70,3 @@ func (da *DismissiveAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVe
 
 	return closestFriend.GetPosition(), true
 }
-
-

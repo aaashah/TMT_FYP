@@ -4,7 +4,6 @@ import (
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
 	"github.com/aaashah/TMT_Attachment/gameRecorder"
 
-	//"github.com/aaashah/TMT_Attachment/gameRecorder"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +19,7 @@ type IExtendedAgent interface {
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldviewBinary() uint32
-	GetYsterofimia() *Ysterofimia 
+	GetYsterofimia() *Ysterofimia
 	//GetMortality() bool
 	GetTelomere() float32
 	IsAlive() bool
