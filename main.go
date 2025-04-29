@@ -35,8 +35,7 @@ func main() {
 	}
 
 	// Initialize social network after agents are created
-	const connectionProbability = 0.35
-	serv.InitialiseRandomNetwork(connectionProbability)
+	serv.InitialiseRandomNetwork(config.ConnectionProbability)
 
 	// Start server
 	serv.Start()
