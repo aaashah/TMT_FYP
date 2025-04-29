@@ -219,6 +219,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.updateAgentHeroism(fullDeathReport)
 
 	// 7. Spawn new agents
+	tserv.updateProbabilityOfChildren()
 	tserv.SpawnNewAgents()
 
 	// Age up all agents
@@ -496,17 +497,15 @@ func (tserv *TMTServer) SpawnChild(parent1, parent2 infra.IExtendedAgent) {
 	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
 }
 
-func (tserv *TMTServer) UpdateProbabilityOfChildren() {
+func (tserv *TMTServer) updateProbabilityOfChildren() {
 	roundEliminations := len(tserv.lastSelfSacrificedAgents)
 	totalAgents := len(tserv.GetAgentMap())
 	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
-	alpha := 0.2
-	beta := 0.1
 
 	if proportionOfEliminations >= tserv.neededProportionEliminations {
-		tserv.expectedChildren = math.Min(tserv.expectedChildren+alpha*(1-tserv.expectedChildren), 2.5)
+		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, 2.2)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren-beta*tserv.expectedChildren, 1.8)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, 1.8)
 	}
 }
 

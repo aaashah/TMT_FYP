@@ -31,7 +31,7 @@ plt.plot(
     turn_numbers, volunteers, marker="o", label="Number of Volunteers", color="green"
 )
 plt.plot(turn_numbers, required, linestyle="--", label="Number Required", color="red")
-plt.xticks(simplified_x_ticks)
+plt.xticks(simplified_x_ticks, rotation=-45)
 plt.xlabel("Turn")
 plt.ylabel("Number of Agents")
 plt.title(rf"Volunteers vs Required Eliminations per Turn ($\rho$={rho})")
