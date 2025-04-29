@@ -63,7 +63,6 @@ type IExtendedAgent interface {
 	HandleReplyMessage(msg *ReplyMessage)
 
 	//Info
-	GetExposedInfo() ExposedAgentInfo
 	AgentInitialised()
 
 	// Data Recording

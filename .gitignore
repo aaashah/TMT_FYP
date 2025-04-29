@@ -28,3 +28,4 @@ logs/
 visualisation_output/
 server/.DS_Store
 JSONlogs/
+.DS_Store

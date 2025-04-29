@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 log_dir = "JSONlogs/output.json"
 volunteers = []
 required = []
+actually_eliminated = []
 turn_numbers = []
 rho = None
 
@@ -14,8 +15,10 @@ with open(log_dir, "r") as file:
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
         for TURN in ITER["Turns"]:
-            num_vols = len(TURN.get("EliminatedBySelfSacrifice", []))
+            acc_elim = len(TURN.get("EliminatedAgents", []))
+            num_vols = TURN["NumVolunteers"]
             num_req = TURN["TotalRequiredEliminations"]
+            actually_eliminated.append(acc_elim)
             volunteers.append(num_vols)
             required.append(num_req)
             turn_numbers.append(turn_number)
@@ -27,10 +30,15 @@ simplified_x_ticks = range(0, total_turns + 1, 5)
 
 # Plot
 plt.figure(figsize=(14, 5))
+plt.xlim(0, total_turns)
+plt.plot(turn_numbers, volunteers, label="Volunteers", color="green")
+plt.plot(turn_numbers, required, linestyle="--", label="Required", color="red")
 plt.plot(
-    turn_numbers, volunteers, marker="o", label="Number of Volunteers", color="green"
+    turn_numbers,
+    actually_eliminated,
+    label="Eliminated",
+    color="blue",
 )
-plt.plot(turn_numbers, required, linestyle="--", label="Number Required", color="red")
 plt.xticks(simplified_x_ticks, rotation=-45)
 plt.xlabel("Turn")
 plt.ylabel("Number of Agents")

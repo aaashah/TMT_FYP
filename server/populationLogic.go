@@ -69,6 +69,8 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	totalAgents := float64(len(tserv.GetAgentMap()))
 	neededVolunteers := int(tserv.neededProportionEliminations * totalAgents)
 	actualVolunteers := len(volunteers)
+	// record number of volunteers
+	tserv.numVolunteeredAgents = actualVolunteers
 
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate

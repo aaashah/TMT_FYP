@@ -512,12 +512,6 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 
 }
 
-func (ea *ExtendedAgent) GetExposedInfo() infra.ExposedAgentInfo {
-	return infra.ExposedAgentInfo{
-		AgentUUID: ea.GetID(),
-	}
-}
-
 func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
 	ea.network[id] = change
 }

@@ -28,6 +28,7 @@ type TMTServer struct {
 	ClusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
 	lastEliminatedAgents         []infra.IExtendedAgent
 	lastSelfSacrificedAgents     []infra.IExtendedAgent
+	numVolunteeredAgents         int
 	expectedChildren             float64
 	neededProportionEliminations float64
 	gameRecorder                 *gameRecorder.GameJSONRecord
@@ -43,6 +44,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 		ClusterEliminationData:       make(map[int]*infra.ClusterEliminations),
 		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
 		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
+		numVolunteeredAgents:         0,
 		expectedChildren:             config.InitialExpectedChildren,
 		neededProportionEliminations: config.PopulationRho,
 		gameRecorder:                 gameRecorder.MakeGameRecord(config),
@@ -543,6 +545,7 @@ func (tserv *TMTServer) RecordTurnJSON(iter, turn int) {
 		NumberOfAgents:            len(tserv.GetAgentMap()),
 		EliminatedAgents:          AgentsToStrings(tserv.lastEliminatedAgents),
 		TotalRequiredEliminations: reqElims,
+		TotalVolunteers:           tserv.numVolunteeredAgents,
 		SelfSacrificedAgents:      AgentsToStrings(tserv.lastSelfSacrificedAgents),
 		TombstoneLocations:        tombstonePositions,
 		TempleLocations:           templePositions,

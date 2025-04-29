@@ -37,6 +37,7 @@ type TurnJSONRecord struct {
 	NumberOfAgents            int               `json:"NumberOfAgents"`
 	EliminatedAgents          []string          `json:"EliminatedAgents"`
 	SelfSacrificedAgents      []string          `json:"EliminatedBySelfSacrifice"`
+	TotalVolunteers           int               `json:"NumVolunteers"`
 	TotalRequiredEliminations int               `json:"TotalRequiredEliminations"`
 	TombstoneLocations        []Position        `json:"TombstoneLocations"`
 	TempleLocations           []Position        `json:"TempleLocations"`

@@ -31,7 +31,6 @@ func main() {
 		if config.Debug {
 			agent.AgentInitialised() // Call the method to print agent details
 		}
-		//fmt.Printf("Agent %v added with with Age: %d, Attachment: [%.2f, %.2f]\n", agent.GetID(), agent.GetAge(), agent.GetAttachment()[0], agent.GetAttachment()[1])
 	}
 
 	// Initialize social network after agents are created
