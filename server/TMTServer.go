@@ -36,7 +36,7 @@ type TMTServer struct {
 
 func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
-		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](10, 10, 50*time.Millisecond, 100),
+		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
 		isDebug:                      config.Debug,
 		Grid:                         infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
 		clusterMap:                   make(map[int][]uuid.UUID),

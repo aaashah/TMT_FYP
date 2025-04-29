@@ -3,7 +3,7 @@ package server
 import (
 	"math/rand"
 
-	infra "github.com/aaashah/TMT_Attachment/infra"
+	"github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
 )
 

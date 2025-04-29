@@ -7,8 +7,8 @@ import (
 	"sort"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
-	gameRecorder "github.com/aaashah/TMT_Attachment/gameRecorder"
-	infra "github.com/aaashah/TMT_Attachment/infra"
+	"github.com/aaashah/TMT_Attachment/gameRecorder"
+	"github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
 )
 

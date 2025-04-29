@@ -1,7 +1,6 @@
 package infra
 
 import (
-	//"github.com/google/uuid"
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/message"
 )
 
