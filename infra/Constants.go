@@ -23,11 +23,6 @@ const (
 )
 
 const (
-	// Agents to eliminate per turn
-	RequiredToEliminate = 1
-)
-
-const (
 	GRID_WIDTH  int = 70
 	GRID_HEIGHT int = 30
 )
