@@ -11,21 +11,21 @@ with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
-        for TURN in ITER["Turns"]:
-            agents = TURN.get("Agents", [])
-            total = max(len(agents), 1)
-            counter = defaultdict(int)
-            for agent in agents:
-                style = agent.get("AttachmentStyle", "Unknown")
-                counter[style] += 1
+        TURN = ITER["Turns"][-1]
+        agents = TURN["Agents"] or []
+        total = max(len(agents), 1)
+        counter = defaultdict(int)
+        for agent in agents:
+            style = agent.get("AttachmentStyle", "Unknown")
+            counter[style] += 1
 
-            assert counter["Unknown"] == 0
+        assert counter["Unknown"] == 0
 
-            for style in attachment_data.keys():
-                attachment_data[style].append(counter[style] / total)
+        for style in attachment_data.keys():
+            attachment_data[style].append(counter[style] / total)
 
-            turn_numbers.append(turn_number)
-            turn_number += 1
+        turn_numbers.append(turn_number)
+        turn_number += 1
 
 
 # Step 2: Plot each style over time
@@ -47,7 +47,7 @@ for style, color in color_map.items():
 plt.xticks(ticks=simplified_x_ticks, rotation=-45)
 plt.ylim(0, 1)
 plt.ylabel("Proportion of Population")
-plt.xlabel("Turn")
+plt.xlabel("Iteration")
 plt.title("Attachment Type Distribution Over Time")
 plt.legend()
 plt.tight_layout()
@@ -66,7 +66,7 @@ plt.stackplot(
 plt.ylim(bottom=0, top=1)
 plt.xlim(left=0, right=len(simplified_x_ticks))
 plt.ylabel("Proportion of Population")
-plt.xlabel("Turn")
+plt.xlabel("Iteration")
 plt.xticks(ticks=simplified_x_ticks, rotation=-45)
 plt.title("Attachment Type Distribution Over Time")
 plt.legend()

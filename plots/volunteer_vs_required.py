@@ -14,15 +14,16 @@ with open(log_dir, "r") as file:
     rho = config["PopulationRho"]
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
-        for TURN in ITER["Turns"]:
-            acc_elim = len(TURN.get("EliminatedAgents", []))
-            num_vols = TURN["NumVolunteers"]
-            num_req = TURN["TotalRequiredEliminations"]
-            actually_eliminated.append(acc_elim)
-            volunteers.append(num_vols)
-            required.append(num_req)
-            turn_numbers.append(turn_number)
-            turn_number += 1
+        TURN = ITER["Turns"][-1]
+        # for TURN in ITER["Turns"]:
+        acc_elim = len(TURN.get("EliminatedAgents", []))
+        num_vols = TURN["NumVolunteers"]
+        num_req = TURN["TotalRequiredEliminations"]
+        actually_eliminated.append(acc_elim)
+        volunteers.append(num_vols)
+        required.append(num_req)
+        turn_numbers.append(turn_number)
+        turn_number += 1
 
 
 total_turns = len(turn_numbers)
@@ -40,7 +41,7 @@ plt.plot(
     color="blue",
 )
 plt.xticks(simplified_x_ticks, rotation=-45)
-plt.xlabel("Turn")
+plt.xlabel("Iteration")
 plt.ylabel("Number of Agents")
 plt.title(rf"Volunteers vs Required Eliminations per Turn ($\rho$={rho})")
 plt.ylim(0, max(volunteers + required) + 1)  # Auto-scaled y-axis
