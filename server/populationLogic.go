@@ -10,8 +10,9 @@ import (
 func (tserv *TMTServer) updateAgentMortality() {
 	for _, agent := range tserv.GetAgentMap() {
 		probDeath := agent.GetTelomere()
-		randVal := rand.Float32()
+		randVal := rand.Float64()
 		if randVal < probDeath {
+			// fmt.Printf("Agent age: %d, Death prob: %f\n", agent.GetAge(), probDeath)
 			agent.MarkAsDead()
 		}
 	}

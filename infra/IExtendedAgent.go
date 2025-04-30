@@ -21,7 +21,7 @@ type IExtendedAgent interface {
 	GetWorldviewBinary() uint32
 	GetYsterofimia() *Ysterofimia
 	//GetMortality() bool
-	GetTelomere() float32
+	GetTelomere() float64
 	IsAlive() bool
 	//GetContextSacrifice() string
 	// Move(grid *Grid)

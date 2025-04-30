@@ -14,7 +14,7 @@ import (
 
 type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
-	Server infra.IServer
+	infra.IServer
 
 	Telomere *infra.Telomere
 
@@ -56,25 +56,17 @@ type ExtendedAgent struct {
 	//RelationshipValidation float32 //section in ASP module
 }
 
-// type AgentConfig struct {
-// 	InitSacrificeWillingness float32
-// }
-
-//var _ infra.IExtendedAgent = (*ExtendedAgent)(nil)
-
 func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *ExtendedAgent {
-	A := rand.Intn(25) + 40     // (40-65)
-	B := A + rand.Intn(35) + 20 // Random max age (60 - 100)
 
 	return &ExtendedAgent{
 		BaseAgent:    agent.CreateBaseAgent(server),
-		Server:       server,                                                               // Type assert the server functions to IServer interface
+		IServer:      server,                                                               // Type assert the server functions to IServer interface
 		Attachment:   infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
 		Heroism:      0,                                                                    //start at 0 increment if chose to self-sacrifice
 		network:      make(map[uuid.UUID]float32),
 		parent1:      parent1ID,
 		parent2:      parent2ID,
-		Telomere:     infra.NewTelomere(rand.Intn(50), A, B, 0.5),
+		Telomere:     infra.NewTelomere(),
 		worldview:    worldview,
 		Ysterofimia:  infra.NewYsterofimia(),
 		AgentIsAlive: true,
@@ -91,11 +83,10 @@ func (ea *ExtendedAgent) GetName() uuid.UUID {
 }
 
 func (ea *ExtendedAgent) GetAge() int {
-	// Beta distribution parameters (adjusted to fit UK population shape)
 	return ea.Telomere.GetAge()
 }
 
-func (ea *ExtendedAgent) GetTelomere() float32 {
+func (ea *ExtendedAgent) GetTelomere() float64 {
 	return ea.Telomere.GetProbabilityOfDeath()
 }
 
@@ -124,7 +115,7 @@ func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 }
 
 func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
-	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, strength)
+	ea.UpdateAgentRelationship(ea.GetID(), otherID, strength)
 }
 
 func (ea *ExtendedAgent) RemoveRelationship(otherID uuid.UUID) {
@@ -132,7 +123,7 @@ func (ea *ExtendedAgent) RemoveRelationship(otherID uuid.UUID) {
 }
 
 func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
-	ea.Server.UpdateAgentRelationship(ea.GetID(), otherID, change)
+	ea.UpdateAgentRelationship(ea.GetID(), otherID, change)
 }
 
 // Finds closest friend in social network
@@ -142,7 +133,7 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 
 	for friendID := range ea.network {
 		// lookup friend in server
-		agentInterface, exists := ea.Server.GetAgentByID(friendID)
+		agentInterface, exists := ea.GetAgentByID(friendID)
 		if !exists {
 			continue
 		}
@@ -265,7 +256,7 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 	age := ea.GetAge()
 
 	for friendID := range ea.network {
-		friend, ok := ea.Server.GetAgentByID(friendID)
+		friend, ok := ea.GetAgentByID(friendID)
 		if ok && friendID != ea.GetID() {
 			totalAge += friend.GetAge()
 			numAgentsNetwork++
@@ -284,7 +275,7 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 }
 
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
-	agentMap := ea.Server.GetAgentMap()
+	agentMap := ea.GetAgentMap()
 	selfPosition := ea.GetPosition()
 	clusterID := ea.GetClusterID()
 	memorials := append(grid.Tombstones, grid.Temples...)
@@ -346,7 +337,7 @@ func worldviewAlignment(a, b uint32) float32 {
 
 func (ea *ExtendedAgent) GetCPR() float32 {
 	// compute cluster profiles
-	agentMap := ea.Server.GetAgentMap()
+	agentMap := ea.GetAgentMap()
 	clusterID := ea.GetClusterID()
 	clusterAlignments := []float32{}
 	for _, otherAgent := range agentMap {
@@ -373,7 +364,7 @@ func (ea *ExtendedAgent) GetCPR() float32 {
 func (ea *ExtendedAgent) GetNPR() float32 {
 	// compute network profiles
 	networkAlignments := []float32{}
-	agentMap := ea.Server.GetAgentMap()
+	agentMap := ea.GetAgentMap()
 	for friendID := range ea.network {
 		if other, ok := agentMap[friendID]; ok {
 			score := worldviewAlignment(ea.worldview, other.GetWorldviewBinary())
@@ -424,7 +415,7 @@ func (ea *ExtendedAgent) GetProSocialEsteem() float32 {
 }
 
 func (ea *ExtendedAgent) GetHeroismTendency() float32 {
-	agentMap := ea.Server.GetAgentMap()
+	agentMap := ea.GetAgentMap()
 	selfHeroism := ea.GetHeroism()
 	network := ea.network
 

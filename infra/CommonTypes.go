@@ -23,11 +23,12 @@ type Attachment struct {
 	Type      string
 }
 
+// for use in Gompertz Death function - 1 - exp(-a/b * exp(kx - 1))
 type Telomere struct {
-	age            int
-	lowerThreshold int
-	upperThreshold int
-	lifespanDecay  float32
+	age              int
+	alpha            float64
+	beta             float64
+	generationLength int
 }
 
 type PTSParams struct {
@@ -37,8 +38,10 @@ type PTSParams struct {
 	Beta      float32 // reinforcement param
 }
 
-func NewTelomere(age, ageA, ageB int, lifeSpan float32) *Telomere {
-	return &Telomere{age, ageA, ageB, lifeSpan}
+func NewTelomere() *Telomere {
+	alpha := 0.001
+	beta := 0.3
+	return &Telomere{0, alpha, beta, 30}
 }
 
 func (t *Telomere) GetAge() int {
@@ -49,15 +52,30 @@ func (t *Telomere) IncrementAge() {
 	t.age++
 }
 
-func (t *Telomere) GetProbabilityOfDeath() float32 {
-	if t.age < t.lowerThreshold {
-		return 0.005 * float32(t.age) // Small increasing probability
-	} else if t.age >= t.upperThreshold {
-		return 1.0 // Guaranteed death at AgeB
-	} else {
-		// Linearly increasing probability from AgeA to AgeB
-		return float32(t.age-t.lowerThreshold) / float32(t.upperThreshold-t.lowerThreshold)
+// func (t *Telomere) getCumulativeDeathRate(time int) float64 {
+// 	upperExp := math.Exp(t.beta*float64(time)) - 1
+// 	return 1 - math.Exp(-t.alpha/t.beta*upperExp)
+// }
+
+// // hazard rate
+// func (t *Telomere) GetProbabilityOfDeath() float64 {
+// 	if t.age == 0 {
+// 		return 0.0
+// 	}
+// 	if t.age >= t.generationLength {
+// 		return 1.0
+// 	}
+// 	currentDeathProb := t.getCumulativeDeathRate(t.age)
+// 	previousDeathProb := t.getCumulativeDeathRate(t.age - 1)
+// 	previousSurvivalProb := 1 - previousDeathProb
+// 	return (currentDeathProb - previousDeathProb) / previousSurvivalProb
+// }
+
+func (t *Telomere) GetProbabilityOfDeath() float64 {
+	if t.age >= t.generationLength {
+		return 1.0
 	}
+	return min(t.alpha*math.Exp(t.beta*float64(t.age)), 1)
 }
 
 type SocialNetwork map[uuid.UUID]float32
