@@ -11,6 +11,8 @@ type Config struct {
 	ConnectionProbability   float64 `json:"ConnectionProb"`
 	PopulationRho           float64 `json:"PopulationRho"`
 	InitialExpectedChildren float64 `json:"InitialExpectedChildren"`
+	MinExpectedChildren     float64 `json:"MinExpectedChildren"`
+	MaxExpectedChildren     float64 `json:"MaxExpectedChildren"`
 	MutationRate            float64 `json:"Mu"`
 	Debug                   bool    `json:"-"`
 	Seed                    int64   `json:"-"`
@@ -25,7 +27,9 @@ func NewConfig() Config {
 	flag.IntVar(&cfg.NumTurns, "turns", 10, "Initial number of turns")
 	flag.Float64Var(&cfg.ConnectionProbability, "connectionProb", 0.35, "Probability of connections in social network")
 	flag.Float64Var(&cfg.PopulationRho, "rho", 0.2, "Proportion of population required to self-sacrifice")
-	flag.Float64Var(&cfg.InitialExpectedChildren, "r0", 1.9, "Initial R0 of population")
+	flag.Float64Var(&cfg.InitialExpectedChildren, "init_r0", 2.0, "Initial R0 of population")
+	flag.Float64Var(&cfg.MinExpectedChildren, "min_r0", 1.9, "Minimum R0 of population")
+	flag.Float64Var(&cfg.MaxExpectedChildren, "max_r0", 2.1, "Maximum R0 of population")
 	flag.Float64Var(&cfg.MutationRate, "mu", 0.2, "Mutation rate of spawned children")
 	flag.BoolVar(&cfg.Debug, "debug", false, "Log debug messages to console")
 	flag.Int64Var(&cfg.Seed, "seed", 42, "Random seed for reproducibility")

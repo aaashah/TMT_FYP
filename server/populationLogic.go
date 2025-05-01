@@ -71,7 +71,7 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	sacrificialReport := make(map[uuid.UUID]infra.DeathInfo)
 
 	totalAgents := float64(len(tserv.GetAgentMap()))
-	neededVolunteers := int(tserv.neededProportionEliminations * totalAgents)
+	neededVolunteers := int(tserv.config.PopulationRho * totalAgents)
 	actualVolunteers := len(volunteers)
 	// record number of volunteers
 	tserv.numVolunteeredAgents = actualVolunteers
@@ -202,7 +202,7 @@ func (tserv *TMTServer) spawnNewAgents() {
 }
 
 func (tserv *TMTServer) getChildProbabilities(parent1, parent2 infra.AttachmentType) map[infra.AttachmentType]float64 {
-	nonMutationRate := 1.0 - tserv.mutationRate
+	nonMutationRate := 1.0 - tserv.config.MutationRate
 	// hashset to track chosen types
 	chosenTypes := make(map[infra.AttachmentType]struct{})
 	probs := make(map[infra.AttachmentType]float64)
@@ -215,7 +215,7 @@ func (tserv *TMTServer) getChildProbabilities(parent1, parent2 infra.AttachmentT
 	chosenTypes[parent2] = struct{}{}
 
 	remainingTypes := len(infra.AllAttachmentTypes) - len(chosenTypes)
-	mutationChance := tserv.mutationRate / float64(remainingTypes)
+	mutationChance := tserv.config.MutationRate / float64(remainingTypes)
 
 	for _, attachType := range infra.AllAttachmentTypes {
 		if _, seen := chosenTypes[attachType]; seen {

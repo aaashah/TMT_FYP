@@ -20,35 +20,31 @@ import (
 
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
-	isDebug                      bool
-	Grid                         *infra.Grid
-	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
-	clusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
-	lastEliminatedAgents         []infra.IExtendedAgent
-	lastSelfSacrificedAgents     []infra.IExtendedAgent
-	numVolunteeredAgents         int
-	expectedChildren             float64
-	neededProportionEliminations float64
-	mutationRate                 float64
-	gameRecorder                 *gameRecorder.GameJSONRecord
-	JSONTurnLogs                 []gameRecorder.TurnJSONRecord
+	config                   config.Config
+	Grid                     *infra.Grid
+	clusterMap               map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
+	clusterEliminationData   map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
+	lastEliminatedAgents     []infra.IExtendedAgent
+	lastSelfSacrificedAgents []infra.IExtendedAgent
+	numVolunteeredAgents     int
+	expectedChildren         float64
+	gameRecorder             *gameRecorder.GameJSONRecord
+	JSONTurnLogs             []gameRecorder.TurnJSONRecord
 }
 
 func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
-		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
-		isDebug:                      config.Debug,
-		Grid:                         infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
-		clusterMap:                   make(map[int][]uuid.UUID),
-		clusterEliminationData:       make(map[int]*infra.ClusterEliminations),
-		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
-		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
-		numVolunteeredAgents:         0,
-		expectedChildren:             config.InitialExpectedChildren,
-		neededProportionEliminations: config.PopulationRho,
-		mutationRate:                 config.MutationRate,
-		gameRecorder:                 gameRecorder.MakeGameRecord(config),
-		JSONTurnLogs:                 make([]gameRecorder.TurnJSONRecord, 0),
+		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
+		config:                   config,
+		Grid:                     infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
+		clusterMap:               make(map[int][]uuid.UUID),
+		clusterEliminationData:   make(map[int]*infra.ClusterEliminations),
+		lastEliminatedAgents:     make([]infra.IExtendedAgent, 0),
+		lastSelfSacrificedAgents: make([]infra.IExtendedAgent, 0),
+		numVolunteeredAgents:     0,
+		expectedChildren:         config.InitialExpectedChildren,
+		gameRecorder:             gameRecorder.MakeGameRecord(config),
+		JSONTurnLogs:             make([]gameRecorder.TurnJSONRecord, 0),
 	}
 }
 
@@ -83,7 +79,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 		agentIDs = append(agentIDs, id)
 	}
 
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Initializing Erdős-Rényi (ER) Network with p = %.2f\n", p)
 	}
 
@@ -96,7 +92,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 				strength := 0.2 + rand.Float32()*0.8
 				tserv.AddRelationship(agentIDs[i], agentIDs[j], strength)
 				// Log connections
-				if tserv.isDebug {
+				if tserv.config.Debug {
 					fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n", agentIDs[i], agentIDs[j], strength)
 				}
 				edgeCount++
@@ -109,7 +105,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 		agent.UpdateRelationship(agentID, 1.0)
 	}
 
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Social Network Initialized with %d connections\n", edgeCount)
 	}
 }
@@ -121,7 +117,7 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 	if existsA && existsB {
 		agentA.UpdateRelationship(agentBID, strength)
 		agentB.UpdateRelationship(agentAID, strength)
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 		}
 	}
@@ -134,14 +130,14 @@ func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
 	if okA && okB {
 		agentA.RemoveRelationship(agentBID)
 		agentB.RemoveRelationship(agentAID)
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
 		}
 	}
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("--------Start of iteration %d---------\n", iteration)
 		fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
 	}
@@ -170,7 +166,7 @@ func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Iteration %d, Turn %d\n", i, j)
 	}
 	tserv.moveAgents()
@@ -178,7 +174,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 }
 
 func (tserv *TMTServer) RunEndOfIteration(iter int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("--------End of iteration %v---------\n", iter)
 	}
 	// fmt.Println(len(tserv.GetAgentMap()))
@@ -364,7 +360,7 @@ func (tserv *TMTServer) applyClustering() {
 				agent.AppendClusterHistory(clusterID, len(agents))
 			}
 		}
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
 		}
 	}
@@ -447,10 +443,10 @@ func (tserv *TMTServer) updateProbabilityOfChildren() {
 	totalAgents := len(tserv.GetAgentMap())
 	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
 
-	if proportionOfEliminations >= tserv.neededProportionEliminations {
-		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, 2.1)
+	if proportionOfEliminations >= tserv.config.PopulationRho {
+		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, tserv.config.MaxExpectedChildren)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, 1.9)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, tserv.config.MinExpectedChildren)
 	}
 }
 
@@ -480,7 +476,7 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 	}
 
 	totalAgents := float64(len(tserv.GetAgentMap()))
-	reqElims := int(tserv.neededProportionEliminations * totalAgents)
+	reqElims := int(tserv.config.PopulationRho * totalAgents)
 
 	jsonLog := gameRecorder.TurnJSONRecord{
 		Turn:                      turn,
