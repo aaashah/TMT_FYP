@@ -11,6 +11,7 @@ type Config struct {
 	ConnectionProbability   float64 `json:"ConnectionProb"`
 	PopulationRho           float64 `json:"PopulationRho"`
 	InitialExpectedChildren float64 `json:"InitialExpectedChildren"`
+	MutationRate            float64 `json:"Mu"`
 	Debug                   bool    `json:"-"`
 	Seed                    int64   `json:"-"`
 }
@@ -25,6 +26,7 @@ func NewConfig() Config {
 	flag.Float64Var(&cfg.ConnectionProbability, "connectionProb", 0.35, "Probability of connections in social network")
 	flag.Float64Var(&cfg.PopulationRho, "rho", 0.2, "Proportion of population required to self-sacrifice")
 	flag.Float64Var(&cfg.InitialExpectedChildren, "r0", 1.9, "Initial R0 of population")
+	flag.Float64Var(&cfg.MutationRate, "mu", 0.2, "Mutation rate of spawned children")
 	flag.BoolVar(&cfg.Debug, "debug", false, "Log debug messages to console")
 	flag.Int64Var(&cfg.Seed, "seed", 42, "Random seed for reproducibility")
 

@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
-	"gonum.org/v1/gonum/stat/distuv"
 
 	"slices"
 
-	"github.com/aaashah/TMT_Attachment/agents"
 	"github.com/aaashah/TMT_Attachment/config"
 	"github.com/aaashah/TMT_Attachment/gameRecorder"
 	"github.com/aaashah/TMT_Attachment/infra"
@@ -31,6 +29,7 @@ type TMTServer struct {
 	numVolunteeredAgents         int
 	expectedChildren             float64
 	neededProportionEliminations float64
+	mutationRate                 float64
 	gameRecorder                 *gameRecorder.GameJSONRecord
 	JSONTurnLogs                 []gameRecorder.TurnJSONRecord
 }
@@ -47,6 +46,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 		numVolunteeredAgents:         0,
 		expectedChildren:             config.InitialExpectedChildren,
 		neededProportionEliminations: config.PopulationRho,
+		mutationRate:                 config.MutationRate,
 		gameRecorder:                 gameRecorder.MakeGameRecord(config),
 		JSONTurnLogs:                 make([]gameRecorder.TurnJSONRecord, 0),
 	}
@@ -440,72 +440,6 @@ func (tserv *TMTServer) applyPTS(cluster []uuid.UUID) {
 			agent.UpdateEsteem(neighbourID, false)
 		}
 	}
-}
-
-func (tserv *TMTServer) spawnNewAgents() {
-	dist := distuv.Poisson{
-		Lambda: tserv.expectedChildren,
-		Src:    rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
-
-	parentPool := tserv.lastEliminatedAgents
-	poolSize := len(parentPool)
-
-	if poolSize < 2 {
-		if tserv.isDebug {
-			fmt.Println("Not enough parents available to spawn new agents.")
-		}
-		return
-	}
-
-	rand.Shuffle(poolSize, func(i, j int) {
-		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
-	})
-
-	for i := 1; i < poolSize; i += 2 {
-		parent1 := parentPool[i-1]
-		parent2 := parentPool[i]
-		childrenToSpawn := int(dist.Rand())
-		for range childrenToSpawn {
-			tserv.spawnChild(parent1, parent2)
-		}
-	}
-}
-
-func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
-	newWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
-
-	randVal := rand.Float32()
-	var newAgent infra.IExtendedAgent
-	switch {
-	case randVal < 0.25:
-		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	case randVal < 0.5:
-		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	case randVal < 0.75:
-		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	default:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	}
-
-	// prob of mutation: mu
-	// prob of same-parents = (1 - p) / 2
-	// (1 - p) / 2 p1, (1 - p) / 2 p2 -> p/n for the rest of the agent types
-
-	// [S, S, D, P, F, F] -> [S D S F F P]
-	// (S, D) -> 50% for S, 50% for D
-	// (S, F) ->
-	// (F, P) ->
-
-	parent1.AddDescendant(newAgent.GetID())
-	parent2.AddDescendant(newAgent.GetID())
-
-	//add new agent to server
-	tserv.AddAgent(newAgent)
-
-	// add relationships in social network
-	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
 }
 
 func (tserv *TMTServer) updateProbabilityOfChildren() {

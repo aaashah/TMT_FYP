@@ -20,7 +20,7 @@ func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID 
 	extendedAgent.Attachment = infra.Attachment{
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.5, 1.0),
-		Type:      "Dismissive",
+		Type:      infra.DISMISSIVE,
 	}
 	// these ranges to be tweaked
 	extendedAgent.PTW = infra.PTSParams{

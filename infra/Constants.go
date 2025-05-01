@@ -8,6 +8,17 @@ const (
 	INACTION
 )
 
+type AttachmentType int
+
+const (
+	DISMISSIVE AttachmentType = iota
+	FEARFUL
+	PREOCCUPIED
+	SECURE
+)
+
+var AllAttachmentTypes = []AttachmentType{DISMISSIVE, FEARFUL, PREOCCUPIED, SECURE}
+
 const (
 	// ASP weights
 	W1  float32 = 0.25

@@ -556,11 +556,18 @@ func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 // ----------------------- Data Recording Functions -----------------------
 
 func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameRecorder.JSONAgentRecord {
+	styleMap := map[infra.AttachmentType]string{
+		infra.DISMISSIVE:  "Dismissive",
+		infra.FEARFUL:     "Fearful",
+		infra.PREOCCUPIED: "Preoccupied",
+		infra.SECURE:      "Secure",
+	}
+
 	return gameRecorder.JSONAgentRecord{
 		ID:                  ea.GetID().String(),
 		IsAlive:             ea.IsAlive(),
 		Age:                 ea.GetAge(),
-		AttachmentStyle:     ea.Attachment.Type,
+		AttachmentStyle:     styleMap[ea.Attachment.Type],
 		AttachmentAnxiety:   ea.Attachment.Anxiety,
 		AttachmentAvoidance: ea.Attachment.Avoidance,
 		ClusterID:           ea.ClusterID,
