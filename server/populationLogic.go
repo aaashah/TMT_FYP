@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -183,13 +182,6 @@ func (tserv *TMTServer) spawnNewAgents() {
 	parentPool := tserv.lastEliminatedAgents
 	poolSize := len(parentPool)
 
-	if poolSize < 2 {
-		if tserv.isDebug {
-			fmt.Println("Not enough parents available to spawn new agents.")
-		}
-		return
-	}
-
 	rand.Shuffle(poolSize, func(i, j int) {
 		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
 	})
@@ -201,6 +193,11 @@ func (tserv *TMTServer) spawnNewAgents() {
 		for range childrenToSpawn {
 			tserv.spawnChild(parent1, parent2)
 		}
+	}
+
+	if poolSize%2 == 1 {
+		clonerAgent := parentPool[poolSize-1]
+		tserv.spawnChild(clonerAgent, clonerAgent)
 	}
 }
 

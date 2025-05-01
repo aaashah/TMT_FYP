@@ -450,7 +450,7 @@ func (tserv *TMTServer) updateProbabilityOfChildren() {
 	if proportionOfEliminations >= tserv.neededProportionEliminations {
 		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, 2.1)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.8, 1.8)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, 1.9)
 	}
 }
 
