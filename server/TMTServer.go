@@ -21,7 +21,7 @@ import (
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
 	config                   config.Config
-	Grid                     *infra.Grid
+	grid                     *infra.Grid
 	clusterMap               map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
 	clusterEliminationData   map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
 	lastEliminatedAgents     []infra.IExtendedAgent
@@ -36,7 +36,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
 		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
 		config:                   config,
-		Grid:                     infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
+		grid:                     infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
 		clusterMap:               make(map[int][]uuid.UUID),
 		clusterEliminationData:   make(map[int]*infra.ClusterEliminations),
 		lastEliminatedAgents:     make([]infra.IExtendedAgent, 0),
@@ -155,7 +155,7 @@ func getStep(current, target int) int {
 }
 
 func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
-	grid := tServ.Grid
+	grid := tServ.grid
 	if moveX < 0 || moveX >= grid.Width {
 		return false
 	}
@@ -292,8 +292,8 @@ func distance(a, b []float64) float64 {
 func (tserv *TMTServer) moveAgents() {
 	for _, agent := range tserv.GetAgentMap() {
 		agentPos := agent.GetPosition()
-		moveX, moveY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
-		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
+		moveX, moveY := tserv.grid.GetValidMove(agentPos.X, agentPos.Y)
+		targetPos, posExists := agent.GetTargetPosition(tserv.grid)
 
 		if posExists {
 			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
@@ -304,7 +304,7 @@ func (tserv *TMTServer) moveAgents() {
 		}
 
 		newPos := infra.PositionVector{X: moveX, Y: moveY}
-		tserv.Grid.UpdateAgentPosition(agent, newPos)
+		tserv.grid.UpdateAgentPosition(agent, newPos)
 		agent.SetPosition(newPos)
 	}
 }
@@ -465,13 +465,13 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 		allAgentRecords = append(allAgentRecords, record)
 	}
 
-	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
-	for i, pos := range tserv.Grid.Tombstones {
+	tombstonePositions := make([]gameRecorder.Position, len(tserv.grid.Tombstones))
+	for i, pos := range tserv.grid.Tombstones {
 		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
 	}
 
-	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
-	for i, pos := range tserv.Grid.Temples {
+	templePositions := make([]gameRecorder.Position, len(tserv.grid.Temples))
+	for i, pos := range tserv.grid.Temples {
 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
 	}
 

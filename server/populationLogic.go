@@ -23,7 +23,7 @@ func (tserv *TMTServer) updateAgentMortality() {
 
 func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
-	tserv.Grid.PlaceTemple(pos.X, pos.Y)
+	tserv.grid.PlaceTemple(pos.X, pos.Y)
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
@@ -31,7 +31,7 @@ func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 
 func (tserv *TMTServer) involuntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
-	tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+	tserv.grid.PlaceTombstone(pos.X, pos.Y)
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (non-voluntary)\n", agent.GetID())
 }
@@ -57,7 +57,7 @@ func (tserv *TMTServer) stratifyVolunteers() ([]infra.IExtendedAgent, []infra.IE
 			continue
 		}
 		// check if agent volunteered
-		if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
+		if agent.GetASPDecision(tserv.grid) == infra.SELF_SACRIFICE {
 			volunteers = append(volunteers, agent)
 		} else {
 			nonVolunteers = append(nonVolunteers, agent)
