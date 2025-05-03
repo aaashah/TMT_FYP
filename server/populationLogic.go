@@ -2,9 +2,12 @@ package server
 
 import (
 	"math/rand"
+	"time"
 
+	"github.com/aaashah/TMT_Attachment/agents"
 	"github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 func (tserv *TMTServer) updateAgentMortality() {
@@ -20,7 +23,7 @@ func (tserv *TMTServer) updateAgentMortality() {
 
 func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
-	tserv.Grid.PlaceTemple(pos.X, pos.Y)
+	tserv.grid.PlaceTemple(pos.X, pos.Y)
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	tserv.lastSelfSacrificedAgents = append(tserv.lastSelfSacrificedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (voluntary)\n", agent.GetID())
@@ -28,7 +31,7 @@ func (tserv *TMTServer) voluntarilySacrificeAgent(agent infra.IExtendedAgent) {
 
 func (tserv *TMTServer) involuntarilySacrificeAgent(agent infra.IExtendedAgent) {
 	pos := agent.GetPosition()
-	tserv.Grid.PlaceTombstone(pos.X, pos.Y)
+	tserv.grid.PlaceTombstone(pos.X, pos.Y)
 	tserv.lastEliminatedAgents = append(tserv.lastEliminatedAgents, agent)
 	// fmt.Printf("Agent %v has been eliminated (non-voluntary)\n", agent.GetID())
 }
@@ -54,7 +57,7 @@ func (tserv *TMTServer) stratifyVolunteers() ([]infra.IExtendedAgent, []infra.IE
 			continue
 		}
 		// check if agent volunteered
-		if agent.GetASPDecision(tserv.Grid) == infra.SELF_SACRIFICE {
+		if agent.GetASPDecision(tserv.grid) == infra.SELF_SACRIFICE {
 			volunteers = append(volunteers, agent)
 		} else {
 			nonVolunteers = append(nonVolunteers, agent)
@@ -68,7 +71,7 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	sacrificialReport := make(map[uuid.UUID]infra.DeathInfo)
 
 	totalAgents := float64(len(tserv.GetAgentMap()))
-	neededVolunteers := int(tserv.neededProportionEliminations * totalAgents)
+	neededVolunteers := int(tserv.config.PopulationRho * totalAgents)
 	actualVolunteers := len(volunteers)
 	// record number of volunteers
 	tserv.numVolunteeredAgents = actualVolunteers
@@ -168,4 +171,107 @@ func (tserv *TMTServer) performSacrifices(deathReport map[uuid.UUID]infra.DeathI
 			tserv.involuntarilySacrificeAgent(deadAgent)
 		}
 	}
+}
+
+func (tserv *TMTServer) spawnNewAgents() {
+	dist := distuv.Poisson{
+		Lambda: tserv.expectedChildren,
+		Src:    rand.New(rand.NewSource(time.Now().UnixNano())),
+	}
+
+	parentPool := tserv.lastEliminatedAgents
+	poolSize := len(parentPool)
+
+	rand.Shuffle(poolSize, func(i, j int) {
+		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
+	})
+
+	for i := 1; i < poolSize; i += 2 {
+		parent1 := parentPool[i-1]
+		parent2 := parentPool[i]
+		childrenToSpawn := int(dist.Rand())
+		for range childrenToSpawn {
+			tserv.spawnChild(parent1, parent2)
+		}
+	}
+
+	if poolSize%2 == 1 {
+		clonerAgent := parentPool[poolSize-1]
+		tserv.spawnChild(clonerAgent, clonerAgent)
+	}
+}
+
+func (tserv *TMTServer) getChildProbabilities(parent1, parent2 infra.AttachmentType) map[infra.AttachmentType]float64 {
+	nonMutationRate := 1.0 - tserv.config.MutationRate
+	// hashset to track chosen types
+	chosenTypes := make(map[infra.AttachmentType]struct{})
+	probs := make(map[infra.AttachmentType]float64)
+
+	// account for parent 1 and parent 2
+	probs[parent1] += nonMutationRate / 2
+	probs[parent2] += nonMutationRate / 2
+
+	chosenTypes[parent1] = struct{}{}
+	chosenTypes[parent2] = struct{}{}
+
+	remainingTypes := len(infra.AllAttachmentTypes) - len(chosenTypes)
+	mutationChance := tserv.config.MutationRate / float64(remainingTypes)
+
+	for _, attachType := range infra.AllAttachmentTypes {
+		if _, seen := chosenTypes[attachType]; seen {
+			continue
+		}
+		probs[attachType] = mutationChance
+	}
+
+	return probs
+}
+
+func (tserv *TMTServer) mixAttachmentTypes(parent1, parent2 infra.AttachmentType) infra.AttachmentType {
+	probMap := tserv.getChildProbabilities(parent1, parent2)
+
+	randVal := rand.Float64()
+	cumulative := 0.0
+
+	for attachType, prob := range probMap {
+		cumulative += prob
+		if randVal < cumulative {
+			return attachType
+		}
+	}
+
+	panic("Failed to select attachment type from probability map")
+
+}
+
+func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
+	type1 := parent1.GetAttachment().Type
+	type2 := parent2.GetAttachment().Type
+	childAttachmentType := tserv.mixAttachmentTypes(type1, type2)
+	childWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
+
+	var newAgent infra.IExtendedAgent
+	switch {
+	case childAttachmentType == infra.SECURE:
+		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+	case childAttachmentType == infra.DISMISSIVE:
+		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+	case childAttachmentType == infra.PREOCCUPIED:
+		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+	case childAttachmentType == infra.FEARFUL:
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+	default:
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+	}
+
+	// add child as descendant to parents
+	parent1.AddDescendant(newAgent.GetID())
+	parent2.AddDescendant(newAgent.GetID())
+
+	//add new agent to server
+	tserv.AddAgent(newAgent)
+
+	// add relationships in social network
+	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
+	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
 }

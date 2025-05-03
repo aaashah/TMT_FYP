@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
-	"gonum.org/v1/gonum/stat/distuv"
 
 	"slices"
 
-	"github.com/aaashah/TMT_Attachment/agents"
 	"github.com/aaashah/TMT_Attachment/config"
 	"github.com/aaashah/TMT_Attachment/gameRecorder"
 	"github.com/aaashah/TMT_Attachment/infra"
@@ -22,33 +20,31 @@ import (
 
 type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
-	isDebug                      bool
-	Grid                         *infra.Grid
-	clusterMap                   map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
-	clusterEliminationData       map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
-	lastEliminatedAgents         []infra.IExtendedAgent
-	lastSelfSacrificedAgents     []infra.IExtendedAgent
-	numVolunteeredAgents         int
-	expectedChildren             float64
-	neededProportionEliminations float64
-	gameRecorder                 *gameRecorder.GameJSONRecord
-	JSONTurnLogs                 []gameRecorder.TurnJSONRecord
+	config                   config.Config
+	grid                     *infra.Grid
+	clusterMap               map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
+	clusterEliminationData   map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
+	lastEliminatedAgents     []infra.IExtendedAgent
+	lastSelfSacrificedAgents []infra.IExtendedAgent
+	numVolunteeredAgents     int
+	expectedChildren         float64
+	gameRecorder             *gameRecorder.GameJSONRecord
+	JSONTurnLogs             []gameRecorder.TurnJSONRecord
 }
 
 func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
-		BaseServer:                   server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
-		isDebug:                      config.Debug,
-		Grid:                         infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
-		clusterMap:                   make(map[int][]uuid.UUID),
-		clusterEliminationData:       make(map[int]*infra.ClusterEliminations),
-		lastEliminatedAgents:         make([]infra.IExtendedAgent, 0),
-		lastSelfSacrificedAgents:     make([]infra.IExtendedAgent, 0),
-		numVolunteeredAgents:         0,
-		expectedChildren:             config.InitialExpectedChildren,
-		neededProportionEliminations: config.PopulationRho,
-		gameRecorder:                 gameRecorder.MakeGameRecord(config),
-		JSONTurnLogs:                 make([]gameRecorder.TurnJSONRecord, 0),
+		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
+		config:                   config,
+		grid:                     infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
+		clusterMap:               make(map[int][]uuid.UUID),
+		clusterEliminationData:   make(map[int]*infra.ClusterEliminations),
+		lastEliminatedAgents:     make([]infra.IExtendedAgent, 0),
+		lastSelfSacrificedAgents: make([]infra.IExtendedAgent, 0),
+		numVolunteeredAgents:     0,
+		expectedChildren:         config.InitialExpectedChildren,
+		gameRecorder:             gameRecorder.MakeGameRecord(config),
+		JSONTurnLogs:             make([]gameRecorder.TurnJSONRecord, 0),
 	}
 }
 
@@ -83,7 +79,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 		agentIDs = append(agentIDs, id)
 	}
 
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Initializing Erdős-Rényi (ER) Network with p = %.2f\n", p)
 	}
 
@@ -96,7 +92,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 				strength := 0.2 + rand.Float32()*0.8
 				tserv.AddRelationship(agentIDs[i], agentIDs[j], strength)
 				// Log connections
-				if tserv.isDebug {
+				if tserv.config.Debug {
 					fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n", agentIDs[i], agentIDs[j], strength)
 				}
 				edgeCount++
@@ -109,7 +105,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 		agent.UpdateRelationship(agentID, 1.0)
 	}
 
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Social Network Initialized with %d connections\n", edgeCount)
 	}
 }
@@ -121,7 +117,7 @@ func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength f
 	if existsA && existsB {
 		agentA.UpdateRelationship(agentBID, strength)
 		agentB.UpdateRelationship(agentAID, strength)
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
 		}
 	}
@@ -134,14 +130,14 @@ func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
 	if okA && okB {
 		agentA.RemoveRelationship(agentBID)
 		agentB.RemoveRelationship(agentAID)
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
 		}
 	}
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("--------Start of iteration %d---------\n", iteration)
 		fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
 	}
@@ -159,7 +155,7 @@ func getStep(current, target int) int {
 }
 
 func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
-	grid := tServ.Grid
+	grid := tServ.grid
 	if moveX < 0 || moveX >= grid.Width {
 		return false
 	}
@@ -170,7 +166,7 @@ func (tServ *TMTServer) moveIsValid(moveX, moveY int) bool {
 }
 
 func (tserv *TMTServer) RunTurn(i, j int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("Iteration %d, Turn %d\n", i, j)
 	}
 	tserv.moveAgents()
@@ -178,7 +174,7 @@ func (tserv *TMTServer) RunTurn(i, j int) {
 }
 
 func (tserv *TMTServer) RunEndOfIteration(iter int) {
-	if tserv.isDebug {
+	if tserv.config.Debug {
 		fmt.Printf("--------End of iteration %v---------\n", iter)
 	}
 	// fmt.Println(len(tserv.GetAgentMap()))
@@ -296,8 +292,8 @@ func distance(a, b []float64) float64 {
 func (tserv *TMTServer) moveAgents() {
 	for _, agent := range tserv.GetAgentMap() {
 		agentPos := agent.GetPosition()
-		moveX, moveY := tserv.Grid.GetValidMove(agentPos.X, agentPos.Y)
-		targetPos, posExists := agent.GetTargetPosition(tserv.Grid)
+		moveX, moveY := tserv.grid.GetValidMove(agentPos.X, agentPos.Y)
+		targetPos, posExists := agent.GetTargetPosition(tserv.grid)
 
 		if posExists {
 			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
@@ -308,7 +304,7 @@ func (tserv *TMTServer) moveAgents() {
 		}
 
 		newPos := infra.PositionVector{X: moveX, Y: moveY}
-		tserv.Grid.UpdateAgentPosition(agent, newPos)
+		tserv.grid.UpdateAgentPosition(agent, newPos)
 		agent.SetPosition(newPos)
 	}
 }
@@ -364,7 +360,7 @@ func (tserv *TMTServer) applyClustering() {
 				agent.AppendClusterHistory(clusterID, len(agents))
 			}
 		}
-		if tserv.isDebug {
+		if tserv.config.Debug {
 			fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
 		}
 	}
@@ -442,81 +438,15 @@ func (tserv *TMTServer) applyPTS(cluster []uuid.UUID) {
 	}
 }
 
-func (tserv *TMTServer) spawnNewAgents() {
-	dist := distuv.Poisson{
-		Lambda: tserv.expectedChildren,
-		Src:    rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
-
-	parentPool := tserv.lastEliminatedAgents
-	poolSize := len(parentPool)
-
-	if poolSize < 2 {
-		if tserv.isDebug {
-			fmt.Println("Not enough parents available to spawn new agents.")
-		}
-		return
-	}
-
-	rand.Shuffle(poolSize, func(i, j int) {
-		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
-	})
-
-	for i := 1; i < poolSize; i += 2 {
-		parent1 := parentPool[i-1]
-		parent2 := parentPool[i]
-		childrenToSpawn := int(dist.Rand())
-		for range childrenToSpawn {
-			tserv.spawnChild(parent1, parent2)
-		}
-	}
-}
-
-func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
-	newWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
-
-	randVal := rand.Float32()
-	var newAgent infra.IExtendedAgent
-	switch {
-	case randVal < 0.25:
-		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	case randVal < 0.5:
-		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	case randVal < 0.75:
-		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	default:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), newWorldview)
-	}
-
-	// prob of mutation: mu
-	// prob of same-parents = (1 - p) / 2
-	// (1 - p) / 2 p1, (1 - p) / 2 p2 -> p/n for the rest of the agent types
-
-	// [S, S, D, P, F, F] -> [S D S F F P]
-	// (S, D) -> 50% for S, 50% for D
-	// (S, F) ->
-	// (F, P) ->
-
-	parent1.AddDescendant(newAgent.GetID())
-	parent2.AddDescendant(newAgent.GetID())
-
-	//add new agent to server
-	tserv.AddAgent(newAgent)
-
-	// add relationships in social network
-	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
-}
-
 func (tserv *TMTServer) updateProbabilityOfChildren() {
 	roundEliminations := len(tserv.lastSelfSacrificedAgents)
 	totalAgents := len(tserv.GetAgentMap())
 	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
 
-	if proportionOfEliminations >= tserv.neededProportionEliminations {
-		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, 2.1)
+	if proportionOfEliminations >= tserv.config.PopulationRho {
+		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, tserv.config.MaxExpectedChildren)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.8, 1.8)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, tserv.config.MinExpectedChildren)
 	}
 }
 
@@ -535,18 +465,18 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 		allAgentRecords = append(allAgentRecords, record)
 	}
 
-	tombstonePositions := make([]gameRecorder.Position, len(tserv.Grid.Tombstones))
-	for i, pos := range tserv.Grid.Tombstones {
+	tombstonePositions := make([]gameRecorder.Position, len(tserv.grid.Tombstones))
+	for i, pos := range tserv.grid.Tombstones {
 		tombstonePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
 	}
 
-	templePositions := make([]gameRecorder.Position, len(tserv.Grid.Temples))
-	for i, pos := range tserv.Grid.Temples {
+	templePositions := make([]gameRecorder.Position, len(tserv.grid.Temples))
+	for i, pos := range tserv.grid.Temples {
 		templePositions[i] = gameRecorder.Position{X: pos.X, Y: pos.Y}
 	}
 
 	totalAgents := float64(len(tserv.GetAgentMap()))
-	reqElims := int(tserv.neededProportionEliminations * totalAgents)
+	reqElims := int(tserv.config.PopulationRho * totalAgents)
 
 	jsonLog := gameRecorder.TurnJSONRecord{
 		Turn:                      turn,

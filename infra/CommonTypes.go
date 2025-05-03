@@ -20,7 +20,7 @@ func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 type Attachment struct {
 	Anxiety   float32
 	Avoidance float32
-	Type      string
+	Type      AttachmentType
 }
 
 // for use in Gompertz Death function - 1 - exp(-a/b * exp(kx - 1))
