@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"fmt"
 	"math"
 	"math/bits"
 
@@ -167,8 +168,6 @@ func (wv *Worldview) getTrendWorldview(delta float64) byte {
 		return byte(0b10)
 	}
 	return byte(0b00)
-
-	// return opinionOnChange & wv.worldviewHash & 2
 }
 
 func (wv *Worldview) getSeasonalWorldview(delta float64) byte {
@@ -179,13 +178,16 @@ func (wv *Worldview) getSeasonalWorldview(delta float64) byte {
 }
 
 func (wv *Worldview) UpdateWorldview(delta float64) {
-	fullWorldviewData := wv.getTrendWorldview(delta) & wv.getSeasonalWorldview(delta)
+	fullWorldviewData := wv.getTrendWorldview(delta) | wv.getSeasonalWorldview(delta)
 	worldviewOpinion := ^(wv.worldviewHash ^ fullWorldviewData)
 	wv.worldviewHistory = append(wv.worldviewHistory, worldviewOpinion)
 }
 
 func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
 	windowLen := min(len(wv1.worldviewHistory), len(wv2.worldviewHistory))
+	if windowLen == 0 {
+		return 0.5
+	}
 	totalBits := 2 * windowLen
 	alignedBits := 0
 	for i := range windowLen {
@@ -194,7 +196,14 @@ func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
 		alignment := ^(wv1Data ^ wv2Data) & 3
 		alignedBits += bits.OnesCount8(alignment)
 	}
-	return float64(alignedBits) / float64(totalBits)
+
+	worldviewAlignment := float64(alignedBits) / float64(totalBits)
+	if worldviewAlignment > 1.0 {
+		misalignment := fmt.Sprintf("Invalid worldview alignment - Aligned bits: %d, Total bits: %d\n", alignedBits, totalBits)
+		panic(misalignment)
+	}
+	fmt.Println(wv1.worldviewHistory, wv2.worldviewHistory, worldviewAlignment)
+	return worldviewAlignment
 }
 
 func NewWorldview(hash byte, prop float64) *Worldview {
