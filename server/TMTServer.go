@@ -183,12 +183,6 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	// 2. Apply clustering (k-means)
 	tserv.applyClustering()
 
-	// snapshot of netowrk pre elimination
-	for _, agent := range tserv.GetAgentMap() {
-		networkLength := len(agent.GetNetwork())
-		agent.AppendNetworkSizeHistory(networkLength)
-	}
-
 	// 4. Check for agent elimination
 	tserv.updateAgentMortality()
 	// 4.1 - natural deaths (old age)
@@ -216,7 +210,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	// 6. Update agent parameters
 	tserv.updateClusterEliminations(fullDeathReport)
 	tserv.updateAgentYsterofimia(fullDeathReport)
-	// tserv.updateAgentHeroism(fullDeathReport)
+	tserv.pruneNetwork(fullDeathReport)
 
 	// 7. Spawn new agents
 	tserv.updateProbabilityOfChildren()
@@ -359,11 +353,12 @@ func (tserv *TMTServer) applyClustering() {
 		)
 
 		// For each agent in this cluster, update their history
-		for _, agentID := range agents {
-			if agent, ok := tserv.GetAgentByID(agentID); ok {
-				agent.AppendClusterHistory(clusterID, len(agents))
-			}
-		}
+		// for _, agentID := range agents {
+		// 	if agent, ok := tserv.GetAgentByID(agentID); ok {
+		// 		agent.AppendClusterHistory(clusterID, len(agents))
+		// 	}
+		// }
+
 		if tserv.config.Debug {
 			fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
 		}
@@ -460,6 +455,10 @@ func (tserv *TMTServer) updateProbabilityOfChildren() {
 	} else {
 		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, tserv.config.MinExpectedChildren)
 	}
+}
+
+func (tserv *TMTServer) GetInitNumberAgents() int {
+	return tserv.config.NumAgents
 }
 
 // func (tserv *TMTServer) mixWorldviews(wv1, wv2 uint32) uint32 {

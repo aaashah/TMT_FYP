@@ -44,7 +44,7 @@ type PTSParams struct {
 func NewTelomere() *Telomere {
 	alpha := 0.001
 	beta := 0.3
-	return &Telomere{0, alpha, beta, 30}
+	return &Telomere{1, alpha, beta, 30}
 }
 
 func (t *Telomere) GetAge() int {

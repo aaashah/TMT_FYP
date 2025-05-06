@@ -11,4 +11,5 @@ type IServer interface {
 	GetAgentByID(agentID uuid.UUID) (IExtendedAgent, bool)
 	GetAgentMap() map[uuid.UUID]IExtendedAgent
 	UpdateAgentRelationship(agentAID, agentBID uuid.UUID, change float32)
+	GetInitNumberAgents() int
 }

@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -22,10 +23,12 @@ type ExtendedAgent struct {
 	//History Tracking
 	clusterID int
 	//ClusterHistory			    []int // the cluster ID the agent belonged to at each turn
-	clusterSizeHistory          []int // the size of the cluster at each turn
-	networkSizeHistory          []int // the size of the network at each turn
+	// clusterSizeHistory          []int // the size of the cluster at each turn
+	// networkSizeHistory          []int // the size of the network at each turn
 	observedEliminationsCluster int
+	clusterEliminationTolerance int
 	observedEliminationsNetwork int
+	networkEliminationTolerance int
 	heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
@@ -55,20 +58,30 @@ type ExtendedAgent struct {
 }
 
 func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview *infra.Worldview) *ExtendedAgent {
-	return &ExtendedAgent{
-		BaseAgent:    agent.CreateBaseAgent(server),
-		IServer:      server,                                                               // Type assert the server functions to IServer interface
-		attachment:   infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
-		heroism:      0,                                                                    //start at 0 increment if chose to self-sacrifice
-		network:      make(map[uuid.UUID]float32),
-		parent1:      parent1ID,
-		parent2:      parent2ID,
-		telomere:     infra.NewTelomere(),
-		worldview:    worldview,
-		ysterofimia:  infra.NewYsterofimia(),
-		agentIsAlive: true,
-		position:     infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
+	initAgents := float64(server.GetInitNumberAgents())
+
+	clusTol := 0.5 * initAgents
+	netTol := 0.5 * initAgents
+
+	ag := &ExtendedAgent{
+		BaseAgent:                   agent.CreateBaseAgent(server),
+		IServer:                     server,                                                               // Type assert the server functions to IServer interface
+		attachment:                  infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
+		heroism:                     0,                                                                    //start at 0 increment if chose to self-sacrifice
+		network:                     make(map[uuid.UUID]float32),
+		parent1:                     parent1ID,
+		parent2:                     parent2ID,
+		telomere:                    infra.NewTelomere(),
+		worldview:                   worldview,
+		ysterofimia:                 infra.NewYsterofimia(),
+		clusterEliminationTolerance: int(clusTol),
+		networkEliminationTolerance: int(netTol),
+		agentIsAlive:                true,
+		position:                    infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
 	}
+
+	ag.UpdateSocialNetwork(ag.GetID(), 0.5)
+	return ag
 }
 
 // ----------------------- Interface implementation -----------------------
@@ -158,18 +171,18 @@ func (ea *ExtendedAgent) SetClusterID(id int) {
 	ea.clusterID = id
 }
 
-func (ea *ExtendedAgent) AppendClusterHistory(clusterID int, clusterSize int) {
-	//ea.ClusterHistory = append(ea.ClusterHistory, clusterID)
-	ea.clusterSizeHistory = append(ea.clusterSizeHistory, clusterSize)
-}
+// func (ea *ExtendedAgent) AppendClusterHistory(clusterID int, clusterSize int) {
+// 	//ea.ClusterHistory = append(ea.ClusterHistory, clusterID)
+// 	ea.clusterSizeHistory = append(ea.clusterSizeHistory, clusterSize)
+// }
 
 func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
 	ea.observedEliminationsCluster += n
 }
 
-func (ea *ExtendedAgent) AppendNetworkSizeHistory(networkSize int) {
-	ea.networkSizeHistory = append(ea.networkSizeHistory, networkSize)
-}
+// func (ea *ExtendedAgent) AppendNetworkSizeHistory(networkSize int) {
+// 	ea.networkSizeHistory = append(ea.networkSizeHistory, networkSize)
+// }
 
 func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
 	ea.observedEliminationsNetwork += n
@@ -221,54 +234,34 @@ func (ea *ExtendedAgent) IsAlive() bool {
 	return ea.agentIsAlive
 }
 
+// take the total number of eliminations you've ever seen (1)
+// divide it by an agent-specific tolerance (2)
 func (ea *ExtendedAgent) ClusterEliminations() float32 {
-	totalExposure := 0
-	for _, size := range ea.clusterSizeHistory {
-		if size > 1 {
-			totalExposure += size
-		}
-	}
-	if totalExposure == 0 {
-		return 0
-	}
-	return float32(ea.observedEliminationsCluster) / float32(totalExposure)
+	propElim := float32(ea.observedEliminationsCluster) / float32(ea.clusterEliminationTolerance)
+	return min(propElim, 1.0)
 }
 
+// take the total number of eliminations you've ever seen (1)
+// divide it by an agent-specific tolerance (2)
 func (ea *ExtendedAgent) NetworkEliminations() float32 {
-	totalExposure := 0
-	for _, size := range ea.networkSizeHistory {
-		if size > 1 {
-			totalExposure += size
-		}
-	}
-	if totalExposure == 0 {
-		return 0
-	}
-	return float32(ea.observedEliminationsNetwork) / float32(totalExposure)
+	propElim := float32(ea.observedEliminationsNetwork) / float32(ea.networkEliminationTolerance)
+	return min(propElim, 1.0)
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
-	var totalAge int
-	var numAgentsNetwork float32
-	age := ea.GetAge()
-
-	for friendID := range ea.network {
-		friend, ok := ea.GetAgentByID(friendID)
-		if ok && friendID != ea.GetID() {
-			totalAge += friend.GetAge()
-			numAgentsNetwork++
+	thisAge := ea.GetAge()
+	ages := make([]int, 0)
+	networkSize := len(ea.network)
+	for agentID := range ea.network {
+		if agent, ok := ea.GetAgentByID(agentID); ok {
+			agentAge := agent.GetAge()
+			ages = append(ages, agentAge)
 		}
 	}
-	if numAgentsNetwork == 0 || age == 0 {
-		return 0
-	}
 
-	averageAge := float32(totalAge) / numAgentsNetwork
-	diff := float32(age) - averageAge
-	if diff <= 0 {
-		return 0
-	}
-	return diff / float32(age)
+	sort.Ints(ages)
+	agePos := sort.SearchInts(ages, thisAge)
+	return float32(agePos) / float32(networkSize)
 }
 
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
@@ -440,7 +433,7 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	ne := float32(ea.NetworkEliminations())
 	ra := float32(ea.RelativeAgeToNetwork())
 	mp := float32(ea.GetMemorialProximity(grid))
-	//fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
+	fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
 	//ea.MortalitySalience = infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 
 	return infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
@@ -479,7 +472,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
+	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {

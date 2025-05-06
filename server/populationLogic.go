@@ -111,6 +111,7 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 func (tserv *TMTServer) updateAgentYsterofimia(deathReport map[uuid.UUID]infra.DeathInfo) {
 	for _, agent := range tserv.GetAgentMap() {
 		networkEliminationCount := 0
+		// fmt.Println(agent.GetNetwork())
 		for friendID, esteem := range agent.GetNetwork() {
 			// friend was eliminated (found in death report)
 			if deathInfo, dead := deathReport[friendID]; dead {
@@ -140,6 +141,20 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 		if count, exists := counts[clusterID]; exists {
 			agent.IncrementClusterEliminations(count)
 		}
+	}
+}
+
+func (tserv *TMTServer) removeFromNetwork(deadAgent infra.IExtendedAgent) {
+	for _, agent := range tserv.GetAgentMap() {
+		deadID := deadAgent.GetID()
+		agent.RemoveRelationship(deadID)
+	}
+}
+
+func (tserv *TMTServer) pruneNetwork(deathReport map[uuid.UUID]infra.DeathInfo) {
+	for _, deathInfo := range deathReport {
+		deadAgent := deathInfo.Agent
+		tserv.removeFromNetwork(deadAgent)
 	}
 }
 
