@@ -3,7 +3,6 @@ package agents
 import (
 	"fmt"
 	"math"
-	"math/rand"
 
 	"github.com/google/uuid"
 
@@ -15,8 +14,7 @@ type PreoccupiedAgent struct {
 }
 
 func CreatePreoccupiedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *PreoccupiedAgent {
-	dunbarProb := rand.Float64() * 0.5
-	worldview := infra.NewWorldview(byte(0b11), dunbarProb)
+	worldview := infra.NewWorldview(byte(0b10))
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance

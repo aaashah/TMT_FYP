@@ -17,8 +17,7 @@ type ExtendedAgent struct {
 
 	telomere *infra.Telomere
 
-	position       infra.PositionVector
-	movementPolicy string // Defines how movement is determined
+	position infra.PositionVector
 
 	//History Tracking
 	clusterID int
@@ -429,7 +428,6 @@ func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 
 	// Sort heroism scores in ascending order
 	sort.Ints(heroismScores)
-
 	index := sort.SearchInts(heroismScores, selfHeroism)
 
 	return float32(index) / float32(len(heroismScores))
@@ -494,6 +492,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 
 	if sum > 0 {
 		// fmt.Printf("✅ Agent %v decided to SELF-SACRIFICE\n", ea.GetID())
+		ea.IncrementHeroism()
 		return infra.SELF_SACRIFICE // Self-sacrifice
 	} else if sum < 0 {
 		return infra.NOT_SELF_SACRIFICE // Reject self-sacrifice

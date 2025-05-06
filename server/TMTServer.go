@@ -216,7 +216,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	// 6. Update agent parameters
 	tserv.updateClusterEliminations(fullDeathReport)
 	tserv.updateAgentYsterofimia(fullDeathReport)
-	tserv.updateAgentHeroism(fullDeathReport)
+	// tserv.updateAgentHeroism(fullDeathReport)
 
 	// 7. Spawn new agents
 	tserv.updateProbabilityOfChildren()
@@ -229,8 +229,6 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	for _, agent := range tserv.GetAgentMap() {
 		agent.IncrementAge()
 	}
-
-	fmt.Println()
 }
 
 // ---------------------- Helper Functions ----------------------

@@ -3,7 +3,6 @@ package agents
 import (
 	"fmt"
 	"math"
-	"math/rand"
 
 	"github.com/google/uuid"
 
@@ -15,8 +14,7 @@ type DismissiveAgent struct {
 }
 
 func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *DismissiveAgent {
-	dunbarProb := rand.Float64() * 0.5
-	worldview := infra.NewWorldview(byte(0b11), dunbarProb)
+	worldview := infra.NewWorldview(byte(0b01))
 
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 

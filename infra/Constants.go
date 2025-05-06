@@ -21,19 +21,21 @@ var AllAttachmentTypes = []AttachmentType{DISMISSIVE, FEARFUL, PREOCCUPIED, SECU
 
 const (
 	// ASP weights
-	W1  float32 = 0.25
-	W2  float32 = 0.25
-	W3  float32 = 0.25
-	W4  float32 = 0.25
-	W5  float32 = 0.25
-	W6  float32 = 0.25
-	W7  float32 = 0.5
-	W8  float32 = 0.25
-	W9  float32 = 0.25
-	W10 float32 = 0.5
+	W1 float32 = 0.25
+	W2 float32 = 0.25
+	W3 float32 = 0.25
+	W4 float32 = 0.25
+
+	W5 float32 = 0.33
+	W6 float32 = 0.33
+	W7 float32 = 0.34
+
+	W8  float32 = 0.33
+	W9  float32 = 0.33
+	W10 float32 = 0.34
 )
 
 const (
-	GRID_WIDTH  int = 70
-	GRID_HEIGHT int = 30
+	GRID_WIDTH  int = 50
+	GRID_HEIGHT int = 50
 )

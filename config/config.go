@@ -28,7 +28,7 @@ func NewConfig() Config {
 	flag.Float64Var(&cfg.ConnectionProbability, "connectionProb", 0.35, "Probability of connections in social network")
 	flag.Float64Var(&cfg.PopulationRho, "rho", 0.2, "Proportion of population required to self-sacrifice")
 	flag.Float64Var(&cfg.InitialExpectedChildren, "init_r0", 2.0, "Initial R0 of population")
-	flag.Float64Var(&cfg.MinExpectedChildren, "min_r0", 1.9, "Minimum R0 of population")
+	flag.Float64Var(&cfg.MinExpectedChildren, "min_r0", 1.5, "Minimum R0 of population")
 	flag.Float64Var(&cfg.MaxExpectedChildren, "max_r0", 2.1, "Maximum R0 of population")
 	flag.Float64Var(&cfg.MutationRate, "mu", 0.2, "Mutation rate of spawned children")
 	flag.BoolVar(&cfg.Debug, "debug", false, "Log debug messages to console")

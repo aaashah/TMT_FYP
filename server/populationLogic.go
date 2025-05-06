@@ -143,15 +143,6 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 	}
 }
 
-func (tserv *TMTServer) updateAgentHeroism(deathReport map[uuid.UUID]infra.DeathInfo) {
-	for _, deathInfo := range deathReport {
-		agent := deathInfo.Agent
-		if deathInfo.WasVoluntary {
-			agent.IncrementHeroism()
-		}
-	}
-}
-
 func (tserv *TMTServer) applyElimination(deathReport map[uuid.UUID]infra.DeathInfo) {
 	for _, deathInfo := range deathReport {
 		deadAgent := deathInfo.Agent
@@ -195,7 +186,7 @@ func (tserv *TMTServer) spawnNewAgents() {
 		}
 	}
 
-	if poolSize%2 == 1 {
+	if poolSize%2 == 1 && poolSize > 1 {
 		clonerAgent := parentPool[poolSize-1]
 		tserv.spawnChild(clonerAgent, clonerAgent)
 	}

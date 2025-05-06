@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/bits"
+	"math/rand"
 
 	"github.com/google/uuid"
 )
@@ -165,7 +166,7 @@ func (wv *Worldview) getTrendWorldview(delta float64) byte {
 	// either 0.x or 1.x
 	pcChange := math.Abs(delta - 1.0)
 	// 1 if within, 0 without
-	if pcChange <= wv.dunbarProportion {
+	if pcChange >= wv.dunbarProportion {
 		return byte(0b10)
 	}
 	return byte(0b00)
@@ -189,7 +190,7 @@ func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
 	M, N := len(wv1.worldviewHistory), len(wv2.worldviewHistory)
 	windowLen := min(M, N)
 	if windowLen == 0 {
-		return 0.5
+		return 0.0
 	}
 	totalBits := 2 * windowLen
 	alignedBits := 0
@@ -209,10 +210,10 @@ func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
 	return worldviewAlignment
 }
 
-func NewWorldview(hash byte, prop float64) *Worldview {
+func NewWorldview(hash byte) *Worldview {
 	return &Worldview{
 		worldviewHash:    hash,
 		worldviewHistory: make([]byte, 0),
-		dunbarProportion: prop,
+		dunbarProportion: rand.Float64() * 0.5,
 	}
 }

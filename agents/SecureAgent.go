@@ -2,7 +2,6 @@ package agents
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/google/uuid"
 
@@ -14,8 +13,7 @@ type SecureAgent struct {
 }
 
 func CreateSecureAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *SecureAgent {
-	dunbarProb := rand.Float64() * 0.5
-	worldview := infra.NewWorldview(byte(0b11), dunbarProb)
+	worldview := infra.NewWorldview(byte(0b11))
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
