@@ -248,20 +248,20 @@ func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
 	type1 := parent1.GetAttachment().Type
 	type2 := parent2.GetAttachment().Type
 	childAttachmentType := tserv.mixAttachmentTypes(type1, type2)
-	childWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
+	// childWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
 
 	var newAgent infra.IExtendedAgent
 	switch {
 	case childAttachmentType == infra.SECURE:
-		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.DISMISSIVE:
-		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.PREOCCUPIED:
-		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.FEARFUL:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	default:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	}
 
 	// add child as descendant to parents

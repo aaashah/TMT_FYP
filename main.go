@@ -1,8 +1,6 @@
 package main
 
 import (
-	"math/rand"
-
 	"github.com/MattSScott/TMT_SOMAS/agents"
 	"github.com/MattSScott/TMT_SOMAS/config"
 	"github.com/MattSScott/TMT_SOMAS/infra"
@@ -19,10 +17,10 @@ func main() {
 	agentPopulation := make([]infra.IExtendedAgent, 0)
 
 	for i := 0; i < config.NumAgents; i += 4 {
-		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, parent1ID, parent2ID, rand.Uint32()))
-		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, parent1ID, parent2ID, rand.Uint32()))
-		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, parent1ID, parent2ID, rand.Uint32()))
-		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, parent1ID, parent2ID, rand.Uint32()))
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, parent1ID, parent2ID))
+		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, parent1ID, parent2ID))
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, parent1ID, parent2ID))
+		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, parent1ID, parent2ID))
 	}
 
 	// Set probability p for Erdős–Rényi network

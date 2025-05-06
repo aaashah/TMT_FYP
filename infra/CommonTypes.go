@@ -2,6 +2,7 @@ package infra
 
 import (
 	"math"
+	"math/bits"
 
 	"github.com/google/uuid"
 )
@@ -150,4 +151,56 @@ func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
 type DeathInfo struct {
 	Agent        IExtendedAgent
 	WasVoluntary bool
+}
+
+type Worldview struct {
+	worldviewHash    byte
+	worldviewHistory []byte
+	dunbarProportion float64
+}
+
+func (wv *Worldview) getTrendWorldview(delta float64) byte {
+	// either 0.x or 1.x
+	pcChange := math.Abs(delta - 1.0)
+	// 1 if within, 0 without
+	if pcChange <= wv.dunbarProportion {
+		return byte(0b10)
+	}
+	return byte(0b00)
+
+	// return opinionOnChange & wv.worldviewHash & 2
+}
+
+func (wv *Worldview) getSeasonalWorldview(delta float64) byte {
+	if delta > 1 {
+		return byte(0b01)
+	}
+	return byte(0b00)
+}
+
+func (wv *Worldview) UpdateWorldview(delta float64) {
+	fullWorldviewData := wv.getTrendWorldview(delta) & wv.getSeasonalWorldview(delta)
+	worldviewOpinion := ^(wv.worldviewHash ^ fullWorldviewData)
+	wv.worldviewHistory = append(wv.worldviewHistory, worldviewOpinion)
+}
+
+func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
+	windowLen := min(len(wv1.worldviewHistory), len(wv2.worldviewHistory))
+	totalBits := 2 * windowLen
+	alignedBits := 0
+	for i := range windowLen {
+		wv1Data := wv1.worldviewHistory[i]
+		wv2Data := wv2.worldviewHistory[i]
+		alignment := ^(wv1Data ^ wv2Data) & 3
+		alignedBits += bits.OnesCount8(alignment)
+	}
+	return float64(alignedBits) / float64(totalBits)
+}
+
+func NewWorldview(hash byte, prop float64) *Worldview {
+	return &Worldview{
+		worldviewHash:    hash,
+		worldviewHistory: make([]byte, 0),
+		dunbarProportion: prop,
+	}
 }

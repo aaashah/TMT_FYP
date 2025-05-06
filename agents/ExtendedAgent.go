@@ -2,7 +2,6 @@ package agents
 
 import (
 	"math"
-	"math/bits"
 	"math/rand"
 	"sort"
 
@@ -16,19 +15,19 @@ type ExtendedAgent struct {
 	*agent.BaseAgent[infra.IExtendedAgent]
 	infra.IServer
 
-	Telomere *infra.Telomere
+	telomere *infra.Telomere
 
-	Position       infra.PositionVector
-	MovementPolicy string // Defines how movement is determined
+	position       infra.PositionVector
+	movementPolicy string // Defines how movement is determined
 
 	//History Tracking
-	ClusterID int
+	clusterID int
 	//ClusterHistory			    []int // the cluster ID the agent belonged to at each turn
-	ClusterSizeHistory          []int // the size of the cluster at each turn
-	NetworkSizeHistory          []int // the size of the network at each turn
-	ObservedEliminationsCluster int
-	ObservedEliminationsNetwork int
-	Heroism                     int // number of times agent volunteered self-sacrifices
+	clusterSizeHistory          []int // the size of the cluster at each turn
+	networkSizeHistory          []int // the size of the network at each turn
+	observedEliminationsCluster int
+	observedEliminationsNetwork int
+	heroism                     int // number of times agent volunteered self-sacrifices
 
 	// Social network and kinship group
 	network       map[uuid.UUID]float32 // stores relationship strengths
@@ -37,40 +36,39 @@ type ExtendedAgent struct {
 	parent1       uuid.UUID
 	parent2       uuid.UUID
 
-	Attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
+	attachment infra.Attachment // Attachment orientations: [anxiety, avoidance].
 
 	// Decision-Making Parameters:
 	//ASP map[string]float32 // Parameters for decision-making
 	//PTS map[string]float32 // Parameters for behavior protocols
 	PTW infra.PTSParams // Parameters for PTS
 
-	worldview uint32 // 32-bit binary representation of opinions
+	worldview *infra.Worldview
 
-	// Ysterofimia (Posthumous Recognition)
-	Ysterofimia *infra.Ysterofimia // Observation of self-sacrifice vs self-preservation
+	// ysterofimia (Posthumous Recognition)
+	ysterofimia *infra.Ysterofimia // Observation of self-sacrifice vs self-preservation
 
-	AgentIsAlive bool // True if agent is alive
+	agentIsAlive bool // True if agent is alive
 
 	//MortalitySalience      float32 //section in ASP module
 	//WorldviewValidation    float32 //section in ASP module
 	//RelationshipValidation float32 //section in ASP module
 }
 
-func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *ExtendedAgent {
-
+func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview *infra.Worldview) *ExtendedAgent {
 	return &ExtendedAgent{
 		BaseAgent:    agent.CreateBaseAgent(server),
 		IServer:      server,                                                               // Type assert the server functions to IServer interface
-		Attachment:   infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
-		Heroism:      0,                                                                    //start at 0 increment if chose to self-sacrifice
+		attachment:   infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
+		heroism:      0,                                                                    //start at 0 increment if chose to self-sacrifice
 		network:      make(map[uuid.UUID]float32),
 		parent1:      parent1ID,
 		parent2:      parent2ID,
-		Telomere:     infra.NewTelomere(),
+		telomere:     infra.NewTelomere(),
 		worldview:    worldview,
-		Ysterofimia:  infra.NewYsterofimia(),
-		AgentIsAlive: true,
-		Position:     infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
+		ysterofimia:  infra.NewYsterofimia(),
+		agentIsAlive: true,
+		position:     infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
 	}
 }
 
@@ -83,27 +81,27 @@ func (ea *ExtendedAgent) GetName() uuid.UUID {
 }
 
 func (ea *ExtendedAgent) GetAge() int {
-	return ea.Telomere.GetAge()
+	return ea.telomere.GetAge()
 }
 
 func (ea *ExtendedAgent) GetTelomere() float64 {
-	return ea.Telomere.GetProbabilityOfDeath()
+	return ea.telomere.GetProbabilityOfDeath()
 }
 
 func (ea *ExtendedAgent) IncrementAge() {
-	ea.Telomere.IncrementAge()
+	ea.telomere.IncrementAge()
 }
 
 func (ea *ExtendedAgent) GetPosition() infra.PositionVector {
-	return ea.Position
+	return ea.position
 }
 
 func (ea *ExtendedAgent) SetPosition(newPos infra.PositionVector) {
-	ea.Position = newPos
+	ea.position = newPos
 }
 
 func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
-	return ea.Attachment
+	return ea.attachment
 }
 
 func randInRange(min, max float32) float32 {
@@ -138,7 +136,7 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 			continue
 		}
 
-		dist := ea.Position.Dist(agentInterface.GetPosition())
+		dist := ea.position.Dist(agentInterface.GetPosition())
 		if dist < minDist {
 			minDist = dist
 			closestFriends = []infra.IExtendedAgent{agentInterface} // start new list
@@ -154,28 +152,28 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 }
 
 func (ea *ExtendedAgent) GetClusterID() int {
-	return ea.ClusterID
+	return ea.clusterID
 }
 
 func (ea *ExtendedAgent) SetClusterID(id int) {
-	ea.ClusterID = id
+	ea.clusterID = id
 }
 
 func (ea *ExtendedAgent) AppendClusterHistory(clusterID int, clusterSize int) {
 	//ea.ClusterHistory = append(ea.ClusterHistory, clusterID)
-	ea.ClusterSizeHistory = append(ea.ClusterSizeHistory, clusterSize)
+	ea.clusterSizeHistory = append(ea.clusterSizeHistory, clusterSize)
 }
 
 func (ea *ExtendedAgent) IncrementClusterEliminations(n int) {
-	ea.ObservedEliminationsCluster += n
+	ea.observedEliminationsCluster += n
 }
 
 func (ea *ExtendedAgent) AppendNetworkSizeHistory(networkSize int) {
-	ea.NetworkSizeHistory = append(ea.NetworkSizeHistory, networkSize)
+	ea.networkSizeHistory = append(ea.networkSizeHistory, networkSize)
 }
 
 func (ea *ExtendedAgent) IncrementNetworkEliminations(n int) {
-	ea.ObservedEliminationsNetwork += n
+	ea.observedEliminationsNetwork += n
 }
 
 func (ea *ExtendedAgent) SetPreEliminationNetworkLength(length int) {
@@ -183,15 +181,15 @@ func (ea *ExtendedAgent) SetPreEliminationNetworkLength(length int) {
 }
 
 func (ea *ExtendedAgent) IncrementHeroism() {
-	ea.Heroism++
+	ea.heroism++
 }
 
 func (ea *ExtendedAgent) GetHeroism() int {
-	return ea.Heroism
+	return ea.heroism
 }
 
 // GetWorldviewBinary returns the 32-bit binary representation of the agent's worldview.
-func (ea *ExtendedAgent) GetWorldviewBinary() uint32 {
+func (ea *ExtendedAgent) GetWorldview() *infra.Worldview {
 	return ea.worldview
 }
 
@@ -213,20 +211,20 @@ func (ea *ExtendedAgent) GetParents() (uuid.UUID, uuid.UUID) {
 // }
 
 func (ea *ExtendedAgent) GetYsterofimia() *infra.Ysterofimia {
-	return ea.Ysterofimia
+	return ea.ysterofimia
 }
 
 func (ea *ExtendedAgent) MarkAsDead() {
-	ea.AgentIsAlive = false
+	ea.agentIsAlive = false
 }
 
 func (ea *ExtendedAgent) IsAlive() bool {
-	return ea.AgentIsAlive
+	return ea.agentIsAlive
 }
 
 func (ea *ExtendedAgent) ClusterEliminations() float32 {
 	totalExposure := 0
-	for _, size := range ea.ClusterSizeHistory {
+	for _, size := range ea.clusterSizeHistory {
 		if size > 1 {
 			totalExposure += size
 		}
@@ -234,12 +232,12 @@ func (ea *ExtendedAgent) ClusterEliminations() float32 {
 	if totalExposure == 0 {
 		return 0
 	}
-	return float32(ea.ObservedEliminationsCluster) / float32(totalExposure)
+	return float32(ea.observedEliminationsCluster) / float32(totalExposure)
 }
 
 func (ea *ExtendedAgent) NetworkEliminations() float32 {
 	totalExposure := 0
-	for _, size := range ea.NetworkSizeHistory {
+	for _, size := range ea.networkSizeHistory {
 		if size > 1 {
 			totalExposure += size
 		}
@@ -247,7 +245,7 @@ func (ea *ExtendedAgent) NetworkEliminations() float32 {
 	if totalExposure == 0 {
 		return 0
 	}
-	return float32(ea.ObservedEliminationsNetwork) / float32(totalExposure)
+	return float32(ea.observedEliminationsNetwork) / float32(totalExposure)
 }
 
 func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
@@ -324,28 +322,29 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 	return sum
 }
 
-func worldviewAlignment(a, b uint32) float32 {
-	// XNOR the numbers to find aligned bits
-	alignedBits := ^(a ^ b)
+// func worldviewAlignment(a, b uint32) float32 {
+// 	// XNOR the numbers to find aligned bits
+// 	alignedBits := ^(a ^ b)
 
-	// Count the differing bits (Hamming weight)
-	alignedBitCount := bits.OnesCount32(alignedBits)
+// 	// Count the differing bits (Hamming weight)
+// 	alignedBitCount := bits.OnesCount32(alignedBits)
 
-	// Divide by 32 to get average bit alignment
-	return float32(alignedBitCount) / 32.0
-}
+// 	// Divide by 32 to get average bit alignment
+// 	return float32(alignedBitCount) / 32.0
+// }
 
 func (ea *ExtendedAgent) GetCPR() float32 {
 	// compute cluster profiles
 	agentMap := ea.GetAgentMap()
 	clusterID := ea.GetClusterID()
-	clusterAlignments := []float32{}
+	clusterAlignments := []float64{}
 	for _, otherAgent := range agentMap {
 		if otherAgent.GetID() == ea.GetID() {
 			continue // skip self
 		}
 		if otherAgent.GetClusterID() == clusterID {
-			score := worldviewAlignment(ea.worldview, otherAgent.GetWorldviewBinary())
+			// score := worldviewAlignment(ea.worldview, otherAgent.GetWorldviewBinary())
+			score := ea.worldview.CompareWorldviews(otherAgent.GetWorldview())
 			clusterAlignments = append(clusterAlignments, score)
 		}
 	}
@@ -354,7 +353,7 @@ func (ea *ExtendedAgent) GetCPR() float32 {
 		return 0
 	}
 	// compute average alignment
-	var totalAlignment float32
+	var totalAlignment float64
 	for _, score := range clusterAlignments {
 		totalAlignment += score
 	}
@@ -363,11 +362,12 @@ func (ea *ExtendedAgent) GetCPR() float32 {
 
 func (ea *ExtendedAgent) GetNPR() float32 {
 	// compute network profiles
-	networkAlignments := []float32{}
+	networkAlignments := []float64{}
 	agentMap := ea.GetAgentMap()
 	for friendID := range ea.network {
 		if other, ok := agentMap[friendID]; ok {
-			score := worldviewAlignment(ea.worldview, other.GetWorldviewBinary())
+			// score := worldviewAlignment(ea.worldview, other.GetWorldviewBinary())
+			score := ea.worldview.CompareWorldviews(other.GetWorldview())
 			networkAlignments = append(networkAlignments, score)
 		}
 	}
@@ -375,7 +375,7 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 		return 0
 	}
 	// compute average alignment
-	var totalAlignment float32
+	var totalAlignment float64
 	for _, score := range networkAlignments {
 		totalAlignment += score
 	}
@@ -567,13 +567,13 @@ func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameReco
 		ID:                  ea.GetID().String(),
 		IsAlive:             ea.IsAlive(),
 		Age:                 ea.GetAge(),
-		AttachmentStyle:     styleMap[ea.Attachment.Type],
-		AttachmentAnxiety:   ea.Attachment.Anxiety,
-		AttachmentAvoidance: ea.Attachment.Avoidance,
-		ClusterID:           ea.ClusterID,
-		Position:            gameRecorder.Position{X: ea.Position.X, Y: ea.Position.Y},
-		Worldview:           ea.worldview,
-		Heroism:             ea.Heroism,
+		AttachmentStyle:     styleMap[ea.attachment.Type],
+		AttachmentAnxiety:   ea.attachment.Anxiety,
+		AttachmentAvoidance: ea.attachment.Avoidance,
+		ClusterID:           ea.clusterID,
+		Position:            gameRecorder.Position{X: ea.position.X, Y: ea.position.Y},
+		// Worldview:           ea.worldview,
+		Heroism: ea.heroism,
 		//MortalitySalience:      ea.MortalitySalience,
 		//WorldviewValidation:    ea.WorldviewValidation,
 		//RelationshipValidation: ea.RelationshipValidation,

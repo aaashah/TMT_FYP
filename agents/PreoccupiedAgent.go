@@ -3,6 +3,7 @@ package agents
 import (
 	"fmt"
 	"math"
+	"math/rand"
 
 	"github.com/google/uuid"
 
@@ -13,11 +14,13 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *PreoccupiedAgent {
+func CreatePreoccupiedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *PreoccupiedAgent {
+	dunbarProb := rand.Float64() * 0.5
+	worldview := infra.NewWorldview(byte(0b11), dunbarProb)
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
-	extendedAgent.Attachment = infra.Attachment{
+	extendedAgent.attachment = infra.Attachment{
 		Anxiety:   randInRange(0.5, 1.0),
 		Avoidance: randInRange(0.0, 0.5),
 		Type:      infra.PREOCCUPIED,
@@ -56,7 +59,7 @@ func (pa *PreoccupiedAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionV
 		}
 		if _, known := pa.network[otherAgent.GetID()]; known {
 			// friend so:
-			dist := pa.Position.Dist(otherAgent.GetPosition())
+			dist := pa.position.Dist(otherAgent.GetPosition())
 			if dist < minDist {
 				minDist = dist
 				closestFriend = otherAgent

@@ -18,7 +18,7 @@ type IExtendedAgent interface {
 	//IsMortalitySalient() bool
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
-	GetWorldviewBinary() uint32
+	GetWorldview() *Worldview
 	GetYsterofimia() *Ysterofimia
 	//GetMortality() bool
 	GetTelomere() float64
