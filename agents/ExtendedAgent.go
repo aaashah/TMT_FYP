@@ -265,53 +265,31 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 }
 
 func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
-	agentMap := ea.GetAgentMap()
 	selfPosition := ea.GetPosition()
 	clusterID := ea.GetClusterID()
 	memorials := append(grid.Tombstones, grid.Temples...)
 
-	if len(memorials) == 0 {
-		return 0 // no memorials
-	}
-
-	//numerator - inverse proximity from self to all memorials
-	selfProx := make(infra.ProximityArray, 0, len(memorials))
-	//var selfMemorialDistanceSum float64
+	totalMemorialInfluence := 0.0
 	for _, mem := range memorials {
-		//selfMemorialDistanceSum += selfPosition.Dist(mem)
-		dist := selfPosition.Dist(mem)
-		if dist > 0 {
-			selfProx = append(selfProx, float32(dist))
-		}
+		distToMem := selfPosition.Dist(mem)
+		totalMemorialInfluence += 1 / distToMem
 	}
 
-	//denominator- distance from memorials and distance from cluster agents to memorials
-	otherProx := make(infra.ProximityArray, 0)
-	//denominator := selfMemorialDistanceSum
-	for _, otherAgent := range agentMap {
-		if otherAgent.GetID() == ea.GetID() {
-			continue // skip self
+	totalClusterInfluence := 0.0
+	for _, ag := range ea.GetAgentMap() {
+		if ag.GetClusterID() != clusterID || ag.GetID() == ea.GetID() {
+			continue
 		}
-		if otherAgent.GetClusterID() == clusterID {
-			otherPosition := otherAgent.GetPosition()
-			for _, mem := range memorials {
-				//denominator += otherPosition.Dist(mem)
-				dist := otherPosition.Dist(mem)
-				if dist > 0 {
-					otherProx = append(otherProx, float32(dist))
-				}
-			}
-		}
+		otherPosition := ag.GetPosition()
+		distToAgent := selfPosition.Dist(otherPosition)
+		totalClusterInfluence += 1 / distToAgent
 	}
 
-	totalProx := append([]float32{}, selfProx...)
-	totalProx = append(totalProx, otherProx...)
-	relativeProx := infra.ProximityArray(totalProx).MapToRelativeProximities()
-	sum := float32(0)
-	for i := 0; i < len(selfProx); i++ {
-		sum += relativeProx[i]
+	if totalClusterInfluence == 0 && totalMemorialInfluence == 0 {
+		return 0
 	}
-	return sum
+
+	return float32(totalClusterInfluence) / (float32(totalClusterInfluence) + float32(totalMemorialInfluence))
 }
 
 // func worldviewAlignment(a, b uint32) float32 {

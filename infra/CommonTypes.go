@@ -136,10 +136,10 @@ func (y *Ysterofimia) ComputeYsterofimia() float32 {
 	}
 }
 
-type ProximityArray []float32
+type ProximityArray []float64
 
 func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
-	var totInvProx float32 = 0.0
+	var totInvProx float64 = 0.0
 	for _, prox := range pa {
 		totInvProx += 1 / prox
 	}
