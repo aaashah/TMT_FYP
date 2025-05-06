@@ -1,4 +1,4 @@
-module github.com/aaashah/TMT_Attachment
+module github.com/MattSScott/TMT_SOMAS
 
 go 1.23.0
 

@@ -1,8 +1,8 @@
 package infra
 
 import (
+	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
-	"github.com/aaashah/TMT_Attachment/gameRecorder"
 
 	"github.com/google/uuid"
 )

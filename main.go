@@ -3,10 +3,10 @@ package main
 import (
 	"math/rand"
 
-	"github.com/aaashah/TMT_Attachment/agents"
-	"github.com/aaashah/TMT_Attachment/config"
-	"github.com/aaashah/TMT_Attachment/infra"
-	"github.com/aaashah/TMT_Attachment/server"
+	"github.com/MattSScott/TMT_SOMAS/agents"
+	"github.com/MattSScott/TMT_SOMAS/config"
+	"github.com/MattSScott/TMT_SOMAS/infra"
+	"github.com/MattSScott/TMT_SOMAS/server"
 	"github.com/google/uuid"
 )
 

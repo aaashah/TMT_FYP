@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"sort"
 
+	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
+	"github.com/MattSScott/TMT_SOMAS/infra"
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/agent"
-	"github.com/aaashah/TMT_Attachment/gameRecorder"
-	"github.com/aaashah/TMT_Attachment/infra"
 	"github.com/google/uuid"
 )
 

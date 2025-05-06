@@ -12,9 +12,9 @@ import (
 
 	"slices"
 
-	"github.com/aaashah/TMT_Attachment/config"
-	"github.com/aaashah/TMT_Attachment/gameRecorder"
-	"github.com/aaashah/TMT_Attachment/infra"
+	"github.com/MattSScott/TMT_SOMAS/config"
+	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
+	"github.com/MattSScott/TMT_SOMAS/infra"
 	"github.com/google/uuid"
 )
 
