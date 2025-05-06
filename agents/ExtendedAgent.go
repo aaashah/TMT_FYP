@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -411,7 +410,7 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	ne := float32(ea.NetworkEliminations())
 	ra := float32(ea.RelativeAgeToNetwork())
 	mp := float32(ea.GetMemorialProximity(grid))
-	fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
+	// fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
 	//ea.MortalitySalience = infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 
 	return infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
@@ -443,14 +442,14 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := float32(0.15) //random threshold
+	threshold := float32(0.2) //random threshold
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
+	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {
