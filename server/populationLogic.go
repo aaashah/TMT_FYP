@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -75,6 +76,8 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	actualVolunteers := len(volunteers)
 	// record number of volunteers
 	tserv.numVolunteeredAgents = actualVolunteers
+
+	fmt.Println(totalAgents, neededVolunteers, actualVolunteers, tserv.expectedChildren)
 
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate

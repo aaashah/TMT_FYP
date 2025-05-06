@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -259,7 +260,7 @@ func (ea *ExtendedAgent) RelativeAgeToNetwork() float32 {
 	}
 
 	sort.Ints(ages)
-	agePos := sort.SearchInts(ages, thisAge)
+	agePos := sort.SearchInts(ages, thisAge) + 1
 	return float32(agePos) / float32(networkSize)
 }
 
@@ -351,6 +352,8 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
+// prop. links agent cut vs links cut to you
+// prop. links created vs links created to you
 func (ea *ExtendedAgent) GetEstrangement() float32 {
 	kin := ea.kinshipGroup
 	network := ea.network
@@ -398,7 +401,7 @@ func (ea *ExtendedAgent) GetHeroismTendency() float32 {
 
 	// Sort heroism scores in ascending order
 	sort.Ints(heroismScores)
-	index := sort.SearchInts(heroismScores, selfHeroism)
+	index := sort.SearchInts(heroismScores, selfHeroism) + 1
 
 	return float32(index) / float32(len(heroismScores))
 }
@@ -434,7 +437,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	est := ea.GetEstrangement()                // compute EST
 	pse := ea.GetProSocialEsteem()             // compute PSE
 	heroismTendency := ea.GetHeroismTendency() // compute heroism tendency
-	//fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
+	fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
 	//ea.RelationshipValidation = infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
@@ -449,7 +452,7 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
+	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {

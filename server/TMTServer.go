@@ -213,7 +213,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.pruneNetwork(fullDeathReport)
 
 	// 7. Spawn new agents
-	tserv.updateProbabilityOfChildren()
+	tserv.updateProbabilityOfChildren(initialPop)
 	tserv.spawnNewAgents()
 
 	newPop := len(tserv.GetAgentMap())
@@ -445,15 +445,15 @@ func (tserv *TMTServer) updateAgentWorldviews(initialPop, newPop int) {
 	}
 }
 
-func (tserv *TMTServer) updateProbabilityOfChildren() {
-	roundEliminations := len(tserv.lastSelfSacrificedAgents)
-	totalAgents := len(tserv.GetAgentMap())
-	proportionOfEliminations := float64(roundEliminations) / float64(totalAgents)
+func (tserv *TMTServer) updateProbabilityOfChildren(initPop int) {
+	numVolunteers := tserv.numVolunteeredAgents
+	fmt.Println("volunteers:", numVolunteers)
+	proportionOfVolunteers := float64(numVolunteers) / float64(initPop)
 
-	if proportionOfEliminations >= tserv.config.PopulationRho {
-		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.1, tserv.config.MaxExpectedChildren)
+	if proportionOfVolunteers >= tserv.config.PopulationRho {
+		tserv.expectedChildren = math.Min(tserv.expectedChildren*1.05, tserv.config.MaxExpectedChildren)
 	} else {
-		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.9, tserv.config.MinExpectedChildren)
+		tserv.expectedChildren = math.Max(tserv.expectedChildren*0.95, tserv.config.MinExpectedChildren)
 	}
 }
 
