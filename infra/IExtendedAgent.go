@@ -19,7 +19,7 @@ type IExtendedAgent interface {
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldview() *Worldview
-	UpdateWorldview(float64)
+	UpdateWorldview(float64, int)
 	GetYsterofimia() *Ysterofimia
 	//GetMortality() bool
 	GetTelomere() float64

@@ -193,8 +193,8 @@ func (ea *ExtendedAgent) GetWorldview() *infra.Worldview {
 	return ea.worldview
 }
 
-func (ea *ExtendedAgent) UpdateWorldview(data float64) {
-	ea.worldview.UpdateWorldview(data)
+func (ea *ExtendedAgent) UpdateWorldview(trend float64, seasonal int) {
+	ea.worldview.UpdateWorldview(trend, seasonal)
 }
 
 func (ea *ExtendedAgent) AddDescendant(childID uuid.UUID) {

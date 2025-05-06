@@ -160,6 +160,7 @@ type Worldview struct {
 	dunbarProportion float64
 }
 
+// low-frequency pop. variance - how does population chance across sim
 func (wv *Worldview) getTrendWorldview(delta float64) byte {
 	// either 0.x or 1.x
 	pcChange := math.Abs(delta - 1.0)
@@ -170,39 +171,41 @@ func (wv *Worldview) getTrendWorldview(delta float64) byte {
 	return byte(0b00)
 }
 
-func (wv *Worldview) getSeasonalWorldview(delta float64) byte {
-	if delta > 1 {
+// high-frequency - how does population chance from turn-to-turn
+func (wv *Worldview) getSeasonalWorldview(delta int) byte {
+	if delta > 0 {
 		return byte(0b01)
 	}
 	return byte(0b00)
 }
 
-func (wv *Worldview) UpdateWorldview(delta float64) {
-	fullWorldviewData := wv.getTrendWorldview(delta) | wv.getSeasonalWorldview(delta)
+func (wv *Worldview) UpdateWorldview(trendDelta float64, seasonalDelta int) {
+	fullWorldviewData := wv.getTrendWorldview(trendDelta) | wv.getSeasonalWorldview(seasonalDelta)
 	worldviewOpinion := ^(wv.worldviewHash ^ fullWorldviewData)
 	wv.worldviewHistory = append(wv.worldviewHistory, worldviewOpinion)
 }
 
 func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
-	windowLen := min(len(wv1.worldviewHistory), len(wv2.worldviewHistory))
+	M, N := len(wv1.worldviewHistory), len(wv2.worldviewHistory)
+	windowLen := min(M, N)
 	if windowLen == 0 {
 		return 0.5
 	}
 	totalBits := 2 * windowLen
 	alignedBits := 0
 	for i := range windowLen {
-		wv1Data := wv1.worldviewHistory[i]
-		wv2Data := wv2.worldviewHistory[i]
+		wv1Data := wv1.worldviewHistory[M-i-1]
+		wv2Data := wv2.worldviewHistory[N-i-1]
 		alignment := ^(wv1Data ^ wv2Data) & 3
 		alignedBits += bits.OnesCount8(alignment)
 	}
 
 	worldviewAlignment := float64(alignedBits) / float64(totalBits)
+
 	if worldviewAlignment > 1.0 {
 		misalignment := fmt.Sprintf("Invalid worldview alignment - Aligned bits: %d, Total bits: %d\n", alignedBits, totalBits)
 		panic(misalignment)
 	}
-	fmt.Println(wv1.worldviewHistory, wv2.worldviewHistory, worldviewAlignment)
 	return worldviewAlignment
 }
 

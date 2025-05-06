@@ -177,6 +177,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	if tserv.config.Debug {
 		fmt.Printf("--------End of iteration %v---------\n", iter)
 	}
+	initialPop := len(tserv.GetAgentMap())
 	// fmt.Println(len(tserv.GetAgentMap()))
 	tserv.addIterationJSON(iter)
 	// 2. Apply clustering (k-means)
@@ -216,16 +217,20 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.updateClusterEliminations(fullDeathReport)
 	tserv.updateAgentYsterofimia(fullDeathReport)
 	tserv.updateAgentHeroism(fullDeathReport)
-	tserv.updateAgentWorldviews()
 
 	// 7. Spawn new agents
 	tserv.updateProbabilityOfChildren()
 	tserv.spawnNewAgents()
 
+	newPop := len(tserv.GetAgentMap())
+	tserv.updateAgentWorldviews(initialPop, newPop)
+
 	// Age up all agents
 	for _, agent := range tserv.GetAgentMap() {
 		agent.IncrementAge()
 	}
+
+	fmt.Println()
 }
 
 // ---------------------- Helper Functions ----------------------
@@ -439,13 +444,11 @@ func (tserv *TMTServer) applyPTS(cluster []uuid.UUID) {
 	}
 }
 
-func (tserv *TMTServer) updateAgentWorldviews() {
-	agentMap := tserv.GetAgentMap()
-	currentPop := len(agentMap)
-	initPop := tserv.config.NumAgents
-	popChange := float64(currentPop) / float64(initPop)
-	for _, agent := range agentMap {
-		agent.UpdateWorldview(popChange)
+func (tserv *TMTServer) updateAgentWorldviews(initialPop, newPop int) {
+	trendChange := float64(newPop) / float64(tserv.config.NumAgents)
+	seasonalChange := newPop - initialPop
+	for _, agent := range tserv.GetAgentMap() {
+		agent.UpdateWorldview(trendChange, seasonalChange)
 	}
 }
 
