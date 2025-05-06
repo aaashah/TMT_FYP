@@ -216,6 +216,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.updateClusterEliminations(fullDeathReport)
 	tserv.updateAgentYsterofimia(fullDeathReport)
 	tserv.updateAgentHeroism(fullDeathReport)
+	tserv.updateAgentWorldviews()
 
 	// 7. Spawn new agents
 	tserv.updateProbabilityOfChildren()
@@ -438,6 +439,16 @@ func (tserv *TMTServer) applyPTS(cluster []uuid.UUID) {
 	}
 }
 
+func (tserv *TMTServer) updateAgentWorldviews() {
+	agentMap := tserv.GetAgentMap()
+	currentPop := len(agentMap)
+	initPop := tserv.config.NumAgents
+	popChange := float64(currentPop) / float64(initPop)
+	for _, agent := range agentMap {
+		agent.UpdateWorldview(popChange)
+	}
+}
+
 func (tserv *TMTServer) updateProbabilityOfChildren() {
 	roundEliminations := len(tserv.lastSelfSacrificedAgents)
 	totalAgents := len(tserv.GetAgentMap())
@@ -450,10 +461,10 @@ func (tserv *TMTServer) updateProbabilityOfChildren() {
 	}
 }
 
-func (tserv *TMTServer) mixWorldviews(wv1, wv2 uint32) uint32 {
-	mask := rand.Uint32()
-	return (wv1 & mask) | (wv2 &^ mask)
-}
+// func (tserv *TMTServer) mixWorldviews(wv1, wv2 uint32) uint32 {
+// 	mask := rand.Uint32()
+// 	return (wv1 & mask) | (wv2 &^ mask)
+// }
 
 // ---------------------- Recording Turn Data ----------------------
 

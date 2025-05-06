@@ -193,9 +193,9 @@ func (ea *ExtendedAgent) GetWorldview() *infra.Worldview {
 	return ea.worldview
 }
 
-// func (ea *ExtendedAgent) SetWorldviewBinary(worldview uint32) {
-// 	ea.Worldview = worldview
-// }
+func (ea *ExtendedAgent) UpdateWorldview(data float64) {
+	ea.worldview.UpdateWorldview(data)
+}
 
 func (ea *ExtendedAgent) AddDescendant(childID uuid.UUID) {
 	ea.kinshipGroup = append(ea.kinshipGroup, childID)
