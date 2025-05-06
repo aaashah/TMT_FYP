@@ -150,7 +150,7 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 func (tserv *TMTServer) removeFromNetwork(deadAgent infra.IExtendedAgent) {
 	for _, agent := range tserv.GetAgentMap() {
 		deadID := deadAgent.GetID()
-		agent.RemoveRelationship(deadID)
+		agent.RemoveFromSocialNetwork(deadID)
 	}
 }
 
@@ -273,14 +273,14 @@ func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
 		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	}
 
-	// add child as descendant to parents
-	parent1.AddDescendant(newAgent.GetID())
-	parent2.AddDescendant(newAgent.GetID())
-
 	//add new agent to server
 	tserv.AddAgent(newAgent)
 
+	newAgentID := newAgent.GetID()
 	// add relationships in social network
-	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+	parent1.AddToSocialNetwork(newAgentID, 0.5)
+	parent2.AddToSocialNetwork(newAgentID, 0.5)
+
+	// add self to social network
+	newAgent.AddToSocialNetwork(newAgentID, 0.5)
 }

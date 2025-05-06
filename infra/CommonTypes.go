@@ -136,19 +136,19 @@ func (y *Ysterofimia) ComputeYsterofimia() float32 {
 	}
 }
 
-type ProximityArray []float64
+// type ProximityArray []float64
 
-func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
-	var totInvProx float64 = 0.0
-	for _, prox := range pa {
-		totInvProx += 1 / prox
-	}
-	for idx, prox := range pa {
-		invProx := 1 / prox
-		pa[idx] = invProx / totInvProx
-	}
-	return pa
-}
+// func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
+// 	var totInvProx float64 = 0.0
+// 	for _, prox := range pa {
+// 		totInvProx += 1 / prox
+// 	}
+// 	for idx, prox := range pa {
+// 		invProx := 1 / prox
+// 		pa[idx] = invProx / totInvProx
+// 	}
+// 	return pa
+// }
 
 type DeathInfo struct {
 	Agent        IExtendedAgent
@@ -215,5 +215,43 @@ func NewWorldview(hash byte) *Worldview {
 		worldviewHash:    hash,
 		worldviewHistory: make([]byte, 0),
 		dunbarProportion: rand.Float64() * 0.5,
+	}
+}
+
+type PTS_Stats struct {
+	createdBy int
+	createdTo int
+	severedBy int
+	severedTo int
+}
+
+func (pts *PTS_Stats) IncrementCreatedBy() {
+	pts.createdBy++
+}
+
+func (pts *PTS_Stats) IncrementCreatedTo() {
+	pts.createdTo++
+}
+
+func (pts *PTS_Stats) IncrementSeveredBy() {
+	pts.severedBy++
+}
+
+func (pts *PTS_Stats) IncrementSeveredTo() {
+	pts.severedTo++
+}
+
+func (pts *PTS_Stats) GetEstrangement() float32 {
+	propCreated := float32(pts.createdBy) / float32(pts.createdBy+pts.createdTo)
+	propSevered := float32(pts.severedBy) / float32(pts.severedBy+pts.severedTo)
+	return 0.5 * (propCreated + propSevered)
+}
+
+func NewPTS_Stats() *PTS_Stats {
+	return &PTS_Stats{
+		createdBy: 1,
+		createdTo: 1,
+		severedBy: 1,
+		severedTo: 1,
 	}
 }

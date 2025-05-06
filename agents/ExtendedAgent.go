@@ -43,7 +43,8 @@ type ExtendedAgent struct {
 	// Decision-Making Parameters:
 	//ASP map[string]float32 // Parameters for decision-making
 	//PTS map[string]float32 // Parameters for behavior protocols
-	PTW infra.PTSParams // Parameters for PTS
+	PTW      infra.PTSParams // Parameters for PTS
+	ptsStats *infra.PTS_Stats
 
 	worldview *infra.Worldview
 
@@ -63,7 +64,7 @@ func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uu
 	clusTol := 0.5 * initAgents
 	netTol := 0.5 * initAgents
 
-	ag := &ExtendedAgent{
+	return &ExtendedAgent{
 		BaseAgent:                   agent.CreateBaseAgent(server),
 		IServer:                     server,                                                               // Type assert the server functions to IServer interface
 		attachment:                  infra.Attachment{Anxiety: rand.Float32(), Avoidance: rand.Float32()}, // Randomised anxiety and avoidance
@@ -74,14 +75,12 @@ func CreateExtendedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uu
 		telomere:                    infra.NewTelomere(),
 		worldview:                   worldview,
 		ysterofimia:                 infra.NewYsterofimia(),
+		ptsStats:                    infra.NewPTS_Stats(),
 		clusterEliminationTolerance: int(clusTol),
 		networkEliminationTolerance: int(netTol),
 		agentIsAlive:                true,
 		position:                    infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
 	}
-
-	ag.UpdateSocialNetwork(ag.GetID(), 0.5)
-	return ag
 }
 
 // ----------------------- Interface implementation -----------------------
@@ -118,22 +117,6 @@ func (ea *ExtendedAgent) GetAttachment() infra.Attachment {
 
 func randInRange(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
-}
-
-func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
-	return ea.network
-}
-
-func (ea *ExtendedAgent) AddRelationship(otherID uuid.UUID, strength float32) {
-	ea.UpdateAgentRelationship(ea.GetID(), otherID, strength)
-}
-
-func (ea *ExtendedAgent) RemoveRelationship(otherID uuid.UUID) {
-	delete(ea.network, otherID)
-}
-
-func (ea *ExtendedAgent) UpdateRelationship(otherID uuid.UUID, change float32) {
-	ea.UpdateAgentRelationship(ea.GetID(), otherID, change)
 }
 
 // Finds closest friend in social network
@@ -352,25 +335,28 @@ func (ea *ExtendedAgent) GetNPR() float32 {
 	return float32(totalAlignment) / float32(len(networkAlignments))
 }
 
-// prop. links agent cut vs links cut to you
-// prop. links created vs links created to you
+// prop. links agent cut vs links cut to you -- agent.RemoveRelationship
+// prop. links created vs links created to you -- agent.CreateRelationship
 func (ea *ExtendedAgent) GetEstrangement() float32 {
-	kin := ea.kinshipGroup
-	network := ea.network
-	//fmt.Print("Number of kin: ", len(kin), " ")
+	return ea.ptsStats.GetEstrangement()
+	// fmt.Println(ea.ptsStats)
+	// return 0.0
+	// kin := ea.kinshipGroup
+	// network := ea.network
+	// //fmt.Print("Number of kin: ", len(kin), " ")
 
-	if len(kin) == 0 {
-		return 0.0 // no descendants
-	}
+	// if len(kin) == 0 {
+	// 	return 0.0 // no descendants
+	// }
 
-	connectedDescendants := 0
-	for _, descendantsID := range kin {
-		if _, ok := network[descendantsID]; ok {
-			connectedDescendants++
-		}
-	}
+	// connectedDescendants := 0
+	// for _, descendantsID := range kin {
+	// 	if _, ok := network[descendantsID]; ok {
+	// 		connectedDescendants++
+	// 	}
+	// }
 
-	return float32(connectedDescendants) / float32(len(kin))
+	// return float32(connectedDescendants) / float32(len(kin))
 }
 
 func (ea *ExtendedAgent) GetProSocialEsteem() float32 {
@@ -445,7 +431,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := float32(0.2) //random threshold
+	threshold := float32(0.45) //random threshold
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
@@ -475,21 +461,31 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 
 }
 
-func (ea *ExtendedAgent) UpdateSocialNetwork(id uuid.UUID, change float32) {
+// -------PTS-------
+
+func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
+	return ea.network
+}
+
+func (ea *ExtendedAgent) AddToSocialNetwork(id uuid.UUID, change float32) {
 	ea.network[id] = change
 }
 
-func (ea *ExtendedAgent) GetPTSParams() infra.PTSParams {
-	return ea.PTW
-}
-
-func (ea *ExtendedAgent) UpdateEsteem(friendID uuid.UUID, isCheck bool) {
+func (ea *ExtendedAgent) UpdateSocialNetwork(friendID uuid.UUID, isCheck bool) {
 	currentEsteem := ea.network[friendID]
 	if isCheck {
 		ea.network[friendID] = currentEsteem + ea.PTW.Alpha*(1-currentEsteem)
 	} else {
 		ea.network[friendID] = currentEsteem - ea.PTW.Beta*(currentEsteem)
 	}
+}
+
+func (ea *ExtendedAgent) RemoveFromSocialNetwork(otherID uuid.UUID) {
+	delete(ea.network, otherID)
+}
+
+func (ea *ExtendedAgent) GetPTSParams() infra.PTSParams {
+	return ea.PTW
 }
 
 func (ea *ExtendedAgent) CreateWellbeingCheckMessage() *infra.WellbeingCheckMessage {
@@ -514,15 +510,28 @@ func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMe
 
 		//then update alpha
 		//fmt.Printf("Agent esteem before: %f\n", ea.network[msg.Sender])
-		ea.UpdateEsteem(msg.Sender, true)
+		ea.UpdateSocialNetwork(msg.Sender, true)
 		//fmt.Printf("Agent esteem after: %f\n", ea.network[msg.Sender])
 	}
 }
 
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 	// update alpha
-	ea.UpdateEsteem(msg.Sender, true)
+	ea.UpdateSocialNetwork(msg.Sender, true)
 	ea.SignalMessagingComplete()
+}
+
+func (ea *ExtendedAgent) PerformCreatedConnection(uuid.UUID) {
+	ea.ptsStats.IncrementCreatedBy()
+}
+func (ea *ExtendedAgent) ReceiveCreatedConnection(uuid.UUID) {
+	ea.ptsStats.IncrementCreatedTo()
+}
+func (ea *ExtendedAgent) PerformSeveredConnected(uuid.UUID) {
+	ea.ptsStats.IncrementSeveredBy()
+}
+func (ea *ExtendedAgent) ReceiveSeveredConnected(uuid.UUID) {
+	ea.ptsStats.IncrementSeveredTo()
 }
 
 // ----------------------- Data Recording Functions -----------------------

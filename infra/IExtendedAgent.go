@@ -15,47 +15,36 @@ type IExtendedAgent interface {
 	GetAttachment() Attachment
 	GetNetwork() map[uuid.UUID]float32
 	GetAge() int
-	//IsMortalitySalient() bool
 	GetPosition() PositionVector
 	SetPosition(PositionVector)
 	GetWorldview() *Worldview
 	UpdateWorldview(float64, int)
 	GetYsterofimia() *Ysterofimia
-	//GetMortality() bool
 	GetTelomere() float64
 	IsAlive() bool
-	//GetContextSacrifice() string
-	// Move(grid *Grid)
+
 	GetTargetPosition(grid *Grid) (PositionVector, bool)
 	GetClusterID() int
-	UpdateRelationship(agentID uuid.UUID, change float32)
-	RemoveRelationship(agentID uuid.UUID)
 	GetASPDecision(grid *Grid) ASPDecison
 	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)
 	IncrementHeroism()
 	GetHeroism() int
-	// IncrementSelfSacrificeCount()
-	// AddSelfSacrificeEsteems(esteem float32)
-	// IncrementOtherEliminationCount()
-	// AddOtherEliminationsEsteems(esteem float32)
 
-	//Setters
-	// SetName(name uuid.UUID)
-	// SetAttachment(attachment []float32)
-	// SetNetwork(network map[uuid.UUID]float32)
 	IncrementAge()
-	//SetMortalitySalience(ms bool)
 	SetClusterID(id int)
-	// AppendClusterHistory(id int, size int)
-	// AppendNetworkSizeHistory(size int)
-	//SetContextSacrifice(context string)
 	MarkAsDead()
-	UpdateEsteem(id uuid.UUID, isCheck bool)
-	//SetWorldviewBinary(worldview uint32)
-	//SetParents(parent1, parent2 uuid.UUID)
-	AddDescendant(descendant uuid.UUID)
+
+	// Social network functions
+	AddToSocialNetwork(uuid.UUID, float32)
+	UpdateSocialNetwork(id uuid.UUID, isCheck bool)
+	RemoveFromSocialNetwork(agentID uuid.UUID)
+	// Social network handlers
+	PerformCreatedConnection(uuid.UUID)
+	ReceiveCreatedConnection(uuid.UUID)
+	PerformSeveredConnected(uuid.UUID)
+	ReceiveSeveredConnected(uuid.UUID)
 
 	//Message functions
 	CreateWellbeingCheckMessage() *WellbeingCheckMessage
@@ -69,7 +58,4 @@ type IExtendedAgent interface {
 	// Data Recording
 	//RecordAgentStatus(instance IExtendedAgent) gameRecorder.AgentRecord
 	RecordAgentJSON(instance IExtendedAgent) gameRecorder.JSONAgentRecord
-
-	// Updaters
-	UpdateSocialNetwork(uuid.UUID, float32)
 }
