@@ -180,6 +180,10 @@ func (wv *Worldview) getSeasonalWorldview(delta int) byte {
 	return byte(0b00)
 }
 
+func (wv *Worldview) GetWorldviewHistory() []byte {
+	return wv.worldviewHistory
+}
+
 func (wv *Worldview) UpdateWorldview(trendDelta float64, seasonalDelta int) {
 	fullWorldviewData := wv.getTrendWorldview(trendDelta) | wv.getSeasonalWorldview(seasonalDelta)
 	worldviewOpinion := ^(wv.worldviewHash ^ fullWorldviewData)

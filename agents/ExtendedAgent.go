@@ -21,10 +21,7 @@ type ExtendedAgent struct {
 	position infra.PositionVector
 
 	//History Tracking
-	clusterID int
-	//ClusterHistory			    []int // the cluster ID the agent belonged to at each turn
-	// clusterSizeHistory          []int // the size of the cluster at each turn
-	// networkSizeHistory          []int // the size of the network at each turn
+	clusterID                   int
 	observedEliminationsCluster int
 	clusterEliminationTolerance int
 	observedEliminationsNetwork int
@@ -409,6 +406,7 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 	npr := ea.GetNPR()                                      // compute NPR
 	ysterofimia := ea.GetYsterofimia().ComputeYsterofimia() // compute ysterofimia
 	fmt.Printf("Agent %v WV Scores: CPR=%.2f, NPR=%.2f, Ysterofimia=%.2f\n", ea.GetID(), cpr, npr, ysterofimia)
+	fmt.Println(ea.GetWorldview().GetWorldviewHistory())
 
 	return infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 }

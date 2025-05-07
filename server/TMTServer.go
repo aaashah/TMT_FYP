@@ -176,14 +176,14 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 		agent.IncrementAge()
 	}
 
-	tserv.spawnNewAgents()
-
-	newPop := len(tserv.GetAgentMap())
+	newAgents := tserv.generateNewAgents()
+	newPop := initialPop + len(newAgents)
 	tserv.updateAgentWorldviews(initialPop, newPop)
+
+	tserv.spawnNewAgents(newAgents)
 }
 
-func (tserv *TMTServer) spawnNewAgents() {
-	newAgents := tserv.generateNewAgents()
+func (tserv *TMTServer) spawnNewAgents(newAgents []infra.IExtendedAgent) {
 	for _, ag := range newAgents {
 		tserv.AddAgent(ag)
 	}
