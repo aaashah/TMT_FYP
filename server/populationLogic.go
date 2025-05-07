@@ -146,9 +146,9 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 }
 
 func (tserv *TMTServer) removeFromNetwork(deadAgent infra.IExtendedAgent) {
-	for _, agent := range tserv.GetAgentMap() {
-		deadID := deadAgent.GetID()
-		agent.RemoveFromSocialNetwork(deadID)
+	deadID := deadAgent.GetID()
+	for aliveID := range tserv.GetAgentMap() {
+		tserv.SeverNetworkConnection(aliveID, deadID)
 	}
 }
 

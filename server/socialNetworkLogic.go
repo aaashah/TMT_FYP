@@ -7,14 +7,14 @@ func (serv *TMTServer) CreateNetworkConnection(fromAgentID, toAgentID uuid.UUID,
 	fromAgent, fromExists := agentMap[fromAgentID]
 	toAgent, toExists := agentMap[toAgentID]
 
-	if !fromExists || !toExists {
-		return
+	if fromExists {
+		fromAgent.AddToSocialNetwork(toAgentID, strength)
+		fromAgent.PerformCreatedConnection(toAgentID)
 	}
 
-	fromAgent.AddToSocialNetwork(toAgentID, strength)
-
-	fromAgent.PerformCreatedConnection(toAgentID)
-	toAgent.ReceiveCreatedConnection(fromAgentID)
+	if toExists {
+		toAgent.ReceiveCreatedConnection(fromAgentID)
+	}
 }
 
 func (serv *TMTServer) SeverNetworkConnection(fromAgentID, toAgentID uuid.UUID) {
@@ -22,12 +22,12 @@ func (serv *TMTServer) SeverNetworkConnection(fromAgentID, toAgentID uuid.UUID) 
 	fromAgent, fromExists := agentMap[fromAgentID]
 	toAgent, toExists := agentMap[toAgentID]
 
-	if !fromExists || !toExists {
-		return
+	if fromExists {
+		fromAgent.RemoveFromSocialNetwork(toAgentID)
 	}
 
-	fromAgent.RemoveFromSocialNetwork(toAgentID)
-
-	toAgent.PerformSeveredConnected(fromAgentID)
-	toAgent.ReceiveSeveredConnected(fromAgentID)
+	if toExists {
+		toAgent.PerformSeveredConnected(fromAgentID)
+		toAgent.ReceiveSeveredConnected(fromAgentID)
+	}
 }

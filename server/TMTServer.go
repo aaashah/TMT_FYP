@@ -149,6 +149,8 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	fmt.Println(iteration)
+	fmt.Println()
+	fmt.Println()
 	if tserv.config.Debug {
 		fmt.Printf("--------Start of iteration %d---------\n", iteration)
 		fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
@@ -226,15 +228,16 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 
 	// 7. Spawn new agents
 	tserv.updateProbabilityOfChildren(initialPop)
-	tserv.spawnNewAgents()
-
-	newPop := len(tserv.GetAgentMap())
-	tserv.updateAgentWorldviews(initialPop, newPop)
 
 	// Age up all agents
 	for _, agent := range tserv.GetAgentMap() {
 		agent.IncrementAge()
 	}
+
+	tserv.spawnNewAgents()
+
+	newPop := len(tserv.GetAgentMap())
+	tserv.updateAgentWorldviews(initialPop, newPop)
 }
 
 // ---------------------- Helper Functions ----------------------

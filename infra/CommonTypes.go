@@ -249,9 +249,9 @@ func (pts *PTS_Stats) GetEstrangement() float32 {
 
 func NewPTS_Stats() *PTS_Stats {
 	return &PTS_Stats{
-		createdBy: 1,
+		createdBy: 0,
 		createdTo: 1,
 		severedBy: 1,
-		severedTo: 1,
+		severedTo: 0,
 	}
 }
