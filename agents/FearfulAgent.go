@@ -13,11 +13,12 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *FearfulAgent {
+func CreateFearfulAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *FearfulAgent {
+	worldview := infra.NewWorldview(byte(0b00))
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
-	extendedAgent.Attachment = infra.Attachment{
+	extendedAgent.attachment = infra.Attachment{
 		Anxiety:   randInRange(0.5, 1.0),
 		Avoidance: randInRange(0.5, 1.0),
 		Type:      infra.FEARFUL,
@@ -55,7 +56,7 @@ func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVecto
 			continue // Skip friends
 		}
 
-		dist := fa.Position.Dist(otherAgent.GetPosition())
+		dist := fa.position.Dist(otherAgent.GetPosition())
 		if dist < minDist {
 			minDist = dist
 			closestStranger = otherAgent

@@ -13,11 +13,13 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID, worldview uint32) *DismissiveAgent {
+func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *DismissiveAgent {
+	worldview := infra.NewWorldview(byte(0b01))
+
 	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
-	extendedAgent.Attachment = infra.Attachment{
+	extendedAgent.attachment = infra.Attachment{
 		Anxiety:   randInRange(0.0, 0.5),
 		Avoidance: randInRange(0.5, 1.0),
 		Type:      infra.DISMISSIVE,
@@ -56,7 +58,7 @@ func (da *DismissiveAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVe
 		}
 		if _, known := da.network[otherAgent.GetID()]; known {
 			// friend so:
-			dist := da.Position.Dist(otherAgent.GetPosition())
+			dist := da.position.Dist(otherAgent.GetPosition())
 			if dist < minDist {
 				minDist = dist
 				closestFriend = otherAgent

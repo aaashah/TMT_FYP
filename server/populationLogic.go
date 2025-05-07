@@ -76,6 +76,8 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	// record number of volunteers
 	tserv.numVolunteeredAgents = actualVolunteers
 
+	// fmt.Println(totalAgents, neededVolunteers, actualVolunteers, tserv.expectedChildren)
+
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate
 		rand.Shuffle(actualVolunteers, func(i, j int) {
@@ -143,12 +145,17 @@ func (tserv *TMTServer) updateClusterEliminations(deathReport map[uuid.UUID]infr
 	}
 }
 
-func (tserv *TMTServer) updateAgentHeroism(deathReport map[uuid.UUID]infra.DeathInfo) {
+func (tserv *TMTServer) removeFromNetwork(deadAgent infra.IExtendedAgent) {
+	deadID := deadAgent.GetID()
+	for aliveID := range tserv.GetAgentMap() {
+		tserv.SeverNetworkConnection(aliveID, deadID)
+	}
+}
+
+func (tserv *TMTServer) pruneNetwork(deathReport map[uuid.UUID]infra.DeathInfo) {
 	for _, deathInfo := range deathReport {
-		agent := deathInfo.Agent
-		if deathInfo.WasVoluntary {
-			agent.IncrementHeroism()
-		}
+		deadAgent := deathInfo.Agent
+		tserv.removeFromNetwork(deadAgent)
 	}
 }
 
@@ -195,7 +202,7 @@ func (tserv *TMTServer) spawnNewAgents() {
 		}
 	}
 
-	if poolSize%2 == 1 {
+	if poolSize%2 == 1 && poolSize > 1 {
 		clonerAgent := parentPool[poolSize-1]
 		tserv.spawnChild(clonerAgent, clonerAgent)
 	}
@@ -248,30 +255,30 @@ func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
 	type1 := parent1.GetAttachment().Type
 	type2 := parent2.GetAttachment().Type
 	childAttachmentType := tserv.mixAttachmentTypes(type1, type2)
-	childWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
+	// childWorldview := tserv.mixWorldviews(parent1.GetWorldviewBinary(), parent2.GetWorldviewBinary())
 
 	var newAgent infra.IExtendedAgent
 	switch {
 	case childAttachmentType == infra.SECURE:
-		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateSecureAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.DISMISSIVE:
-		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateDismissiveAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.PREOCCUPIED:
-		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreatePreoccupiedAgent(tserv, parent1.GetID(), parent2.GetID())
 	case childAttachmentType == infra.FEARFUL:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	default:
-		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID(), childWorldview)
+		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	}
-
-	// add child as descendant to parents
-	parent1.AddDescendant(newAgent.GetID())
-	parent2.AddDescendant(newAgent.GetID())
 
 	//add new agent to server
 	tserv.AddAgent(newAgent)
 
+	newAgentID := newAgent.GetID()
 	// add relationships in social network
-	tserv.AddRelationship(parent1.GetID(), newAgent.GetID(), 0.5)
-	tserv.AddRelationship(parent2.GetID(), newAgent.GetID(), 0.5)
+	parent1.AddToSocialNetwork(newAgentID, 0.5)
+	parent2.AddToSocialNetwork(newAgentID, 0.5)
+
+	// add self to social network
+	newAgent.AddToSocialNetwork(newAgentID, 0.5)
 }

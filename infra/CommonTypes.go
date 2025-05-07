@@ -1,7 +1,10 @@
 package infra
 
 import (
+	"fmt"
 	"math"
+	"math/bits"
+	"math/rand"
 
 	"github.com/google/uuid"
 )
@@ -41,7 +44,7 @@ type PTSParams struct {
 func NewTelomere() *Telomere {
 	alpha := 0.001
 	beta := 0.3
-	return &Telomere{0, alpha, beta, 30}
+	return &Telomere{1, alpha, beta, 30}
 }
 
 func (t *Telomere) GetAge() int {
@@ -133,21 +136,122 @@ func (y *Ysterofimia) ComputeYsterofimia() float32 {
 	}
 }
 
-type ProximityArray []float32
+// type ProximityArray []float64
 
-func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
-	var totInvProx float32 = 0.0
-	for _, prox := range pa {
-		totInvProx += 1 / prox
-	}
-	for idx, prox := range pa {
-		invProx := 1 / prox
-		pa[idx] = invProx / totInvProx
-	}
-	return pa
-}
+// func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
+// 	var totInvProx float64 = 0.0
+// 	for _, prox := range pa {
+// 		totInvProx += 1 / prox
+// 	}
+// 	for idx, prox := range pa {
+// 		invProx := 1 / prox
+// 		pa[idx] = invProx / totInvProx
+// 	}
+// 	return pa
+// }
 
 type DeathInfo struct {
 	Agent        IExtendedAgent
 	WasVoluntary bool
+}
+
+type Worldview struct {
+	worldviewHash    byte
+	worldviewHistory []byte
+	dunbarProportion float64
+}
+
+// low-frequency pop. variance - how does population chance across sim
+func (wv *Worldview) getTrendWorldview(delta float64) byte {
+	// either 0.x or 1.x
+	pcChange := math.Abs(delta - 1.0)
+	// 1 if within, 0 without
+	if pcChange >= wv.dunbarProportion {
+		return byte(0b10)
+	}
+	return byte(0b00)
+}
+
+// high-frequency - how does population chance from turn-to-turn
+func (wv *Worldview) getSeasonalWorldview(delta int) byte {
+	if delta > 0 {
+		return byte(0b01)
+	}
+	return byte(0b00)
+}
+
+func (wv *Worldview) UpdateWorldview(trendDelta float64, seasonalDelta int) {
+	fullWorldviewData := wv.getTrendWorldview(trendDelta) | wv.getSeasonalWorldview(seasonalDelta)
+	worldviewOpinion := ^(wv.worldviewHash ^ fullWorldviewData)
+	wv.worldviewHistory = append(wv.worldviewHistory, worldviewOpinion)
+}
+
+func (wv1 *Worldview) CompareWorldviews(wv2 *Worldview) float64 {
+	M, N := len(wv1.worldviewHistory), len(wv2.worldviewHistory)
+	windowLen := min(M, N)
+	if windowLen == 0 {
+		return 0.0
+	}
+	totalBits := 2 * windowLen
+	alignedBits := 0
+	for i := range windowLen {
+		wv1Data := wv1.worldviewHistory[M-i-1]
+		wv2Data := wv2.worldviewHistory[N-i-1]
+		alignment := ^(wv1Data ^ wv2Data) & 3
+		alignedBits += bits.OnesCount8(alignment)
+	}
+
+	worldviewAlignment := float64(alignedBits) / float64(totalBits)
+
+	if worldviewAlignment > 1.0 {
+		misalignment := fmt.Sprintf("Invalid worldview alignment - Aligned bits: %d, Total bits: %d\n", alignedBits, totalBits)
+		panic(misalignment)
+	}
+	return worldviewAlignment
+}
+
+func NewWorldview(hash byte) *Worldview {
+	return &Worldview{
+		worldviewHash:    hash,
+		worldviewHistory: make([]byte, 0),
+		dunbarProportion: rand.Float64() * 0.5,
+	}
+}
+
+type PTS_Stats struct {
+	createdBy int
+	createdTo int
+	severedBy int
+	severedTo int
+}
+
+func (pts *PTS_Stats) IncrementCreatedBy() {
+	pts.createdBy++
+}
+
+func (pts *PTS_Stats) IncrementCreatedTo() {
+	pts.createdTo++
+}
+
+func (pts *PTS_Stats) IncrementSeveredBy() {
+	pts.severedBy++
+}
+
+func (pts *PTS_Stats) IncrementSeveredTo() {
+	pts.severedTo++
+}
+
+func (pts *PTS_Stats) GetEstrangement() float32 {
+	propCreated := float32(pts.createdBy) / float32(pts.createdBy+pts.createdTo)
+	propSevered := float32(pts.severedTo) / float32(pts.severedBy+pts.severedTo)
+	return 0.5 * (propCreated + propSevered)
+}
+
+func NewPTS_Stats() *PTS_Stats {
+	return &PTS_Stats{
+		createdBy: 0,
+		createdTo: 1,
+		severedBy: 1,
+		severedTo: 0,
+	}
 }
