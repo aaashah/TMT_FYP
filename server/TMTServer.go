@@ -348,8 +348,7 @@ func (tserv *TMTServer) applyClustering() {
 		agentPositionMap[agentID] = pos
 	}
 
-	numClusters := 3
-	clusterAssignments := runKMeans(agentPositionMap, numClusters)
+	clusterAssignments := runKMeans(agentPositionMap, tserv.config.NumClusters)
 
 	for agentID, assigment := range clusterAssignments {
 		if agent, ok := tserv.GetAgentByID(agentID); ok {
