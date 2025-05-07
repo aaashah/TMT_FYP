@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -423,7 +422,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	est := ea.GetEstrangement()                // compute EST
 	pse := ea.GetProSocialEsteem()             // compute PSE
 	heroismTendency := ea.GetHeroismTendency() // compute heroism tendency
-	fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
+	// fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
 	//ea.RelationshipValidation = infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
@@ -431,14 +430,14 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 
 // Decision-making logic
 func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := float32(0.45) //random threshold
+	threshold := ea.GetASPThreshold()
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
+	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n", ea.GetID(), ms, wv, rv)
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {

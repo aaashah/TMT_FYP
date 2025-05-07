@@ -243,7 +243,7 @@ func (pts *PTS_Stats) IncrementSeveredTo() {
 
 func (pts *PTS_Stats) GetEstrangement() float32 {
 	propCreated := float32(pts.createdBy) / float32(pts.createdBy+pts.createdTo)
-	propSevered := float32(pts.severedBy) / float32(pts.severedBy+pts.severedTo)
+	propSevered := float32(pts.severedTo) / float32(pts.severedBy+pts.severedTo)
 	return 0.5 * (propCreated + propSevered)
 }
 

@@ -59,6 +59,10 @@ func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, b
 	return agent, exists
 }
 
+func (tserv *TMTServer) GetASPThreshold() float32 {
+	return float32(tserv.config.ASPThreshold)
+}
+
 // Moved to TMTServer to avoid import cycle
 // func (tserv *TMTServer) CreateBidirectionalConnection(agentAID, agentBID uuid.UUID, strength float32) error {
 // 	agentA, existsA := tserv.GetAgentByID(agentAID)
@@ -144,6 +148,7 @@ func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
 // }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
+	fmt.Println(iteration)
 	if tserv.config.Debug {
 		fmt.Printf("--------Start of iteration %d---------\n", iteration)
 		fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
@@ -451,7 +456,6 @@ func (tserv *TMTServer) updateAgentWorldviews(initialPop, newPop int) {
 
 func (tserv *TMTServer) updateProbabilityOfChildren(initPop int) {
 	numVolunteers := tserv.numVolunteeredAgents
-	fmt.Println("volunteers:", numVolunteers)
 	proportionOfVolunteers := float64(numVolunteers) / float64(initPop)
 
 	if proportionOfVolunteers >= tserv.config.PopulationRho {

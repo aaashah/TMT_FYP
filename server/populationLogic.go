@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -77,7 +76,7 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 	// record number of volunteers
 	tserv.numVolunteeredAgents = actualVolunteers
 
-	fmt.Println(totalAgents, neededVolunteers, actualVolunteers, tserv.expectedChildren)
+	// fmt.Println(totalAgents, neededVolunteers, actualVolunteers, tserv.expectedChildren)
 
 	if actualVolunteers >= neededVolunteers {
 		//randomly select n volunteers to eliminate
@@ -114,7 +113,6 @@ func (tserv *TMTServer) getSacrificialEliminationReport() map[uuid.UUID]infra.De
 func (tserv *TMTServer) updateAgentYsterofimia(deathReport map[uuid.UUID]infra.DeathInfo) {
 	for _, agent := range tserv.GetAgentMap() {
 		networkEliminationCount := 0
-		// fmt.Println(agent.GetNetwork())
 		for friendID, esteem := range agent.GetNetwork() {
 			// friend was eliminated (found in death report)
 			if deathInfo, dead := deathReport[friendID]; dead {
