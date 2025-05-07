@@ -10,8 +10,6 @@ import (
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
-	"slices"
-
 	"github.com/MattSScott/TMT_SOMAS/config"
 	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
 	"github.com/MattSScott/TMT_SOMAS/infra"
@@ -241,65 +239,80 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 }
 
 // ---------------------- Helper Functions ----------------------
-func runKMeans(data [][]float64, k int) []int {
-	if len(data) == 0 {
-		return []int{}
+func runKMeans(positionMap map[uuid.UUID]infra.PositionVector, numClusters int) map[uuid.UUID]int {
+	numPositions := len(positionMap)
+	if numPositions == 0 {
+		return nil
 	}
-	// Initialize centroids
-	centroids := make([][]float64, k)
-	for i := range k {
-		centroids[i] = slices.Clone(data[rand.Intn(len(data))])
+	// ----- Initialize centroids -----
+	// shuffle initial positions
+	availablePositions := make([]infra.PositionVector, 0)
+	for _, pos := range positionMap {
+		availablePositions = append(availablePositions, pos)
+	}
+	rand.Shuffle(numPositions, func(i, j int) {
+		availablePositions[i], availablePositions[j] = availablePositions[j], availablePositions[i]
+	})
+	centroids := make([]*infra.Centroid, numClusters)
+	for i := range numClusters {
+		samplePoint := availablePositions[i]
+		centroids[i] = samplePoint.PositionVectorToCentroid()
 	}
 
-	assignments := make([]int, len(data))
+	// ----- Perform K-Means -----
+	clusterAssignments := make(map[uuid.UUID]int)
 	changed := true
 
 	for changed {
 		changed = false
 
 		// Assign points
-		for i, point := range data {
+		for agentID, agentPos := range positionMap {
 			minDist := math.MaxFloat64
 			best := -1
 			for j, centroid := range centroids {
-				d := distance(point, centroid)
-				if d < minDist {
-					minDist = d
+				agentDist := agentPos.CentroidDist(centroid)
+				if agentDist < minDist {
+					minDist = agentDist
 					best = j
 				}
 			}
-			if assignments[i] != best {
-				assignments[i] = best
+
+			if assignedPosition, agentIsAssigned := clusterAssignments[agentID]; !agentIsAssigned || assignedPosition != best {
+				clusterAssignments[agentID] = best
 				changed = true
 			}
+
 		}
 
-		// Update centroids
-		count := make([]int, k)
-		sums := make([][]float64, k)
-		for i := range sums {
-			sums[i] = make([]float64, 2) // because [x, y]
+		// ----- Update Clusters -----
+		// record mean cluster position with total size...
+		clusterSize := make([]int, numClusters)
+		// ...and number of elements
+		clusterSum := make([]*infra.PositionVector, numClusters)
+
+		for i := range clusterSum {
+			clusterSum[i] = &infra.PositionVector{X: 0, Y: 0}
 		}
-		for i, a := range assignments {
-			sums[a][0] += data[i][0]
-			sums[a][1] += data[i][1]
-			count[a]++
+
+		for agentID, assignedCluster := range clusterAssignments {
+			agentPos := positionMap[agentID]
+			clusterSum[assignedCluster].X += agentPos.X
+			clusterSum[assignedCluster].Y += agentPos.Y
+			clusterSize[assignedCluster]++
 		}
-		for i := range k {
-			if count[i] > 0 {
-				centroids[i][0] = sums[i][0] / float64(count[i])
-				centroids[i][1] = sums[i][1] / float64(count[i])
+
+		for i := range numClusters {
+			size := clusterSize[i]
+			if size == 0 {
+				continue
 			}
+			centroids[i].X = float64(clusterSum[i].X) / float64(size)
+			centroids[i].Y = float64(clusterSum[i].Y) / float64(size)
 		}
 	}
 
-	return assignments
-}
-
-func distance(a, b []float64) float64 {
-	dx := a[0] - b[0]
-	dy := a[1] - b[1]
-	return math.Sqrt(dx*dx + dy*dy)
+	return clusterAssignments
 }
 
 func (tserv *TMTServer) moveAgents() {
@@ -323,28 +336,27 @@ func (tserv *TMTServer) moveAgents() {
 }
 
 func (tserv *TMTServer) applyClustering() {
-	positions := [][]float64{}
-	idToIndex := make([]uuid.UUID, 0)
 	agentMap := tserv.GetAgentMap()
 	if len(agentMap) == 0 {
 		return // Nothing to cluster
 	}
 
-	for _, agent := range agentMap {
+	agentPositionMap := make(map[uuid.UUID]infra.PositionVector)
+
+	for agentID, agent := range agentMap {
 		pos := agent.GetPosition()
-		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
-		idToIndex = append(idToIndex, agent.GetID())
+		agentPositionMap[agentID] = pos
 	}
 
-	k := 3
-	clusters := runKMeans(positions, k)
+	numClusters := 3
+	clusterAssignments := runKMeans(agentPositionMap, numClusters)
 
-	for i, clusterID := range clusters {
-		agentID := idToIndex[i]
+	for agentID, assigment := range clusterAssignments {
 		if agent, ok := tserv.GetAgentByID(agentID); ok {
-			agent.SetClusterID(clusterID)
+			agent.SetClusterID(assigment)
 		}
 	}
+
 	tserv.clusterMap = make(map[int][]uuid.UUID)
 	for _, agent := range tserv.GetAgentMap() {
 		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())

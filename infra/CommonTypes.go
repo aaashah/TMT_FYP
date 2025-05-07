@@ -14,9 +14,26 @@ type PositionVector struct {
 	Y int
 }
 
+type Centroid struct {
+	X, Y float64
+}
+
 func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 	deltaX := float64(p1.X - p2.X)
 	deltaY := float64(p1.Y - p2.Y)
+	return math.Sqrt((deltaX * deltaX) + (deltaY * deltaY))
+}
+
+func (pv PositionVector) PositionVectorToCentroid() *Centroid {
+	return &Centroid{
+		X: float64(pv.X),
+		Y: float64(pv.Y),
+	}
+}
+
+func (pv PositionVector) CentroidDist(c *Centroid) float64 {
+	deltaX := float64(pv.X) - c.X
+	deltaY := float64(pv.Y) - c.Y
 	return math.Sqrt((deltaX * deltaX) + (deltaY * deltaY))
 }
 
