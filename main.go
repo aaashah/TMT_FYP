@@ -23,16 +23,12 @@ func main() {
 		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, parent1ID, parent2ID))
 	}
 
-	// Set probability p for Erdős–Rényi network
 	for _, agent := range agentPopulation {
 		serv.AddAgent(agent)
 		if config.Debug {
-			agent.AgentInitialised() // Call the method to print agent details
+			agent.AgentInitialised()
 		}
 	}
-
-	// Initialize social network after agents are created
-	serv.InitialiseRandomNetwork(config.ConnectionProbability)
 
 	// Start server
 	serv.Start()

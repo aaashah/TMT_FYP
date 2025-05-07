@@ -461,6 +461,11 @@ func (ea *ExtendedAgent) GetNetwork() map[uuid.UUID]float32 {
 	return ea.network
 }
 
+func (ea *ExtendedAgent) ExistsInNetwork(otherID uuid.UUID) bool {
+	_, exists := ea.network[otherID]
+	return exists
+}
+
 func (ea *ExtendedAgent) AddToSocialNetwork(id uuid.UUID, change float32) {
 	ea.network[id] = change
 }

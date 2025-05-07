@@ -47,6 +47,10 @@ func CreateTMTServer(config config.Config) *TMTServer {
 }
 
 func (tserv *TMTServer) Start() {
+	// Initialize social network after agents are created
+	for _, ag := range tserv.GetAgentMap() {
+		tserv.InitialiseRandomNetworkForAgent(ag)
+	}
 	tserv.BaseServer.Start()
 	gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
 }
@@ -61,89 +65,29 @@ func (tserv *TMTServer) GetASPThreshold() float32 {
 	return float32(tserv.config.ASPThreshold)
 }
 
-// Moved to TMTServer to avoid import cycle
-// func (tserv *TMTServer) CreateBidirectionalConnection(agentAID, agentBID uuid.UUID, strength float32) error {
-// 	agentA, existsA := tserv.GetAgentByID(agentAID)
-// 	agentB, existsB := tserv.GetAgentByID(agentBID)
-
-// 	if existsA && existsB {
-// 		agentA.AddToSocialNetwork(agentBID, strength)
-// 		agentB.AddToSocialNetwork(agentAID, strength)
-// 		return nil
-// 	}
-
-// 	return fmt.Errorf("attempted to unite agents not found in agent map")
-// }
-
-// Erdős–Rényi (ER) Random Network
-func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
-	agentIDs := make([]uuid.UUID, 0, len(tserv.GetAgentMap()))
-
-	// Collect all agent IDs
-	for id := range tserv.GetAgentMap() {
-		agentIDs = append(agentIDs, id)
-	}
-
-	if tserv.config.Debug {
-		fmt.Printf("Initializing Erdős-Rényi (ER) Network with p = %.2f\n", p)
-	}
-
-	edgeCount := 0
-	for i := range agentIDs {
-		for j := i + 1; j < len(agentIDs); j++ { // Avoid duplicate edges
-			probability := rand.Float64() // Generate a random number
-			// Connect with probability p
-			if probability > p {
-				continue
-			}
-			agent1_ID, agent2_ID := agentIDs[i], agentIDs[j]
-			// Assign a random relationship strength (0.2 to 1.0)
-			strength := 0.2 + rand.Float32()*0.8
-			tserv.CreateNetworkConnection(agent1_ID, agent2_ID, strength)
-			tserv.CreateNetworkConnection(agent2_ID, agent1_ID, strength)
-			// Log connections
-			if tserv.config.Debug {
-				fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n", agent1_ID, agent2_ID, strength)
-			}
-			edgeCount++
-		}
-	}
-
+func (tserv *TMTServer) InitialiseRandomNetworkForAgent(agent infra.IExtendedAgent) {
+	thisAgentID := agent.GetID()
 	// add self to network
-	for agentID, agent := range tserv.GetAgentMap() {
-		agent.AddToSocialNetwork(agentID, 0.5)
-	}
+	agent.AddToSocialNetwork(thisAgentID, 0.5)
 
-	if tserv.config.Debug {
-		fmt.Printf("Social Network Initialized with %d connections\n", edgeCount)
+	// add others with probability p
+	for otherAgentID := range tserv.GetAgentMap() {
+		// avoid overwriting existing connection
+		if agent.ExistsInNetwork(otherAgentID) {
+			continue
+		}
+		probability := rand.Float64() // Generate a random number
+		// Connect with probability p
+		if probability > tserv.config.ConnectionProbability {
+			continue
+		}
+		// Assign a random relationship strength (0.2 to 1.0)
+		strength1 := 0.2 + rand.Float32()*0.8
+		tserv.CreateNetworkConnection(thisAgentID, otherAgentID, strength1)
+		strength2 := 0.2 + rand.Float32()*0.8
+		tserv.CreateNetworkConnection(otherAgentID, thisAgentID, strength2)
 	}
 }
-
-// func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength float32) {
-// 	agentA, existsA := tserv.GetAgentByID(agentAID)
-// 	agentB, existsB := tserv.GetAgentByID(agentBID)
-
-// 	if existsA && existsB {
-// 		agentA.UpdateRelationship(agentBID, strength)
-// 		agentB.UpdateRelationship(agentAID, strength)
-// 		if tserv.config.Debug {
-// 			fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
-// 		}
-// 	}
-// }
-
-// func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
-// 	agentA, okA := tserv.GetAgentByID(agentAID)
-// 	agentB, okB := tserv.GetAgentByID(agentBID)
-
-// 	if okA && okB {
-// 		agentA.RemoveRelationship(agentBID)
-// 		agentB.RemoveRelationship(agentAID)
-// 		if tserv.config.Debug {
-// 			fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
-// 		}
-// 	}
-// }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	fmt.Println(iteration)
@@ -236,6 +180,18 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 
 	newPop := len(tserv.GetAgentMap())
 	tserv.updateAgentWorldviews(initialPop, newPop)
+}
+
+func (tserv *TMTServer) spawnNewAgents() {
+	newAgents := tserv.generateNewAgents()
+	for _, ag := range newAgents {
+		tserv.AddAgent(ag)
+	}
+
+	for _, ag := range newAgents {
+		tserv.InitialiseRandomNetworkForAgent(ag)
+		fmt.Println(len(ag.GetNetwork()))
+	}
 }
 
 // ---------------------- Helper Functions ----------------------
