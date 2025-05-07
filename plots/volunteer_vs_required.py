@@ -7,11 +7,13 @@ required = []
 actually_eliminated = []
 turn_numbers = []
 rho = None
+tau = None
 
 with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
     config = GAME_DATA["Config"]
     rho = config["PopulationRho"]
+    tau = config["ASPThreshold"]
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
         TURN = ITER["Turns"][-1]
@@ -43,8 +45,8 @@ plt.plot(
 plt.xticks(simplified_x_ticks, rotation=-45)
 plt.xlabel("Iteration")
 plt.ylabel("Number of Agents")
-plt.title(rf"Volunteers vs Required Eliminations per Turn ($\rho$={rho})")
-plt.ylim(0, max(volunteers + required) + 1)  # Auto-scaled y-axis
+plt.title(rf"Volunteers vs Required Eliminations per Turn ($\rho$={rho}, $\tau$={tau})")
+# plt.ylim(0, max(volunteers + required) + 1)  # Auto-scaled y-axis
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
