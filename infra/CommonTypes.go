@@ -139,33 +139,18 @@ func (y *Ysterofimia) ComputeYsterofimia() float32 {
 	totalEsteem := y.SelfSacrificeEsteems + y.OtherEliminationsEsteems
 
 	if totalEliminations == 0 || totalEsteem == 0 {
-		return 0.5 // no eliminations or no esteem data
+		return 0.0 // no eliminations or no esteem data
 	}
 
-	//esteemRatio := float32(y.SelfSacrificeEsteems) / float32(totalEsteem)
-	sacrificeEsteemRatio := float32(y.SelfSacrificeEsteems) / float32(y.SelfSacrificeCount)
-	otherEsteemRatio := float32(y.OtherEliminationsEsteems) / float32(y.OtherEliminationCount)
+	averageVoluntaryEsteem := float32(y.SelfSacrificeEsteems) / float32(y.SelfSacrificeCount)
+	averageInvoluntaryEsteem := float32(y.OtherEliminationsEsteems) / float32(y.OtherEliminationCount)
 
-	if sacrificeEsteemRatio > otherEsteemRatio {
+	if averageVoluntaryEsteem > averageInvoluntaryEsteem {
 		return float32(y.SelfSacrificeCount) / float32(totalEliminations)
 	} else {
 		return float32(y.OtherEliminationCount) / float32(totalEliminations)
 	}
 }
-
-// type ProximityArray []float64
-
-// func (pa ProximityArray) MapToRelativeProximities() ProximityArray {
-// 	var totInvProx float64 = 0.0
-// 	for _, prox := range pa {
-// 		totInvProx += 1 / prox
-// 	}
-// 	for idx, prox := range pa {
-// 		invProx := 1 / prox
-// 		pa[idx] = invProx / totInvProx
-// 	}
-// 	return pa
-// }
 
 type DeathInfo struct {
 	Agent        IExtendedAgent
@@ -180,10 +165,8 @@ type Worldview struct {
 
 // low-frequency pop. variance - how does population chance across sim
 func (wv *Worldview) getTrendWorldview(delta float64) byte {
-	// either 0.x or 1.x
-	pcChange := math.Abs(delta - 1.0)
 	// 1 if within, 0 without
-	if pcChange >= wv.dunbarProportion {
+	if delta >= wv.dunbarProportion || delta <= 1/wv.dunbarProportion {
 		return byte(0b10)
 	}
 	return byte(0b00)
@@ -231,7 +214,7 @@ func NewWorldview(hash byte) *Worldview {
 	return &Worldview{
 		worldviewHash:    hash,
 		worldviewHistory: make([]byte, 0),
-		dunbarProportion: rand.Float64() * 0.5,
+		dunbarProportion: rand.Float64() + 1,
 	}
 }
 

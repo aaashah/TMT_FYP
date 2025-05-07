@@ -190,7 +190,6 @@ func (tserv *TMTServer) spawnNewAgents() {
 
 	for _, ag := range newAgents {
 		tserv.InitialiseRandomNetworkForAgent(ag)
-		fmt.Println(len(ag.GetNetwork()))
 	}
 }
 
