@@ -245,17 +245,15 @@ func runKMeans(positionMap map[uuid.UUID]infra.PositionVector, numClusters int) 
 		return nil
 	}
 	// ----- Initialize centroids -----
-	// shuffle initial positions
+	// sample randomly from list of agent positions
 	availablePositions := make([]infra.PositionVector, 0)
 	for _, pos := range positionMap {
 		availablePositions = append(availablePositions, pos)
 	}
-	rand.Shuffle(numPositions, func(i, j int) {
-		availablePositions[i], availablePositions[j] = availablePositions[j], availablePositions[i]
-	})
 	centroids := make([]*infra.Centroid, numClusters)
 	for i := range numClusters {
-		samplePoint := availablePositions[i]
+		randPos := rand.Intn(numPositions)
+		samplePoint := availablePositions[randPos]
 		centroids[i] = samplePoint.PositionVectorToCentroid()
 	}
 
