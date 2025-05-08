@@ -26,6 +26,7 @@ type TMTServer struct {
 	lastSelfSacrificedAgents []infra.IExtendedAgent
 	numVolunteeredAgents     int
 	expectedChildren         float64
+	agentDecisionThresholds  map[uuid.UUID]float64
 	gameRecorder             *gameRecorder.GameJSONRecord
 	JSONTurnLogs             []gameRecorder.TurnJSONRecord
 }
@@ -41,6 +42,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 		lastSelfSacrificedAgents: make([]infra.IExtendedAgent, 0),
 		numVolunteeredAgents:     0,
 		expectedChildren:         config.InitialExpectedChildren,
+		agentDecisionThresholds:  make(map[uuid.UUID]float64),
 		gameRecorder:             gameRecorder.MakeGameRecord(config),
 		JSONTurnLogs:             make([]gameRecorder.TurnJSONRecord, 0),
 	}
@@ -99,6 +101,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	}
 	// Clear memory for iteration
 	tserv.JSONTurnLogs = nil
+	clear(tserv.agentDecisionThresholds)
 }
 
 func getStep(current, target int) int {
@@ -481,8 +484,9 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 
 func (tserv *TMTServer) addIterationJSON(iter int) {
 	log := gameRecorder.IterationJSONRecord{
-		Iteration: iter,
-		Turns:     tserv.JSONTurnLogs,
+		Iteration:  iter,
+		Turns:      tserv.JSONTurnLogs,
+		Thresholds: tserv.agentDecisionThresholds,
 	}
 
 	tserv.gameRecorder.AddIteration(log)

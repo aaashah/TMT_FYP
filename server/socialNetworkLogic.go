@@ -31,3 +31,7 @@ func (serv *TMTServer) SeverNetworkConnection(fromAgentID, toAgentID uuid.UUID) 
 		toAgent.ReceiveSeveredConnected(fromAgentID)
 	}
 }
+
+func (serv *TMTServer) SubmitDecisionThreshold(agentID uuid.UUID, score float64) {
+	serv.agentDecisionThresholds[agentID] = score
+}

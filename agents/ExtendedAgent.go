@@ -432,16 +432,20 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 
 	// Debug log
 	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n\n", ea.GetID(), ms, wv, rv)
-	fmt.Printf("AGE: %d\n\n", ea.GetAge())
+	// fmt.Printf("AGE: %d\n\n", ea.GetAge())
+	thresholdScore := 0.0
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {
+		thresholdScore += min(float64(score/threshold), 1)
 		if score > threshold {
 			sum += 1
 		} else {
 			sum -= 1
 		}
 	}
+
+	ea.SubmitDecisionThreshold(ea.GetID(), thresholdScore/3)
 
 	if sum > 0 {
 		ea.IncrementHeroism()
