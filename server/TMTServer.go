@@ -26,6 +26,7 @@ type TMTServer struct {
 	lastSelfSacrificedAgents []infra.IExtendedAgent
 	numVolunteeredAgents     int
 	expectedChildren         float64
+	agentDecisionThresholds  map[uuid.UUID]float64
 	gameRecorder             *gameRecorder.GameJSONRecord
 	JSONTurnLogs             []gameRecorder.TurnJSONRecord
 }
@@ -41,6 +42,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 		lastSelfSacrificedAgents: make([]infra.IExtendedAgent, 0),
 		numVolunteeredAgents:     0,
 		expectedChildren:         config.InitialExpectedChildren,
+		agentDecisionThresholds:  make(map[uuid.UUID]float64),
 		gameRecorder:             gameRecorder.MakeGameRecord(config),
 		JSONTurnLogs:             make([]gameRecorder.TurnJSONRecord, 0),
 	}
@@ -99,6 +101,7 @@ func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	}
 	// Clear memory for iteration
 	tserv.JSONTurnLogs = nil
+	clear(tserv.agentDecisionThresholds)
 }
 
 func getStep(current, target int) int {
@@ -135,7 +138,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	}
 	initialPop := len(tserv.GetAgentMap())
 	// fmt.Println(len(tserv.GetAgentMap()))
-	tserv.addIterationJSON(iter)
+
 	// 2. Apply clustering (k-means)
 	tserv.applyClustering()
 
@@ -181,6 +184,8 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.updateAgentWorldviews(initialPop, newPop)
 
 	tserv.spawnNewAgents(newAgents)
+
+	tserv.addIterationJSON(iter)
 }
 
 func (tserv *TMTServer) spawnNewAgents(newAgents []infra.IExtendedAgent) {
@@ -480,9 +485,13 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 }
 
 func (tserv *TMTServer) addIterationJSON(iter int) {
+	writeMap := make(map[uuid.UUID]float64)
+	maps.Copy(writeMap, tserv.agentDecisionThresholds)
+
 	log := gameRecorder.IterationJSONRecord{
-		Iteration: iter,
-		Turns:     tserv.JSONTurnLogs,
+		Iteration:  iter,
+		Turns:      tserv.JSONTurnLogs,
+		Thresholds: writeMap,
 	}
 
 	tserv.gameRecorder.AddIteration(log)

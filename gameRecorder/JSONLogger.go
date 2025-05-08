@@ -44,8 +44,9 @@ type TurnJSONRecord struct {
 }
 
 type IterationJSONRecord struct {
-	Iteration int              `json:"Iteration"`
-	Turns     []TurnJSONRecord `json:"Turns"`
+	Iteration  int                   `json:"Iteration"`
+	Turns      []TurnJSONRecord      `json:"Turns"`
+	Thresholds map[uuid.UUID]float64 `json:"AgentThresholds"`
 }
 
 type GameJSONRecord struct {
