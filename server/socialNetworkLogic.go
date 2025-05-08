@@ -1,6 +1,8 @@
 package server
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 func (serv *TMTServer) CreateNetworkConnection(fromAgentID, toAgentID uuid.UUID, strength float32) {
 	agentMap := serv.GetAgentMap()

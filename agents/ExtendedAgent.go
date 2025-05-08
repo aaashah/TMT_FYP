@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -394,7 +393,7 @@ func (ea *ExtendedAgent) ComputeMortalitySalience(grid *infra.Grid) float32 {
 	ne := float32(ea.NetworkEliminations())
 	ra := float32(ea.RelativeAgeToNetwork())
 	mp := float32(ea.GetMemorialProximity(grid))
-	fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
+	// fmt.Printf("Agent %v MS Scores: CE=%.2f, NE=%.2f, RA=%.2f, MP=%.2f\n", ea.GetID(), ce, ne, ra, mp)
 
 	return infra.W1*ce + infra.W2*ne + infra.W3*ra + infra.W4*mp
 }
@@ -405,8 +404,8 @@ func (ea *ExtendedAgent) ComputeWorldviewValidation() float32 {
 	cpr := ea.GetCPR()
 	npr := ea.GetNPR()                                      // compute NPR
 	ysterofimia := ea.GetYsterofimia().ComputeYsterofimia() // compute ysterofimia
-	fmt.Printf("Agent %v WV Scores: CPR=%.2f, NPR=%.2f, Ysterofimia=%.2f\n", ea.GetID(), cpr, npr, ysterofimia)
-	fmt.Println(ea.GetWorldview().GetWorldviewHistory())
+	// fmt.Printf("Agent %v WV Scores: CPR=%.2f, NPR=%.2f, Ysterofimia=%.2f\n", ea.GetID(), cpr, npr, ysterofimia)
+	// fmt.Println(ea.GetWorldview().GetWorldviewHistory())
 
 	return infra.W5*cpr + infra.W6*npr + infra.W7*ysterofimia
 }
@@ -417,7 +416,7 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 	est := ea.GetEstrangement()                // compute EST
 	pse := ea.GetProSocialEsteem()             // compute PSE
 	heroismTendency := ea.GetHeroismTendency() // compute heroism tendency
-	fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
+	// fmt.Printf("Agent %v RV Scores: EST=%.2f, PSE=%.2f, HeroismTendency=%.2f\n", ea.GetID(), est, pse, heroismTendency)
 
 	return infra.W8*est + infra.W9*pse + infra.W10*heroismTendency
 }

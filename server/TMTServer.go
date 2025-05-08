@@ -138,7 +138,7 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	}
 	initialPop := len(tserv.GetAgentMap())
 	// fmt.Println(len(tserv.GetAgentMap()))
-	tserv.addIterationJSON(iter)
+
 	// 2. Apply clustering (k-means)
 	tserv.applyClustering()
 
@@ -184,6 +184,8 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 	tserv.updateAgentWorldviews(initialPop, newPop)
 
 	tserv.spawnNewAgents(newAgents)
+
+	tserv.addIterationJSON(iter)
 }
 
 func (tserv *TMTServer) spawnNewAgents(newAgents []infra.IExtendedAgent) {
@@ -483,10 +485,13 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 }
 
 func (tserv *TMTServer) addIterationJSON(iter int) {
+	writeMap := make(map[uuid.UUID]float64)
+	maps.Copy(writeMap, tserv.agentDecisionThresholds)
+
 	log := gameRecorder.IterationJSONRecord{
 		Iteration:  iter,
 		Turns:      tserv.JSONTurnLogs,
-		Thresholds: tserv.agentDecisionThresholds,
+		Thresholds: writeMap,
 	}
 
 	tserv.gameRecorder.AddIteration(log)
