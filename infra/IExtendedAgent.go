@@ -38,6 +38,7 @@ type IExtendedAgent interface {
 
 	// Social network functions
 	AddToSocialNetwork(uuid.UUID, float32)
+	ExistsInNetwork(uuid.UUID) bool
 	UpdateSocialNetwork(id uuid.UUID, isCheck bool)
 	RemoveFromSocialNetwork(agentID uuid.UUID)
 	// Social network handlers

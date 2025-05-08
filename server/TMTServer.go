@@ -10,8 +10,6 @@ import (
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
-	"slices"
-
 	"github.com/MattSScott/TMT_SOMAS/config"
 	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
 	"github.com/MattSScott/TMT_SOMAS/infra"
@@ -49,6 +47,10 @@ func CreateTMTServer(config config.Config) *TMTServer {
 }
 
 func (tserv *TMTServer) Start() {
+	// Initialize social network after agents are created
+	for _, ag := range tserv.GetAgentMap() {
+		tserv.InitialiseRandomNetworkForAgent(ag)
+	}
 	tserv.BaseServer.Start()
 	gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
 }
@@ -63,89 +65,29 @@ func (tserv *TMTServer) GetASPThreshold() float32 {
 	return float32(tserv.config.ASPThreshold)
 }
 
-// Moved to TMTServer to avoid import cycle
-// func (tserv *TMTServer) CreateBidirectionalConnection(agentAID, agentBID uuid.UUID, strength float32) error {
-// 	agentA, existsA := tserv.GetAgentByID(agentAID)
-// 	agentB, existsB := tserv.GetAgentByID(agentBID)
-
-// 	if existsA && existsB {
-// 		agentA.AddToSocialNetwork(agentBID, strength)
-// 		agentB.AddToSocialNetwork(agentAID, strength)
-// 		return nil
-// 	}
-
-// 	return fmt.Errorf("attempted to unite agents not found in agent map")
-// }
-
-// Erdős–Rényi (ER) Random Network
-func (tserv *TMTServer) InitialiseRandomNetwork(p float64) {
-	agentIDs := make([]uuid.UUID, 0, len(tserv.GetAgentMap()))
-
-	// Collect all agent IDs
-	for id := range tserv.GetAgentMap() {
-		agentIDs = append(agentIDs, id)
-	}
-
-	if tserv.config.Debug {
-		fmt.Printf("Initializing Erdős-Rényi (ER) Network with p = %.2f\n", p)
-	}
-
-	edgeCount := 0
-	for i := range agentIDs {
-		for j := i + 1; j < len(agentIDs); j++ { // Avoid duplicate edges
-			probability := rand.Float64() // Generate a random number
-			// Connect with probability p
-			if probability > p {
-				continue
-			}
-			agent1_ID, agent2_ID := agentIDs[i], agentIDs[j]
-			// Assign a random relationship strength (0.2 to 1.0)
-			strength := 0.2 + rand.Float32()*0.8
-			tserv.CreateNetworkConnection(agent1_ID, agent2_ID, strength)
-			tserv.CreateNetworkConnection(agent2_ID, agent1_ID, strength)
-			// Log connections
-			if tserv.config.Debug {
-				fmt.Printf("Connected Agent %v ↔ Agent %v (strength=%.2f)\n", agent1_ID, agent2_ID, strength)
-			}
-			edgeCount++
-		}
-	}
-
+func (tserv *TMTServer) InitialiseRandomNetworkForAgent(agent infra.IExtendedAgent) {
+	thisAgentID := agent.GetID()
 	// add self to network
-	for agentID, agent := range tserv.GetAgentMap() {
-		agent.AddToSocialNetwork(agentID, 0.5)
-	}
+	agent.AddToSocialNetwork(thisAgentID, 0.5)
 
-	if tserv.config.Debug {
-		fmt.Printf("Social Network Initialized with %d connections\n", edgeCount)
+	// add others with probability p
+	for otherAgentID := range tserv.GetAgentMap() {
+		// avoid overwriting existing connection
+		if agent.ExistsInNetwork(otherAgentID) {
+			continue
+		}
+		probability := rand.Float64() // Generate a random number
+		// Connect with probability p
+		if probability > tserv.config.ConnectionProbability {
+			continue
+		}
+		// Assign a random relationship strength (0.2 to 1.0)
+		strength1 := 0.2 + rand.Float32()*0.8
+		tserv.CreateNetworkConnection(thisAgentID, otherAgentID, strength1)
+		strength2 := 0.2 + rand.Float32()*0.8
+		tserv.CreateNetworkConnection(otherAgentID, thisAgentID, strength2)
 	}
 }
-
-// func (tserv *TMTServer) AddRelationship(agentAID, agentBID uuid.UUID, strength float32) {
-// 	agentA, existsA := tserv.GetAgentByID(agentAID)
-// 	agentB, existsB := tserv.GetAgentByID(agentBID)
-
-// 	if existsA && existsB {
-// 		agentA.UpdateRelationship(agentBID, strength)
-// 		agentB.UpdateRelationship(agentAID, strength)
-// 		if tserv.config.Debug {
-// 			fmt.Printf("✅ Relationship established: %v ↔ %v (strength=%.2f)\n", agentAID, agentBID, strength)
-// 		}
-// 	}
-// }
-
-// func (tserv *TMTServer) RemoveRelationship(agentAID, agentBID uuid.UUID) {
-// 	agentA, okA := tserv.GetAgentByID(agentAID)
-// 	agentB, okB := tserv.GetAgentByID(agentBID)
-
-// 	if okA && okB {
-// 		agentA.RemoveRelationship(agentBID)
-// 		agentB.RemoveRelationship(agentAID)
-// 		if tserv.config.Debug {
-// 			fmt.Printf("Relationship removed: %v ↔ %v\n", agentAID, agentBID)
-// 		}
-// 	}
-// }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
 	fmt.Println(iteration)
@@ -234,72 +176,96 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 		agent.IncrementAge()
 	}
 
-	tserv.spawnNewAgents()
-
-	newPop := len(tserv.GetAgentMap())
+	newAgents := tserv.generateNewAgents()
+	newPop := initialPop + len(newAgents)
 	tserv.updateAgentWorldviews(initialPop, newPop)
+
+	tserv.spawnNewAgents(newAgents)
+}
+
+func (tserv *TMTServer) spawnNewAgents(newAgents []infra.IExtendedAgent) {
+	for _, ag := range newAgents {
+		tserv.AddAgent(ag)
+	}
+
+	for _, ag := range newAgents {
+		tserv.InitialiseRandomNetworkForAgent(ag)
+	}
 }
 
 // ---------------------- Helper Functions ----------------------
-func runKMeans(data [][]float64, k int) []int {
-	if len(data) == 0 {
-		return []int{}
+func runKMeans(positionMap map[uuid.UUID]infra.PositionVector, numClusters int) map[uuid.UUID]int {
+	numPositions := len(positionMap)
+	if numPositions == 0 {
+		return nil
 	}
-	// Initialize centroids
-	centroids := make([][]float64, k)
-	for i := range k {
-		centroids[i] = slices.Clone(data[rand.Intn(len(data))])
+	// ----- Initialize centroids -----
+	// sample randomly from list of agent positions
+	availablePositions := make([]infra.PositionVector, 0)
+	for _, pos := range positionMap {
+		availablePositions = append(availablePositions, pos)
+	}
+	centroids := make([]*infra.Centroid, numClusters)
+	for i := range numClusters {
+		randPos := rand.Intn(numPositions)
+		samplePoint := availablePositions[randPos]
+		centroids[i] = samplePoint.PositionVectorToCentroid()
 	}
 
-	assignments := make([]int, len(data))
+	// ----- Perform K-Means -----
+	clusterAssignments := make(map[uuid.UUID]int)
 	changed := true
 
 	for changed {
 		changed = false
 
 		// Assign points
-		for i, point := range data {
+		for agentID, agentPos := range positionMap {
 			minDist := math.MaxFloat64
 			best := -1
 			for j, centroid := range centroids {
-				d := distance(point, centroid)
-				if d < minDist {
-					minDist = d
+				agentDist := agentPos.CentroidDist(centroid)
+				if agentDist < minDist {
+					minDist = agentDist
 					best = j
 				}
 			}
-			if assignments[i] != best {
-				assignments[i] = best
+
+			if assignedPosition, agentIsAssigned := clusterAssignments[agentID]; !agentIsAssigned || assignedPosition != best {
+				clusterAssignments[agentID] = best
 				changed = true
 			}
+
 		}
 
-		// Update centroids
-		count := make([]int, k)
-		sums := make([][]float64, k)
-		for i := range sums {
-			sums[i] = make([]float64, 2) // because [x, y]
+		// ----- Update Clusters -----
+		// record mean cluster position with total size...
+		clusterSize := make([]int, numClusters)
+		// ...and number of elements
+		clusterSum := make([]*infra.PositionVector, numClusters)
+
+		for i := range clusterSum {
+			clusterSum[i] = &infra.PositionVector{X: 0, Y: 0}
 		}
-		for i, a := range assignments {
-			sums[a][0] += data[i][0]
-			sums[a][1] += data[i][1]
-			count[a]++
+
+		for agentID, assignedCluster := range clusterAssignments {
+			agentPos := positionMap[agentID]
+			clusterSum[assignedCluster].X += agentPos.X
+			clusterSum[assignedCluster].Y += agentPos.Y
+			clusterSize[assignedCluster]++
 		}
-		for i := range k {
-			if count[i] > 0 {
-				centroids[i][0] = sums[i][0] / float64(count[i])
-				centroids[i][1] = sums[i][1] / float64(count[i])
+
+		for i := range numClusters {
+			size := clusterSize[i]
+			if size == 0 {
+				continue
 			}
+			centroids[i].X = float64(clusterSum[i].X) / float64(size)
+			centroids[i].Y = float64(clusterSum[i].Y) / float64(size)
 		}
 	}
 
-	return assignments
-}
-
-func distance(a, b []float64) float64 {
-	dx := a[0] - b[0]
-	dy := a[1] - b[1]
-	return math.Sqrt(dx*dx + dy*dy)
+	return clusterAssignments
 }
 
 func (tserv *TMTServer) moveAgents() {
@@ -323,28 +289,26 @@ func (tserv *TMTServer) moveAgents() {
 }
 
 func (tserv *TMTServer) applyClustering() {
-	positions := [][]float64{}
-	idToIndex := make([]uuid.UUID, 0)
 	agentMap := tserv.GetAgentMap()
 	if len(agentMap) == 0 {
 		return // Nothing to cluster
 	}
 
-	for _, agent := range agentMap {
+	agentPositionMap := make(map[uuid.UUID]infra.PositionVector)
+
+	for agentID, agent := range agentMap {
 		pos := agent.GetPosition()
-		positions = append(positions, []float64{float64(pos.X), float64(pos.Y)})
-		idToIndex = append(idToIndex, agent.GetID())
+		agentPositionMap[agentID] = pos
 	}
 
-	k := 3
-	clusters := runKMeans(positions, k)
+	clusterAssignments := runKMeans(agentPositionMap, tserv.config.NumClusters)
 
-	for i, clusterID := range clusters {
-		agentID := idToIndex[i]
+	for agentID, assigment := range clusterAssignments {
 		if agent, ok := tserv.GetAgentByID(agentID); ok {
-			agent.SetClusterID(clusterID)
+			agent.SetClusterID(assigment)
 		}
 	}
+
 	tserv.clusterMap = make(map[int][]uuid.UUID)
 	for _, agent := range tserv.GetAgentMap() {
 		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())

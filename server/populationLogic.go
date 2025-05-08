@@ -180,7 +180,9 @@ func (tserv *TMTServer) performSacrifices(deathReport map[uuid.UUID]infra.DeathI
 	}
 }
 
-func (tserv *TMTServer) spawnNewAgents() {
+func (tserv *TMTServer) generateNewAgents() []infra.IExtendedAgent {
+	newAgents := make([]infra.IExtendedAgent, 0)
+
 	dist := distuv.Poisson{
 		Lambda: tserv.expectedChildren,
 		Src:    rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -198,14 +200,16 @@ func (tserv *TMTServer) spawnNewAgents() {
 		parent2 := parentPool[i]
 		childrenToSpawn := int(dist.Rand())
 		for range childrenToSpawn {
-			tserv.spawnChild(parent1, parent2)
+			newAgents = append(newAgents, tserv.generateChild(parent1, parent2))
 		}
 	}
 
 	if poolSize%2 == 1 && poolSize > 1 {
 		clonerAgent := parentPool[poolSize-1]
-		tserv.spawnChild(clonerAgent, clonerAgent)
+		newAgents = append(newAgents, tserv.generateChild(clonerAgent, clonerAgent))
 	}
+
+	return newAgents
 }
 
 func (tserv *TMTServer) getChildProbabilities(parent1, parent2 infra.AttachmentType) map[infra.AttachmentType]float64 {
@@ -251,7 +255,7 @@ func (tserv *TMTServer) mixAttachmentTypes(parent1, parent2 infra.AttachmentType
 
 }
 
-func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
+func (tserv *TMTServer) generateChild(parent1, parent2 infra.IExtendedAgent) infra.IExtendedAgent {
 	type1 := parent1.GetAttachment().Type
 	type2 := parent2.GetAttachment().Type
 	childAttachmentType := tserv.mixAttachmentTypes(type1, type2)
@@ -271,14 +275,12 @@ func (tserv *TMTServer) spawnChild(parent1, parent2 infra.IExtendedAgent) {
 		newAgent = agents.CreateFearfulAgent(tserv, parent1.GetID(), parent2.GetID())
 	}
 
+	return newAgent
+
 	//add new agent to server
-	tserv.AddAgent(newAgent)
+	// tserv.AddAgent(newAgent)
+	// initialise agent's social network
+	// tserv.InitialiseRandomNetworkForAgent(newAgent)
 
-	newAgentID := newAgent.GetID()
-	// add relationships in social network
-	parent1.AddToSocialNetwork(newAgentID, 0.5)
-	parent2.AddToSocialNetwork(newAgentID, 0.5)
-
-	// add self to social network
-	newAgent.AddToSocialNetwork(newAgentID, 0.5)
+	// fmt.Println(len(newAgent.GetNetwork()))
 }
