@@ -2,12 +2,9 @@ import json
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
-
 
 log_dir = "JSONlogs/output.json"
 data = []
-
 
 with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
@@ -32,8 +29,6 @@ heatmap_data = heatmap_data.loc[ordered_agents]  # Reorder rows
 heatmap_data.index = (
     heatmap_data.index.str[:8] + "…"
 )  # Truncate the index and add ellipsis
-
-# print(heatmap_data)
 
 # Plot
 plt.figure(figsize=(14, 12))
