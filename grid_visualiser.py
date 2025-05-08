@@ -7,17 +7,10 @@ from dash import dcc, html, callback_context
 from dash.dependencies import Input, Output, State
 
 # --- Constants ---
-LOG_DIR = "JSONlogs"
-GRID_WIDTH = 70
-GRID_HEIGHT = 30
+LOG_DIR = "JSONlogs/output.json"
+GRID_WIDTH = 50
+GRID_HEIGHT = 50
 CELL_SIZE = 30
-
-
-# --- Helper Functions ---
-def generate_color(index, total_agents):
-    hue = (index / total_agents) % 1
-    rgb = colorsys.hsv_to_rgb(hue, 0.85, 0.85)
-    return f"rgb({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)})"
 
 
 # --- Load JSON Logs ---
@@ -25,33 +18,62 @@ iteration_logs = {}
 max_iteration = -1
 turns_per_iteration = {}
 
-for filename in sorted(os.listdir(LOG_DIR)):
-    if filename.startswith("iteration_") and filename.endswith(".json"):
-        with open(os.path.join(LOG_DIR, filename), "r") as f:
-            data = json.load(f)
-            iteration = data["Iteration"]
-            iteration_logs[iteration] = data["Turns"]
-            turns_per_iteration[iteration] = len(data["Turns"]) - 1
-            max_iteration = max(max_iteration, iteration)
+
+with open(LOG_DIR, "r") as file:
+    GAME_DATA = json.load(file)
+    turn_number = 0
+    for ITER in GAME_DATA["Iterations"]:
+        iter_num = ITER["Iteration"]
+        TURN_DATA = ITER["Turns"]
+        iteration_logs[iter_num] = TURN_DATA
+        turns_per_iteration[iter_num] = len(TURN_DATA) - 1
+        max_iteration = max(max_iteration, iter_num)
 
 # --- Agent Colors ---
-unique_agent_ids = set()
+
+color_map = {
+    "Secure": "green",
+    "Dismissive": "red",
+    "Preoccupied": "blue",
+    "Fearful": "purple",
+}
+
+agent_colors = {}
 for turns in iteration_logs.values():
     for turn in turns:
         for agent in turn.get("Agents") or []:
-            unique_agent_ids.add(agent["ID"])
+            agent_id = agent["ID"]
+            attch = agent["AttachmentStyle"]
+            agent_colors[agent_id] = color_map[attch]
 
-agent_colors = {
-    agent_id: generate_color(i, len(unique_agent_ids))
-    for i, agent_id in enumerate(sorted(unique_agent_ids))
-}
+
+# Legend for color map
+style_map = [
+    html.Div(
+        children=[
+            html.Div(
+                style={
+                    "width": "15px",
+                    "height": "15px",
+                    "background-color": color,
+                    "display": "inline-block",
+                    "margin-right": "10px",
+                }
+            ),
+            html.H3(label),
+        ],
+        style={"margin": "10px", "display": "flex", "align-items": "center"},
+    )
+    for label, color in color_map.items()
+]
+
 
 # --- Dash App Setup ---
 app = dash.Dash(__name__)
 
 app.layout = html.Div(
     [
-        html.H2("Agent Movement Grid (from JSON Logs)"),
+        html.H1("Animated Agent Movement", style={"textAlign": "center"}),
         html.Div(
             [
                 html.Button(
@@ -61,7 +83,7 @@ app.layout = html.Div(
                     style={"font-size": "20px"},
                 ),
                 html.Button(
-                    "▶ Play",
+                    "▶️ Play",
                     id="play-pause",
                     n_clicks=0,
                     style={"font-size": "20px", "margin": "0 10px"},
@@ -80,12 +102,26 @@ app.layout = html.Div(
             id="iteration-turn-label",
             style={"textAlign": "center", "font-size": "20px"},
         ),
-        dcc.Graph(id="grid-plot"),
-        dcc.Store(id="iteration-store", data=0),
-        dcc.Store(id="turn-store", data=0),
-        dcc.Store(id="animation-state", data=True),
-        dcc.Interval(
-            id="animation-interval", interval=1000, n_intervals=0, disabled=False
+        html.Div(
+            [
+                # dcc.Graph(figure=style_map),
+                html.Div(style_map, style={"flexDirection": "column"}),
+                dcc.Graph(id="grid-plot"),
+                dcc.Store(id="iteration-store", data=0),
+                dcc.Store(id="turn-store", data=0),
+                dcc.Store(id="animation-state", data=True),
+                dcc.Interval(
+                    id="animation-interval", interval=100, n_intervals=0, disabled=False
+                ),
+            ],
+            id="plot-body",
+            style={
+                "display": "flex",
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "alignContent": "center",
+                "alignItems": "center",
+            },
         ),
     ]
 )
@@ -102,7 +138,7 @@ app.layout = html.Div(
     [State("animation-state", "data")],
 )
 def toggle_animation(n_clicks, is_playing):
-    return (True, "▶ Play", False) if is_playing else (False, "⏸ Pause", True)
+    return (True, "▶️ Play", False) if is_playing else (False, "⏸️ Pause", True)
 
 
 @app.callback(
@@ -144,6 +180,29 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
 
     fig = go.Figure()
 
+    fig.update_layout(
+        title=f"Iteration {current_iteration} - Turn {current_turn}",
+        xaxis=dict(
+            range=[-1, GRID_WIDTH + 1],
+            tickvals=[i for i in range(GRID_WIDTH + 1)],
+            ticktext=[str(i) for i in range(GRID_WIDTH + 1)],
+            showgrid=True,
+            gridcolor="lightgray",
+        ),
+        yaxis=dict(
+            range=[-1, GRID_HEIGHT + 1],
+            tickvals=[i for i in range(GRID_HEIGHT + 1)],
+            ticktext=[str(i) for i in range(GRID_HEIGHT + 1)],
+            showgrid=True,
+            gridcolor="lightgray",
+        ),
+        height=GRID_HEIGHT * CELL_SIZE,
+        width=GRID_WIDTH * CELL_SIZE,
+        showlegend=True,
+        plot_bgcolor="white",
+        autosize=True,
+    )
+
     for agent in agents:
         agent_id = agent["ID"]
         x = agent["Position"]["X"]
@@ -168,29 +227,6 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
             x=t["X"], y=t["Y"], text="🏛️", showarrow=False, font=dict(size=15)
         )
 
-    fig.update_layout(
-        title=f"Iteration {current_iteration} - Turn {current_turn}",
-        xaxis=dict(
-            range=[-0.5, GRID_WIDTH + 1],
-            tickvals=[i + 0.5 for i in range(GRID_WIDTH + 1)],
-            ticktext=[str(i) for i in range(GRID_WIDTH + 1)],
-            showgrid=True,
-            gridcolor="lightgray",
-        ),
-        yaxis=dict(
-            range=[-0.5, GRID_HEIGHT + 1],
-            tickvals=[i + 0.5 for i in range(GRID_HEIGHT + 1)],
-            ticktext=[str(i) for i in range(GRID_HEIGHT + 1)],
-            showgrid=True,
-            gridcolor="lightgray",
-        ),
-        height=GRID_HEIGHT * CELL_SIZE,
-        width=GRID_WIDTH * CELL_SIZE,
-        showlegend=True,
-        plot_bgcolor="white",
-        autosize=True,
-    )
-
     return (
         fig,
         f"Iteration {current_iteration} - Turn {current_turn}",
@@ -201,4 +237,4 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
 
 # --- Run App ---
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
