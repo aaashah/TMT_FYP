@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/google/uuid"
-
 	"github.com/MattSScott/TMT_SOMAS/infra"
 )
 
@@ -13,10 +11,10 @@ type DismissiveAgent struct {
 	*ExtendedAgent
 }
 
-func CreateDismissiveAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *DismissiveAgent {
+func CreateDismissiveAgent(server infra.IServer) *DismissiveAgent {
 	worldview := infra.NewWorldview(byte(0b01))
 
-	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
+	extendedAgent := CreateExtendedAgent(server, worldview)
 
 	// Set Dismissive-style attachment: low anxiety, high avoidance
 	extendedAgent.attachment = infra.Attachment{

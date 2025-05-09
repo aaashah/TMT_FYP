@@ -84,25 +84,6 @@ func (t *Telomere) IncrementAge() {
 	t.age++
 }
 
-// func (t *Telomere) getCumulativeDeathRate(time int) float64 {
-// 	upperExp := math.Exp(t.beta*float64(time)) - 1
-// 	return 1 - math.Exp(-t.alpha/t.beta*upperExp)
-// }
-
-// // hazard rate
-// func (t *Telomere) GetProbabilityOfDeath() float64 {
-// 	if t.age == 0 {
-// 		return 0.0
-// 	}
-// 	if t.age >= t.generationLength {
-// 		return 1.0
-// 	}
-// 	currentDeathProb := t.getCumulativeDeathRate(t.age)
-// 	previousDeathProb := t.getCumulativeDeathRate(t.age - 1)
-// 	previousSurvivalProb := 1 - previousDeathProb
-// 	return (currentDeathProb - previousDeathProb) / previousSurvivalProb
-// }
-
 func (t *Telomere) GetProbabilityOfDeath() float64 {
 	if t.age >= t.generationLength {
 		return 1.0
@@ -269,5 +250,39 @@ func NewPTS_Stats() *PTS_Stats {
 		createdTo: 1,
 		severedBy: 1,
 		severedTo: 0,
+	}
+}
+
+type EliminationHistory struct {
+	observedEliminationsCluster int
+	clusterEliminationTolerance int
+	observedEliminationsNetwork int
+	networkEliminationTolerance int
+}
+
+func (eh *EliminationHistory) IncrementClusterEliminations(n int) {
+	eh.observedEliminationsCluster += n
+}
+
+func (eh *EliminationHistory) IncrementNetworkEliminations(n int) {
+	eh.observedEliminationsNetwork += n
+}
+
+func (eh *EliminationHistory) GetClusterEliminationThreshold() float32 {
+	propElim := float32(eh.observedEliminationsCluster) / float32(eh.clusterEliminationTolerance)
+	return min(propElim, 1.0)
+}
+
+func (eh *EliminationHistory) GetNetworkEliminationThreshold() float32 {
+	propElim := float32(eh.observedEliminationsNetwork) / float32(eh.networkEliminationTolerance)
+	return min(propElim, 1.0)
+}
+
+func NewEliminationHistory(numAgents float64) *EliminationHistory {
+	return &EliminationHistory{
+		observedEliminationsCluster: 0,
+		observedEliminationsNetwork: 0,
+		clusterEliminationTolerance: int(numAgents * 0.5),
+		networkEliminationTolerance: int(numAgents * 0.5),
 	}
 }

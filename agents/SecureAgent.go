@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/google/uuid"
-
 	"github.com/MattSScott/TMT_SOMAS/infra"
 )
 
@@ -13,9 +11,9 @@ type SecureAgent struct {
 	*ExtendedAgent
 }
 
-func CreateSecureAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *SecureAgent {
+func CreateSecureAgent(server infra.IServer) *SecureAgent {
 	worldview := infra.NewWorldview(byte(0b11))
-	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
+	extendedAgent := CreateExtendedAgent(server, worldview)
 
 	// Set Secure-style attachment: low anxiety, low avoidance
 	extendedAgent.attachment = infra.Attachment{
