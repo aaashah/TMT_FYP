@@ -35,7 +35,7 @@ func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
 		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
 		config:                   config,
-		grid:                     infra.NewGrid(infra.GRID_WIDTH, infra.GRID_HEIGHT),
+		grid:                     infra.NewGrid(config.GridWidth, config.GridHeight),
 		clusterMap:               make(map[int][]uuid.UUID),
 		clusterEliminationData:   make(map[int]*infra.ClusterEliminations),
 		lastEliminatedAgents:     make([]infra.IExtendedAgent, 0),
@@ -441,10 +441,9 @@ func (tserv *TMTServer) GetInitNumberAgents() int {
 	return tserv.config.NumAgents
 }
 
-// func (tserv *TMTServer) mixWorldviews(wv1, wv2 uint32) uint32 {
-// 	mask := rand.Uint32()
-// 	return (wv1 & mask) | (wv2 &^ mask)
-// }
+func (tserv *TMTServer) GetGridDims() (int, int) {
+	return tserv.config.GridWidth, tserv.config.GridHeight
+}
 
 // ---------------------- Recording Turn Data ----------------------
 

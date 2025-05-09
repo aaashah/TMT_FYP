@@ -42,6 +42,7 @@ type ExtendedAgent struct {
 
 func CreateExtendedAgent(server infra.IServer, worldview *infra.Worldview) *ExtendedAgent {
 	initAgents := float64(server.GetInitNumberAgents())
+	gridWidth, gridHeight := server.GetGridDims()
 
 	return &ExtendedAgent{
 		BaseAgent:          agent.CreateBaseAgent(server),
@@ -55,7 +56,7 @@ func CreateExtendedAgent(server infra.IServer, worldview *infra.Worldview) *Exte
 		ptsStats:           infra.NewPTS_Stats(),
 		eliminationHistory: infra.NewEliminationHistory(initAgents),
 		agentIsAlive:       true,
-		position:           infra.PositionVector{X: rand.Intn(infra.GRID_WIDTH), Y: rand.Intn(infra.GRID_HEIGHT)},
+		position:           infra.PositionVector{X: rand.Intn(gridWidth), Y: rand.Intn(gridHeight)},
 	}
 }
 
