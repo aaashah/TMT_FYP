@@ -20,8 +20,7 @@ type TMTServer struct {
 	*server.BaseServer[infra.IExtendedAgent]
 	config                   config.Config
 	grid                     *infra.Grid
-	clusterMap               map[int][]uuid.UUID                // Map of cluster IDs to agent IDs
-	clusterEliminationData   map[int]*infra.ClusterEliminations // clusterID → ClusterEliminations
+	clusterMap               map[int][]uuid.UUID // Map of cluster IDs to agent IDs
 	lastEliminatedAgents     []infra.IExtendedAgent
 	lastSelfSacrificedAgents []infra.IExtendedAgent
 	numVolunteeredAgents     int
@@ -37,7 +36,6 @@ func CreateTMTServer(config config.Config) *TMTServer {
 		config:                   config,
 		grid:                     infra.NewGrid(config.GridWidth, config.GridHeight),
 		clusterMap:               make(map[int][]uuid.UUID),
-		clusterEliminationData:   make(map[int]*infra.ClusterEliminations),
 		lastEliminatedAgents:     make([]infra.IExtendedAgent, 0),
 		lastSelfSacrificedAgents: make([]infra.IExtendedAgent, 0),
 		numVolunteeredAgents:     0,
@@ -317,28 +315,6 @@ func (tserv *TMTServer) applyClustering() {
 	tserv.clusterMap = make(map[int][]uuid.UUID)
 	for _, agent := range tserv.GetAgentMap() {
 		tserv.clusterMap[agent.GetClusterID()] = append(tserv.clusterMap[agent.GetClusterID()], agent.GetID())
-	}
-
-	// Initialize map if not done already
-	if tserv.clusterEliminationData == nil {
-		tserv.clusterEliminationData = make(map[int]*infra.ClusterEliminations)
-	}
-
-	// Record cluster sizes and set cluster history for each agent
-	for clusterID, agents := range tserv.clusterMap {
-		// Initialize if this cluster hasn't been tracked before
-		if _, exists := tserv.clusterEliminationData[clusterID]; !exists {
-			tserv.clusterEliminationData[clusterID] = &infra.ClusterEliminations{}
-		}
-		// Record size of cluster this turn
-		tserv.clusterEliminationData[clusterID].ClusterSizes = append(
-			tserv.clusterEliminationData[clusterID].ClusterSizes,
-			len(agents),
-		)
-
-		if tserv.config.Debug {
-			fmt.Printf("Cluster %d → %d agents\n", clusterID, len(agents))
-		}
 	}
 }
 
