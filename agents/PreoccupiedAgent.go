@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/google/uuid"
-
 	"github.com/MattSScott/TMT_SOMAS/infra"
 )
 
@@ -13,9 +11,9 @@ type PreoccupiedAgent struct {
 	*ExtendedAgent
 }
 
-func CreatePreoccupiedAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *PreoccupiedAgent {
+func CreatePreoccupiedAgent(server infra.IServer) *PreoccupiedAgent {
 	worldview := infra.NewWorldview(byte(0b10))
-	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
+	extendedAgent := CreateExtendedAgent(server, worldview)
 
 	// Set Preoccupied-style attachment: high anxiety, low avoidance
 	extendedAgent.attachment = infra.Attachment{

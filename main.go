@@ -5,7 +5,6 @@ import (
 	"github.com/MattSScott/TMT_SOMAS/config"
 	"github.com/MattSScott/TMT_SOMAS/infra"
 	"github.com/MattSScott/TMT_SOMAS/server"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -13,14 +12,13 @@ func main() {
 	serv := server.CreateTMTServer(config)
 	serv.SetGameRunner(serv)
 
-	parent1ID, parent2ID := uuid.Nil, uuid.Nil
 	agentPopulation := make([]infra.IExtendedAgent, 0)
 
 	for i := 0; i < config.NumAgents; i += 4 {
-		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv, parent1ID, parent2ID))
-		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv, parent1ID, parent2ID))
-		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv, parent1ID, parent2ID))
-		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv, parent1ID, parent2ID))
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv))
+		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv))
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv))
+		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv))
 	}
 
 	for _, agent := range agentPopulation {

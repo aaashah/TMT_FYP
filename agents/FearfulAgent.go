@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/google/uuid"
-
 	"github.com/MattSScott/TMT_SOMAS/infra"
 )
 
@@ -13,9 +11,9 @@ type FearfulAgent struct {
 	*ExtendedAgent
 }
 
-func CreateFearfulAgent(server infra.IServer, parent1ID uuid.UUID, parent2ID uuid.UUID) *FearfulAgent {
+func CreateFearfulAgent(server infra.IServer) *FearfulAgent {
 	worldview := infra.NewWorldview(byte(0b00))
-	extendedAgent := CreateExtendedAgent(server, parent1ID, parent2ID, worldview)
+	extendedAgent := CreateExtendedAgent(server, worldview)
 
 	// Set Fearful-style attachment: high anxiety, high avoidance
 	extendedAgent.attachment = infra.Attachment{
