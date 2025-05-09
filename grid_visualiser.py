@@ -8,8 +8,8 @@ from dash.dependencies import Input, Output, State
 
 # --- Constants ---
 LOG_DIR = "JSONlogs/output.json"
-GRID_WIDTH = 50
-GRID_HEIGHT = 50
+GRID_WIDTH = None
+GRID_HEIGHT = None
 CELL_SIZE = 30
 
 
@@ -21,7 +21,10 @@ turns_per_iteration = {}
 
 with open(LOG_DIR, "r") as file:
     GAME_DATA = json.load(file)
-    turn_number = 0
+    CONFIG = GAME_DATA["Config"]
+    GRID_WIDTH = CONFIG["GridWidth"]
+    GRID_HEIGHT = CONFIG["GridHeight"]
+    assert GRID_WIDTH is not None and GRID_HEIGHT is not None
     for ITER in GAME_DATA["Iterations"]:
         iter_num = ITER["Iteration"]
         TURN_DATA = ITER["Turns"]
@@ -104,7 +107,6 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                # dcc.Graph(figure=style_map),
                 html.Div(style_map, style={"flexDirection": "column"}),
                 dcc.Graph(id="grid-plot"),
                 dcc.Store(id="iteration-store", data=0),
@@ -199,7 +201,7 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
             gridcolor="lightgray",
         ),
         height=GRID_HEIGHT * CELL_SIZE,
-        width=GRID_WIDTH * CELL_SIZE,
+        width=GRID_WIDTH * CELL_SIZE * 1.5,
         showlegend=True,
         plot_bgcolor="white",
         autosize=True,
@@ -221,7 +223,7 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
 
     for t in tombstones:
         fig.add_annotation(
-            x=t["X"], y=t["Y"], text="💀", showarrow=False, font=dict(size=25)
+            x=t["X"], y=t["Y"], text="🪦", showarrow=False, font=dict(size=25)
         )
 
     for t in temples:
