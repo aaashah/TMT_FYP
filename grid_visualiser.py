@@ -219,12 +219,12 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
 
     for t in tombstones:
         fig.add_annotation(
-            x=t["X"], y=t["Y"], text="💀", showarrow=False, font=dict(size=15)
+            x=t["X"], y=t["Y"], text="💀", showarrow=False, font=dict(size=25)
         )
 
     for t in temples:
         fig.add_annotation(
-            x=t["X"], y=t["Y"], text="🏛️", showarrow=False, font=dict(size=15)
+            x=t["X"], y=t["Y"], text="🏛️", showarrow=False, font=dict(size=25)
         )
 
     return (
