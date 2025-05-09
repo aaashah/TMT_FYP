@@ -2,6 +2,7 @@ package agents
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/google/uuid"
 
@@ -41,7 +42,35 @@ func (sa *SecureAgent) AgentInitialised() {
 }
 
 // Secure agent movement policy
-// moves randomly
-func (sa *SecureAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector, bool) {
-	return infra.PositionVector{}, false
+// TODO: moves towards closest in social network
+func (da *SecureAgent) GetTargetPosition() (infra.PositionVector, bool) {
+	var closestInNetwork infra.IExtendedAgent = nil
+	minDist := math.Inf(1)
+
+	for otherID := range da.network {
+		// Ignore self
+		if otherID == da.GetID() {
+			continue
+		}
+
+		otherAgent, alive := da.GetAgentByID(otherID)
+
+		// ignore dead agents
+		if !alive {
+			continue
+		}
+
+		dist := da.position.Dist(otherAgent.GetPosition())
+		if dist < minDist {
+			minDist = dist
+			closestInNetwork = otherAgent
+		}
+	}
+
+	if closestInNetwork == nil {
+		return infra.PositionVector{}, false
+	}
+
+	// closest->self + self == self - closest + self
+	return closestInNetwork.GetPosition(), true
 }

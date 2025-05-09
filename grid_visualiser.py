@@ -212,7 +212,7 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
                 x=[x],
                 y=[y],
                 mode="markers",
-                marker=dict(size=10, color=agent_colors.get(agent_id, "gray")),
+                marker=dict(size=15, color=agent_colors.get(agent_id, "gray")),
                 name=f"Agent {agent_id}",
             )
         )

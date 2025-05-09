@@ -42,32 +42,34 @@ func (pa *PreoccupiedAgent) AgentInitialised() {
 }
 
 // preoccupied agent movement policy
-// moves towards social network
-func (pa *PreoccupiedAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector, bool) {
-	occupiedAgents := grid.GetAllOccupiedAgentPositions()
-	//fmt.Printf("PreoccupiedAgent %v network: %v\n", pa.GetID(), pa.Network)
+// TODO: moves towards closest in cluster
+func (pa *PreoccupiedAgent) GetTargetPosition() (infra.PositionVector, bool) {
+	// occupied := grid.GetAllOccupiedAgentPositions()
 
-	var closestFriend infra.IExtendedAgent = nil
+	var closestInCluster infra.IExtendedAgent = nil
 	minDist := math.Inf(1)
 
-	// Find closest friend
-	for _, otherAgent := range occupiedAgents {
-		if otherAgent.GetID() == pa.GetID() {
-			continue // Skip self
+	for otherID, otherAgent := range pa.GetAgentMap() {
+		// Ignore agents outside of cluster
+		if otherAgent.GetClusterID() != pa.clusterID {
+			continue
 		}
-		if _, known := pa.network[otherAgent.GetID()]; known {
-			// friend so:
-			dist := pa.position.Dist(otherAgent.GetPosition())
-			if dist < minDist {
-				minDist = dist
-				closestFriend = otherAgent
-			}
+
+		// Ignore self
+		if otherID == pa.GetID() {
+			continue
+		}
+
+		dist := pa.position.Dist(otherAgent.GetPosition())
+		if dist < minDist {
+			minDist = dist
+			closestInCluster = otherAgent
 		}
 	}
 
-	if closestFriend == nil {
+	if closestInCluster == nil {
 		return infra.PositionVector{}, false
 	}
 
-	return closestFriend.GetPosition(), true
+	return closestInCluster.GetPosition(), true
 }

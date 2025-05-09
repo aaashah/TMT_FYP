@@ -43,32 +43,38 @@ func (da *DismissiveAgent) AgentInitialised() {
 }
 
 // dismissive agent movement policy
-// moves away from social network
-func (da *DismissiveAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector, bool) {
-	occupiedAgents := grid.GetAllOccupiedAgentPositions()
-	//fmt.Printf("DismissiveAgent %v network: %v\n", pa.GetID(), pa.Network)
-
-	var closestFriend infra.IExtendedAgent = nil
+// TODO: moves away from closest in social network
+func (da *DismissiveAgent) GetTargetPosition() (infra.PositionVector, bool) {
+	var closestInNetwork infra.IExtendedAgent = nil
 	minDist := math.Inf(1)
 
-	// Find closest friend
-	for _, otherAgent := range occupiedAgents {
-		if otherAgent.GetID() == da.GetID() {
-			continue // Skip self
+	for otherID := range da.network {
+		// Ignore self
+		if otherID == da.GetID() {
+			continue
 		}
-		if _, known := da.network[otherAgent.GetID()]; known {
-			// friend so:
-			dist := da.position.Dist(otherAgent.GetPosition())
-			if dist < minDist {
-				minDist = dist
-				closestFriend = otherAgent
-			}
+
+		otherAgent, alive := da.GetAgentByID(otherID)
+
+		// ignore dead agents
+		if !alive {
+			continue
+		}
+
+		dist := da.position.Dist(otherAgent.GetPosition())
+		if dist < minDist {
+			minDist = dist
+			closestInNetwork = otherAgent
 		}
 	}
 
-	if closestFriend == nil {
+	if closestInNetwork == nil {
 		return infra.PositionVector{}, false
 	}
 
-	return closestFriend.GetPosition(), true
+	closestPos := closestInNetwork.GetPosition()
+	selfPos := da.GetPosition()
+
+	// closest->self + self == self - closest + self
+	return selfPos.Sub(closestPos).Add(selfPos), true
 }

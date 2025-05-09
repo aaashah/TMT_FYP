@@ -277,7 +277,7 @@ func (tserv *TMTServer) moveAgents() {
 	for _, agent := range tserv.GetAgentMap() {
 		agentPos := agent.GetPosition()
 		moveX, moveY := tserv.grid.GetValidMove(agentPos.X, agentPos.Y)
-		targetPos, posExists := agent.GetTargetPosition(tserv.grid)
+		targetPos, posExists := agent.GetTargetPosition()
 
 		if posExists {
 			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)

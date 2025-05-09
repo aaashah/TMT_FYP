@@ -24,6 +24,18 @@ func (p1 PositionVector) Dist(p2 PositionVector) float64 {
 	return math.Sqrt((deltaX * deltaX) + (deltaY * deltaY))
 }
 
+func (p1 PositionVector) Sub(p2 PositionVector) PositionVector {
+	deltaX := p1.X - p2.X
+	deltaY := p1.Y - p2.Y
+	return PositionVector{X: deltaX, Y: deltaY}
+}
+
+func (p1 PositionVector) Add(p2 PositionVector) PositionVector {
+	deltaX := p1.X + p2.X
+	deltaY := p1.Y + p2.Y
+	return PositionVector{X: deltaX, Y: deltaY}
+}
+
 func (pv PositionVector) PositionVectorToCentroid() *Centroid {
 	return &Centroid{
 		X: float64(pv.X),

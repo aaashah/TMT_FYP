@@ -41,32 +41,39 @@ func (fa *FearfulAgent) AgentInitialised() {
 }
 
 // Fearful agent movement policy
-// moves towards those not in social network
-func (fa *FearfulAgent) GetTargetPosition(grid *infra.Grid) (infra.PositionVector, bool) {
-	occupied := grid.GetAllOccupiedAgentPositions()
+// TODO: moves away from closest in cluster
+func (fa *FearfulAgent) GetTargetPosition() (infra.PositionVector, bool) {
+	// occupied := grid.GetAllOccupiedAgentPositions()
 
-	var closestStranger infra.IExtendedAgent = nil
+	var closestInCluster infra.IExtendedAgent = nil
 	minDist := math.Inf(1)
 
-	for _, otherAgent := range occupied {
-		if otherAgent.GetID() == fa.GetID() {
-			continue // Skip self
+	for otherID, otherAgent := range fa.GetAgentMap() {
+		// Ignore agents outside of cluster
+		if otherAgent.GetClusterID() != fa.clusterID {
+			continue
 		}
-		if _, known := fa.network[otherAgent.GetID()]; known {
-			continue // Skip friends
+
+		// Ignore self
+		if otherID == fa.GetID() {
+			continue
 		}
 
 		dist := fa.position.Dist(otherAgent.GetPosition())
 		if dist < minDist {
 			minDist = dist
-			closestStranger = otherAgent
+			closestInCluster = otherAgent
 		}
 	}
 
-	if closestStranger == nil {
+	if closestInCluster == nil {
 		return infra.PositionVector{}, false
 	}
 
-	return closestStranger.GetPosition(), true
+	closestPos := closestInCluster.GetPosition()
+	selfPos := fa.GetPosition()
 
+	// closest->self + self == self - closest + self
+
+	return selfPos.Sub(closestPos).Add(selfPos), true
 }
