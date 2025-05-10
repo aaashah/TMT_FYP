@@ -31,19 +31,27 @@ heatmap_data.index = (
 )  # Truncate the index and add ellipsis
 
 # Plot
-plt.figure(figsize=(14, 12))
+plt.figure(figsize=(24, 20))
 sns.set_style("white", {"axes.grid": False})
-sns.heatmap(
+ax = sns.heatmap(
     heatmap_data,
-    cbar_kws={"label": "Proportion of Threshold Reached"},
     cmap="rocket_r",
     linewidths=0,
     linecolor="none",
 )
+colorbar = ax.collections[0].colorbar
+colorbar.ax.tick_params(labelsize=45)  # Change tick font size
+colorbar.set_label("Proportion of Threshold Reached", fontsize=40, labelpad=25)
 plt.grid(False)
-plt.title("Agent Self-Sacrifice Decisions over Time")
-plt.xlabel("Iteration")
-plt.ylabel("Agent ID")
+plt.xticks(
+    ticks=range(0, len(heatmap_data.columns), 5),
+    labels=heatmap_data.columns[::5],
+    fontsize=45,
+)
+# plt.title("Agent Self-Sacrifice Decisions over Time", fontsize=40, pad=45)
+plt.xlabel("Iteration", fontsize=45, labelpad=15)
+plt.ylabel("Agents", fontsize=45, labelpad=25)
+plt.yticks([])
 plt.tight_layout()
 # plt.show()
 plt.savefig("figures/agentSelfSac.pdf", format="pdf")

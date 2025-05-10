@@ -219,10 +219,14 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 	clusterID := ea.GetClusterID()
 	memorials := append(grid.Tombstones, grid.Temples...)
 
+	epsilon := 1e-3
+
 	totalMemorialInfluence := 0.0
 	for _, mem := range memorials {
 		distToMem := selfPosition.Dist(mem)
-		totalMemorialInfluence += 1 / distToMem
+		if distToMem > epsilon {
+			totalMemorialInfluence += 1 / distToMem
+		}
 	}
 
 	totalClusterInfluence := 0.0
@@ -232,7 +236,9 @@ func (ea *ExtendedAgent) GetMemorialProximity(grid *infra.Grid) float32 {
 		}
 		otherPosition := ag.GetPosition()
 		distToAgent := selfPosition.Dist(otherPosition)
-		totalClusterInfluence += 1 / distToAgent
+		if distToAgent > epsilon {
+			totalClusterInfluence += 1 / distToAgent
+		}
 	}
 
 	if totalClusterInfluence == 0 && totalMemorialInfluence == 0 {
@@ -472,9 +478,8 @@ func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMe
 	//fmt.Printf("Agent %v received wellbeing check from %v\n", ea.GetID(), msg.Sender)
 	if rand.Float32() < ea.PTW.ReplyProb {
 		reply := ea.CreateReplyMessage()
-		//ea.SendMessage(reply, msg.Sender)
 		ea.SendSynchronousMessage(reply, msg.Sender)
-		//fmt.Printf("Agent %v sending reply message to %v\n", ea.GetID(), msg.Sender)
+		// fmt.Printf("Agent %v sending reply message to %v\n", ea.GetID(), msg.Sender)
 
 		//then update alpha
 		//fmt.Printf("Agent esteem before: %f\n", ea.network[msg.Sender])
@@ -486,7 +491,6 @@ func (ea *ExtendedAgent) HandleWellbeingCheckMessage(msg *infra.WellbeingCheckMe
 func (ea *ExtendedAgent) HandleReplyMessage(msg *infra.ReplyMessage) {
 	// update alpha
 	ea.UpdateSocialNetwork(msg.Sender, true)
-	ea.SignalMessagingComplete()
 }
 
 func (ea *ExtendedAgent) PerformCreatedConnection(uuid.UUID) {

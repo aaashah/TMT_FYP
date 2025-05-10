@@ -34,7 +34,6 @@ type JSONAgentRecord struct {
 type TurnJSONRecord struct {
 	Turn                      int               `json:"TurnNumber"`
 	Agents                    []JSONAgentRecord `json:"Agents"`
-	NumberOfAgents            int               `json:"NumberOfAgents"`
 	EliminatedAgents          []string          `json:"EliminatedAgents"`
 	SelfSacrificedAgents      []string          `json:"EliminatedBySelfSacrifice"`
 	TotalVolunteers           int               `json:"NumVolunteers"`
@@ -44,9 +43,10 @@ type TurnJSONRecord struct {
 }
 
 type IterationJSONRecord struct {
-	Iteration  int                   `json:"Iteration"`
-	Turns      []TurnJSONRecord      `json:"Turns"`
-	Thresholds map[uuid.UUID]float64 `json:"AgentThresholds"`
+	Iteration      int                   `json:"Iteration"`
+	Turns          []TurnJSONRecord      `json:"Turns"`
+	Thresholds     map[uuid.UUID]float64 `json:"AgentThresholds"`
+	NumberOfAgents int                   `json:"NumberOfAgents"`
 }
 
 type GameJSONRecord struct {
@@ -70,6 +70,8 @@ func WriteJSONLog(outputDir string, record *GameJSONRecord) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
+
+	checkForNaN("GameJSON", record)
 
 	fileName := fmt.Sprintf("%s/output.json", outputDir)
 	data, err := json.MarshalIndent(record, "", "  ")
