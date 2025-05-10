@@ -400,7 +400,11 @@ func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
 
 	sum := 0
 	for _, score := range []float32{ms, wv, rv} {
-		thresholdScore += min(float64(score/threshold), 1)
+		if threshold > 0 {
+			thresholdScore += min(float64(score/threshold), 1)
+		} else {
+			thresholdScore += 1
+		}
 		if score > threshold {
 			sum += 1
 		} else {

@@ -52,7 +52,10 @@ func (tserv *TMTServer) Start() {
 		tserv.InitialiseRandomNetworkForAgent(ag)
 	}
 	tserv.BaseServer.Start()
-	gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
+	err := gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, bool) {
