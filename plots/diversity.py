@@ -16,7 +16,7 @@ def classify(value):
 
 
 log_dir = "JSONlogs/output.json"
-iters = 5
+iters = 30
 attach_types = ["Dismissive", "Fearful", "Preoccupied", "Secure"]
 props = np.identity(4)
 data = defaultdict(list)
@@ -31,7 +31,8 @@ for row, type in zip(props, attach_types):
                 "-numAgents=40",
                 "-iters=200",
                 "-rho=0.3",
-                "-tau=0.3",
+                "-tau=0.4",
+                "-mu=0",
                 f"-dismissive={D}",
                 f"-fearful={F}",
                 f"-preoccupied={P}",
@@ -62,7 +63,6 @@ for record in records.values():
         record[category] = record.get(category, 0)
 
 
-print(records)
 df = pd.DataFrame(records)
 print(df)
 
@@ -76,7 +76,7 @@ for idx, agent_type in enumerate(attach_types):
     series = series / series.sum()
     ax.bar(series.index, series.values, color=["skyblue", "lightgreen", "salmon"])
     ax.set_title(agent_type)
-    ax.set_xticklabels(series.index)
+    # ax.set_xticklabels(series.index)
     ax.set_ylim(0, 1)
     ax.set_ylabel("Proportion")
 
