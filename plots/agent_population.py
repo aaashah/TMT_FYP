@@ -9,8 +9,7 @@ with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
-        TURN = ITER["Turns"][-1]
-        num_alive = TURN["NumberOfAgents"]
+        num_alive = ITER["NumberOfAgents"]
         pop_count.append(num_alive)
         turn_numbers.append(turn_number)
         turn_number += 1

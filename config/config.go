@@ -2,12 +2,17 @@ package config
 
 import (
 	"flag"
+	"math"
 )
 
 type Config struct {
 	GridWidth               int     `json:"GridWidth"`
 	GridHeight              int     `json:"GridHeight"`
 	NumAgents               int     `json:"NumAgents"`
+	DismissiveProp          float64 `json:"DismissiveProp"`
+	FearfulProp             float64 `json:"FearfulProp"`
+	PreoccupiedProp         float64 `json:"ProccupiedProp"`
+	SecureProp              float64 `json:"SecureProp"`
 	NumIterations           int     `json:"NumIterations"`
 	NumTurns                int     `json:"NumTurns"`
 	NumClusters             int     `json:"NumClusters"`
@@ -29,6 +34,10 @@ func NewConfig() Config {
 	flag.IntVar(&cfg.GridWidth, "width", 50, "Width of Grid World")
 	flag.IntVar(&cfg.GridHeight, "height", 50, "Height of Grid World")
 	flag.IntVar(&cfg.NumAgents, "numAgents", 40, "Initial number of agents")
+	flag.Float64Var(&cfg.DismissiveProp, "dismissive", 0.25, "Initial proportion of dismissive agents")
+	flag.Float64Var(&cfg.FearfulProp, "fearful", 0.25, "Initial proportion of fearful agents")
+	flag.Float64Var(&cfg.PreoccupiedProp, "preoccupied", 0.25, "Initial proportion of preoccupied agents")
+	flag.Float64Var(&cfg.SecureProp, "secure", 0.25, "Initial proportion of secure agents")
 	flag.IntVar(&cfg.NumIterations, "iters", 100, "Number of iterations")
 	flag.IntVar(&cfg.NumTurns, "turns", 10, "Initial number of turns")
 	flag.IntVar(&cfg.NumClusters, "kappa", 3, "Number of agent clusters")
@@ -43,6 +52,11 @@ func NewConfig() Config {
 	flag.Int64Var(&cfg.Seed, "seed", 42, "Random seed for reproducibility")
 
 	flag.Parse()
+
+	epsilon := 0.05
+	if math.Abs(cfg.DismissiveProp+cfg.FearfulProp+cfg.PreoccupiedProp+cfg.SecureProp-1) > epsilon {
+		panic("Proportion of attachment types do not sum to 1.0")
+	}
 
 	return cfg
 }

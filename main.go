@@ -14,11 +14,18 @@ func main() {
 
 	agentPopulation := make([]infra.IExtendedAgent, 0)
 
-	for i := 0; i < config.NumAgents; i += 4 {
-		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv))
+	totalAgents := float64(config.NumAgents)
+	for range int(totalAgents * config.DismissiveProp) {
 		agentPopulation = append(agentPopulation, agents.CreateDismissiveAgent(serv))
-		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv))
+	}
+	for range int(totalAgents * config.FearfulProp) {
 		agentPopulation = append(agentPopulation, agents.CreateFearfulAgent(serv))
+	}
+	for range int(totalAgents * config.PreoccupiedProp) {
+		agentPopulation = append(agentPopulation, agents.CreatePreoccupiedAgent(serv))
+	}
+	for range int(totalAgents * config.SecureProp) {
+		agentPopulation = append(agentPopulation, agents.CreateSecureAgent(serv))
 	}
 
 	for _, agent := range agentPopulation {
@@ -28,6 +35,5 @@ func main() {
 		}
 	}
 
-	// Start server
 	serv.Start()
 }

@@ -6,8 +6,6 @@ import (
 	"math"
 	"math/rand"
 
-	"time"
-
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
 	"github.com/MattSScott/TMT_SOMAS/config"
@@ -32,7 +30,7 @@ type TMTServer struct {
 
 func CreateTMTServer(config config.Config) *TMTServer {
 	return &TMTServer{
-		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 50*time.Millisecond, 100),
+		BaseServer:               server.CreateBaseServer[infra.IExtendedAgent](config.NumIterations, config.NumTurns, 0, 0),
 		config:                   config,
 		grid:                     infra.NewGrid(config.GridWidth, config.GridHeight),
 		clusterMap:               make(map[int][]uuid.UUID),
@@ -52,7 +50,11 @@ func (tserv *TMTServer) Start() {
 		tserv.InitialiseRandomNetworkForAgent(ag)
 	}
 	tserv.BaseServer.Start()
-	gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
+	err := gameRecorder.WriteJSONLog("JSONlogs", tserv.gameRecorder)
+	if err != nil {
+		fmt.Println(tserv.config)
+		panic(err)
+	}
 }
 
 func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, bool) {
@@ -90,9 +92,8 @@ func (tserv *TMTServer) InitialiseRandomNetworkForAgent(agent infra.IExtendedAge
 }
 
 func (tserv *TMTServer) RunStartOfIteration(iteration int) {
-	fmt.Println(iteration)
-	fmt.Println()
-	fmt.Println()
+	// fmt.Println(iteration, len(tserv.GetAgentMap()))
+
 	if tserv.config.Debug {
 		fmt.Printf("--------Start of iteration %d---------\n", iteration)
 		fmt.Printf("Total agents: %d\n", len(tserv.GetAgentMap()))
@@ -135,7 +136,6 @@ func (tserv *TMTServer) RunEndOfIteration(iter int) {
 		fmt.Printf("--------End of iteration %v---------\n", iter)
 	}
 	initialPop := len(tserv.GetAgentMap())
-	// fmt.Println(len(tserv.GetAgentMap()))
 
 	// 2. Apply clustering (k-means)
 	tserv.applyClustering()
@@ -447,7 +447,6 @@ func (tserv *TMTServer) recordTurnJSON(turn int) {
 	jsonLog := gameRecorder.TurnJSONRecord{
 		Turn:                      turn,
 		Agents:                    allAgentRecords,
-		NumberOfAgents:            len(tserv.GetAgentMap()),
 		EliminatedAgents:          agentsToStrings(tserv.lastEliminatedAgents),
 		TotalRequiredEliminations: reqElims,
 		TotalVolunteers:           tserv.numVolunteeredAgents,
@@ -464,9 +463,10 @@ func (tserv *TMTServer) addIterationJSON(iter int) {
 	maps.Copy(writeMap, tserv.agentDecisionThresholds)
 
 	log := gameRecorder.IterationJSONRecord{
-		Iteration:  iter,
-		Turns:      tserv.JSONTurnLogs,
-		Thresholds: writeMap,
+		Iteration:      iter,
+		Turns:          tserv.JSONTurnLogs,
+		Thresholds:     writeMap,
+		NumberOfAgents: len(tserv.GetAgentMap()),
 	}
 
 	tserv.gameRecorder.AddIteration(log)

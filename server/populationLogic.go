@@ -195,13 +195,16 @@ func (tserv *TMTServer) generateNewAgents() []infra.IExtendedAgent {
 		parentPool[i], parentPool[j] = parentPool[j], parentPool[i]
 	})
 
+	spacesAvailable := max(3*tserv.config.NumAgents-len(tserv.GetAgentMap()), 0)
+
 	for i := 1; i < poolSize; i += 2 {
 		parent1 := parentPool[i-1]
 		parent2 := parentPool[i]
 		childrenToSpawn := int(dist.Rand())
-		for range childrenToSpawn {
+		for range min(spacesAvailable, childrenToSpawn) {
 			newAgents = append(newAgents, tserv.generateChild(parent1, parent2))
 		}
+		spacesAvailable -= childrenToSpawn
 	}
 
 	if poolSize%2 == 1 && poolSize > 1 {
