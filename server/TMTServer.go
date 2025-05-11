@@ -278,8 +278,8 @@ func (tserv *TMTServer) moveAgents() {
 		targetPos, posExists := agent.GetTargetPosition()
 
 		if posExists {
-			attemptX := agentPos.X - getStep(agentPos.X, targetPos.X)
-			attemptY := agentPos.Y - getStep(agentPos.Y, targetPos.Y)
+			attemptX := agentPos.X + getStep(agentPos.X, targetPos.X)
+			attemptY := agentPos.Y + getStep(agentPos.Y, targetPos.Y)
 			if tserv.moveIsValid(attemptX, attemptY) {
 				moveX, moveY = attemptX, attemptY
 			}
