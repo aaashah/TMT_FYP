@@ -43,9 +43,26 @@ pivot.to_pickle("figures/rho_vs_tau.pkl")
 
 # pivot = pd.read_pickle("figures/rho_vs_tau.pkl")
 
-plt.figure()
-sns.heatmap(pivot)
-plt.gca().invert_yaxis()  # Bottom to top
-plt.xlabel(r"$\tau$")
-plt.ylabel(r"$\rho$")
+# plt.figure()
+# sns.heatmap(pivot)
+# plt.gca().invert_yaxis()  # Bottom to top
+# plt.xlabel(r"$\tau$")
+# plt.ylabel(r"$\rho$")
+# plt.show()
+
+# Plot
+plt.figure(figsize=(10, 8))
+sns.set_context("talk")
+ax = sns.heatmap(
+    pivot,
+    cbar_kws={"label": "Avg Final / Initial Population"},
+)
+
+plt.title("Effect of ASP Threshold ($\\tau$) and Required Sacrifice Rate ($\\rho$)", fontsize=16)
+plt.xlabel("ASP Threshold $\\tau$", fontsize=14)
+plt.ylabel("Required Sacrifice Rate $\\rho$", fontsize=14)
+plt.xticks(rotation=0)
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.gca().invert_yaxis()
 plt.show()

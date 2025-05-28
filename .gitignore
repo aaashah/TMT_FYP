@@ -29,3 +29,4 @@ visualisation_output/
 server/.DS_Store
 JSONlogs/
 .DS_Store
+venv/
