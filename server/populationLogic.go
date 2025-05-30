@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/MattSScott/TMT_SOMAS/agents"
-	"github.com/MattSScott/TMT_SOMAS/infra"
+	"github.com/aaashah/TMT_FYP/agents"
+	"github.com/aaashah/TMT_FYP/infra"
 	"github.com/google/uuid"
 	"gonum.org/v1/gonum/stat/distuv"
 )

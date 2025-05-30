@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/MattSScott/TMT_SOMAS/agents"
-	"github.com/MattSScott/TMT_SOMAS/config"
-	"github.com/MattSScott/TMT_SOMAS/infra"
-	"github.com/MattSScott/TMT_SOMAS/server"
+	"github.com/aaashah/TMT_FYP/agents"
+	"github.com/aaashah/TMT_FYP/config"
+	"github.com/aaashah/TMT_FYP/infra"
+	"github.com/aaashah/TMT_FYP/server"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MattSScott/TMT_SOMAS/config"
+	"github.com/aaashah/TMT_FYP/config"
 	"github.com/google/uuid"
 )
 

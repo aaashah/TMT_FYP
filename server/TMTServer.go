@@ -8,9 +8,9 @@ import (
 
 	"github.com/MattSScott/basePlatformSOMAS/v2/pkg/server"
 
-	"github.com/MattSScott/TMT_SOMAS/config"
-	"github.com/MattSScott/TMT_SOMAS/gameRecorder"
-	"github.com/MattSScott/TMT_SOMAS/infra"
+	"github.com/aaashah/TMT_FYP/config"
+	"github.com/aaashah/TMT_FYP/gameRecorder"
+	"github.com/aaashah/TMT_FYP/infra"
 	"github.com/google/uuid"
 )
 
