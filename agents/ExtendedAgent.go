@@ -102,6 +102,9 @@ func (ea *ExtendedAgent) FindClosestFriend() infra.IExtendedAgent {
 	minDist := math.Inf(1)
 
 	for friendID := range ea.network {
+		if friendID == ea.GetID() {
+			continue // Skip self
+		}
 		// lookup friend in server
 		agentInterface, exists := ea.GetAgentByID(friendID)
 		if !exists {
