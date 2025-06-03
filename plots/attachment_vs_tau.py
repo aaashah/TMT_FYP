@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Constants
 log_path = "JSONlogs/output.json"
-iters = 20
+iters = 50
 tau_values = [round(i * 0.1, 1) for i in range(11)]
 attachment_styles = ["Secure", "Dismissive", "Preoccupied", "Fearful"]
 
@@ -25,6 +25,7 @@ for tau in tqdm(tau_values, desc="Tau sweep"):
             "./tmtSimulator",
             "-numAgents=40",
             "-iters=200",
+            "-seed=42", # seed for reproducibility
             f"-tau={tau}"
         ], stdout=subprocess.DEVNULL)
 

@@ -26,6 +26,7 @@ for style in tqdm(attachment_types, desc="Attachment Type Sweep"):
         "./tmtSimulator",
         "-numAgents=40",
         "-iters=100",
+        "-seed=42",  # seed for reproducibility
         f"-tau=0.5",
         f"-secure={props['secure']}",
         f"-dismissive={props['dismissive']}",

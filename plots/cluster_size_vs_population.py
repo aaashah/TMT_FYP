@@ -71,7 +71,7 @@ from tqdm import tqdm
 
 # Constants
 log_path = "JSONlogs/output.json"
-iters = 20
+iters = 50
 kappa_values = list(range(1, 11))  # Cluster counts from 1 to 10
 results = []
 
@@ -85,6 +85,7 @@ for kappa in tqdm(kappa_values, desc="Kappa sweep"):
             "./tmtSimulator",
             "-numAgents=40",
             "-iters=200",
+            "-seed=42",  # seed for reproducibility
             f"-kappa={kappa}"
         ], stdout=subprocess.DEVNULL)
 
