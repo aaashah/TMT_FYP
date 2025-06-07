@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Constants
 log_path = "JSONlogs/output.json"
-iters = 50
+iters = 30
 rho_values = [round(i * 0.1, 1) for i in range(11)]
 attachment_styles = ["Secure", "Dismissive", "Preoccupied", "Fearful"]
 
@@ -25,6 +25,7 @@ for rho in tqdm(rho_values, desc="Rho sweep"):
             "./tmtSimulator",
             "-numAgents=40",
             "-iters=200",
+            #"kappa=6"
             "-seed=42",  # seed for reproducibility
             f"-rho={rho}"
         ], stdout=subprocess.DEVNULL)

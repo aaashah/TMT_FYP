@@ -40,7 +40,7 @@ func (pa *PreoccupiedAgent) AgentInitialised() {
 }
 
 // preoccupied agent movement policy
-// TODO: moves towards closest in cluster
+// Moves towards closest in cluster
 func (pa *PreoccupiedAgent) GetTargetPosition() (infra.PositionVector, bool) {
 	// occupied := grid.GetAllOccupiedAgentPositions()
 

@@ -28,7 +28,7 @@ type JSONAgentRecord struct {
 	//MortalitySalience      float32           `json:"MortalitySalience"`
 	//WorldviewValidation    float32           `json:"WorldviewValidation"`
 	//RelationshipValidation float32           `json:"RelationshipValidation"`
-	//ASPDecison		       string            `json:"ASPDecision"`
+	//ASMDecison		       string            `json:"ASMDecision"`
 }
 
 type TurnJSONRecord struct {

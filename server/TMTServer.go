@@ -63,8 +63,8 @@ func (tserv *TMTServer) GetAgentByID(agentID uuid.UUID) (infra.IExtendedAgent, b
 	return agent, exists
 }
 
-func (tserv *TMTServer) GetASPThreshold() float32 {
-	return float32(tserv.config.ASPThreshold)
+func (tserv *TMTServer) GetASMThreshold() float32 {
+	return float32(tserv.config.ASMThreshold)
 }
 
 func (tserv *TMTServer) InitialiseRandomNetworkForAgent(agent infra.IExtendedAgent) {

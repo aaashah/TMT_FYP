@@ -57,7 +57,7 @@ func (tserv *TMTServer) stratifyVolunteers() ([]infra.IExtendedAgent, []infra.IE
 			continue
 		}
 		// check if agent volunteered
-		if agent.GetASPDecision(tserv.grid) == infra.SELF_SACRIFICE {
+		if agent.GetASMDecision(tserv.grid) == infra.SELF_SACRIFICE {
 			volunteers = append(volunteers, agent)
 		} else {
 			nonVolunteers = append(nonVolunteers, agent)

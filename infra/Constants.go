@@ -1,9 +1,9 @@
 package infra
 
-type ASPDecison int
+type ASMDecison int
 
 const (
-	SELF_SACRIFICE ASPDecison = iota
+	SELF_SACRIFICE ASMDecison = iota
 	NOT_SELF_SACRIFICE
 	INACTION
 )
@@ -20,7 +20,7 @@ const (
 var AllAttachmentTypes = []AttachmentType{DISMISSIVE, FEARFUL, PREOCCUPIED, SECURE}
 
 const (
-	// ASP weights
+	// ASM weights
 	W1 float32 = 0.25
 	W2 float32 = 0.25
 	W3 float32 = 0.25

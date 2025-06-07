@@ -39,7 +39,7 @@ func (fa *FearfulAgent) AgentInitialised() {
 }
 
 // Fearful agent movement policy
-// TODO: moves away from closest in cluster
+// Moves away from closest in cluster
 func (fa *FearfulAgent) GetTargetPosition() (infra.PositionVector, bool) {
 	// occupied := grid.GetAllOccupiedAgentPositions()
 

@@ -7,7 +7,7 @@ This repository contains the codebase for the self-organising multi-agent simula
 ## Core Features
 
 - **Attachment Styles**: Secure, Dismissive, Preoccupied, Fearful — based on Bartholomew and Horowitz (1991).
-- **ASP Modules**: Self-sacrifice decisions are driven by:
+- **ASM Modules**: Self-sacrifice decisions are driven by:
   - **Mortality Salience**
   - **Worldview Validation**
   - **Relationship Validation**

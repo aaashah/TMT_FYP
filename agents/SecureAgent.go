@@ -40,7 +40,7 @@ func (sa *SecureAgent) AgentInitialised() {
 }
 
 // Secure agent movement policy
-// TODO: moves towards closest in social network
+// Moves towards closest in social network
 func (da *SecureAgent) GetTargetPosition() (infra.PositionVector, bool) {
 	var closestInNetwork infra.IExtendedAgent = nil
 	minDist := math.Inf(1)

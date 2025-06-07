@@ -58,8 +58,8 @@ ax = sns.heatmap(
     cbar_kws={"label": "Avg Final / Initial Population"},
 )
 
-plt.title("Effect of ASP Threshold ($\\tau$) and Required Sacrifice Rate ($\\rho$)", fontsize=16)
-plt.xlabel("ASP Threshold $\\tau$", fontsize=14)
+plt.title("Effect of ASM Threshold ($\\tau$) and Required Sacrifice Rate ($\\rho$)", fontsize=16)
+plt.xlabel("ASM Threshold $\\tau$", fontsize=14)
 plt.ylabel("Required Sacrifice Rate $\\rho$", fontsize=14)
 plt.xticks(rotation=0)
 plt.yticks(rotation=0)

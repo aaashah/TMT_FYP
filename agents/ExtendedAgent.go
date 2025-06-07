@@ -395,15 +395,15 @@ func (ea *ExtendedAgent) ComputeRelationshipValidation() float32 {
 }
 
 // Decision-making logic
-func (ea *ExtendedAgent) GetASPDecision(grid *infra.Grid) infra.ASPDecison {
-	threshold := ea.GetASPThreshold()
+func (ea *ExtendedAgent) GetASMDecision(grid *infra.Grid) infra.ASMDecison {
+	threshold := ea.GetASMThreshold()
 
 	ms := ea.ComputeMortalitySalience(grid)
 	wv := ea.ComputeWorldviewValidation()
 	rv := ea.ComputeRelationshipValidation()
 
 	// Debug log
-	// fmt.Printf("Agent %v ASP Scores: MS=%.2f, WV=%.2f, RV=%.2f\n\n", ea.GetID(), ms, wv, rv)
+	// fmt.Printf("Agent %v ASM Scores: MS=%.2f, WV=%.2f, RV=%.2f\n\n", ea.GetID(), ms, wv, rv)
 	// fmt.Printf("AGE: %d\n\n", ea.GetAge())
 	thresholdScore := 0.0
 
@@ -533,6 +533,6 @@ func (ea *ExtendedAgent) RecordAgentJSON(instance infra.IExtendedAgent) gameReco
 		//MortalitySalience:      ea.MortalitySalience,
 		//WorldviewValidation:    ea.WorldviewValidation,
 		//RelationshipValidation: ea.RelationshipValidation,
-		//ASPDecison: 		    ea.GetASPDecision(nil),
+		//ASMDecison: 		    ea.GetASMDecision(nil),
 	}
 }

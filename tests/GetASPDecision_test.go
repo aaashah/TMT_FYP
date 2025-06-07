@@ -6,8 +6,8 @@ import (
 	"github.com/aaashah/TMT_FYP/infra"
 )
 
-// same functionality as GetASPDecision in agents/ExtendedAgent.go (feed in ms, wv, rv, threshold to test in isolation)
-func GetASPDecision(ms float32, wv float32, rv float32, threshold float32) infra.ASPDecison {
+// same functionality as GetASMDecision in agents/ExtendedAgent.go (feed in ms, wv, rv, threshold to test in isolation)
+func GetASMDecision(ms float32, wv float32, rv float32, threshold float32) infra.ASMDecison {
 	thresholdScore := 0.0
 
 	sum := 0
@@ -33,12 +33,12 @@ func GetASPDecision(ms float32, wv float32, rv float32, threshold float32) infra
 	}
 }
 
-func TestGetASPDecision(t *testing.T) {
+func TestGetASMDecision(t *testing.T) {
 	tests := []struct {
 		name      string
 		ms, wv, rv float32
 		threshold  float32
-		expected   infra.ASPDecison
+		expected   infra.ASMDecison
 	}{
 		{
 			name: "All above threshold -> self-sacrifice",
@@ -62,7 +62,7 @@ func TestGetASPDecision(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			decision := GetASPDecision(tt.ms, tt.wv, tt.rv, tt.threshold)
+			decision := GetASMDecision(tt.ms, tt.wv, tt.rv, tt.threshold)
 			if decision != tt.expected {
 				t.Errorf("Expected %v, got %v (ms=%.2f, wv=%.2f, rv=%.2f, threshold=%.2f)", tt.expected, decision, tt.ms, tt.wv, tt.rv, tt.threshold)
 			}

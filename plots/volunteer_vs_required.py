@@ -13,7 +13,7 @@ with open(log_dir, "r") as file:
     GAME_DATA = json.load(file)
     config = GAME_DATA["Config"]
     rho = config["PopulationRho"]
-    tau = config["ASPThreshold"]
+    tau = config["ASMThreshold"]
     turn_number = 0
     for ITER in GAME_DATA["Iterations"]:
         TURN = ITER["Turns"][-1]

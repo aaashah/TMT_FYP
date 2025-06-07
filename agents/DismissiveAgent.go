@@ -41,7 +41,7 @@ func (da *DismissiveAgent) AgentInitialised() {
 }
 
 // dismissive agent movement policy
-// TODO: moves away from closest in social network
+// Moves away from closest in social network
 func (da *DismissiveAgent) GetTargetPosition() (infra.PositionVector, bool) {
 	var closestInNetwork infra.IExtendedAgent = nil
 	minDist := math.Inf(1)

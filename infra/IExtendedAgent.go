@@ -25,7 +25,7 @@ type IExtendedAgent interface {
 
 	GetTargetPosition() (PositionVector, bool)
 	GetClusterID() int
-	GetASPDecision(grid *Grid) ASPDecison
+	GetASMDecision(grid *Grid) ASMDecison
 	GetPTSParams() PTSParams
 	IncrementClusterEliminations(n int)
 	IncrementNetworkEliminations(n int)

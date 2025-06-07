@@ -11,7 +11,7 @@ type IServer interface {
 	GetAgentByID(agentID uuid.UUID) (IExtendedAgent, bool)
 	GetAgentMap() map[uuid.UUID]IExtendedAgent
 	SubmitDecisionThreshold(uuid.UUID, float64)
-	GetASPThreshold() float32
+	GetASMThreshold() float32
 	GetInitNumberAgents() int
 	GetGridDims() (int, int)
 }

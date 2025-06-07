@@ -22,7 +22,7 @@ type Config struct {
 	MinExpectedChildren     float64 `json:"MinExpectedChildren"`
 	MaxExpectedChildren     float64 `json:"MaxExpectedChildren"`
 	MutationRate            float64 `json:"Mu"`
-	ASPThreshold            float64 `json:"ASPThreshold"`
+	ASMThreshold            float64 `json:"ASMThreshold"`
 	Debug                   bool    `json:"-"`
 	Seed                    int64   `json:"-"`
 }
@@ -47,7 +47,7 @@ func NewConfig() Config {
 	flag.Float64Var(&cfg.MinExpectedChildren, "min_r0", 1.9, "Minimum R0 of population")
 	flag.Float64Var(&cfg.MaxExpectedChildren, "max_r0", 2.1, "Maximum R0 of population")
 	flag.Float64Var(&cfg.MutationRate, "mu", 0.2, "Mutation rate of spawned children")
-	flag.Float64Var(&cfg.ASPThreshold, "tau", 0.5, "Threshold for ASP decision")
+	flag.Float64Var(&cfg.ASMThreshold, "tau", 0.5, "Threshold for ASM decision")
 	flag.BoolVar(&cfg.Debug, "debug", false, "Log debug messages to console")
 	flag.Int64Var(&cfg.Seed, "seed", 42, "Random seed for reproducibility")
 
