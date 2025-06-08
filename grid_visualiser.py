@@ -211,6 +211,8 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
         agent_id = agent["ID"]
         x = agent["Position"]["X"]
         y = agent["Position"]["Y"]
+        cluster_id = agent.get("ClusterID", "N/A")
+        text_label = f"Agent: {agent_id}<br>Cluster: {cluster_id}"
         fig.add_trace(
             go.Scattergl(
                 x=[x],
@@ -218,6 +220,10 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
                 mode="markers",
                 marker=dict(size=15, color=agent_colors.get(agent_id, "gray")),
                 name=f"Agent {agent_id}",
+                text=[f"C{cluster_id}"],
+                textposition="top center",
+                hoverinfo="text",
+                hovertext=text_label 
             )
         )
 
