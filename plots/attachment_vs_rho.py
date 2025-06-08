@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Constants
 log_path = "JSONlogs/output.json"
-iters = 30
+iters = 20
 rho_values = [round(i * 0.1, 1) for i in range(11)]
 attachment_styles = ["Secure", "Dismissive", "Preoccupied", "Fearful"]
 
@@ -68,7 +68,7 @@ plt.figure(figsize=(10, 6))
 sns.lineplot(data=df, x="rho", y="Count", hue="AttachmentStyle", marker="o")
 plt.xlabel(r"$\rho$")
 plt.ylabel("Avg Count of Agents (Final Iteration)")
-plt.title("Attachment Style Survival vs rho")
+plt.title("Attachment Style Survival vs $\\rho$")
 plt.grid(True)
 plt.tight_layout()
 plt.show()

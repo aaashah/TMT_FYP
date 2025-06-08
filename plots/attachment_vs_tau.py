@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Constants
 log_path = "JSONlogs/output.json"
-iters = 50
+iters = 20
 tau_values = [round(i * 0.1, 1) for i in range(11)]
 attachment_styles = ["Secure", "Dismissive", "Preoccupied", "Fearful"]
 

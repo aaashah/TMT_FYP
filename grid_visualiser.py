@@ -113,7 +113,7 @@ app.layout = html.Div(
                 dcc.Store(id="turn-store", data=0),
                 dcc.Store(id="animation-state", data=True),
                 dcc.Interval(
-                    id="animation-interval", interval=100, n_intervals=0, disabled=False
+                    id="animation-interval", interval=1000, n_intervals=0, disabled=False
                 ),
             ],
             id="plot-body",
