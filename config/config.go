@@ -39,7 +39,7 @@ func NewConfig() Config {
 	flag.Float64Var(&cfg.PreoccupiedProp, "preoccupied", 0.25, "Initial proportion of preoccupied agents")
 	flag.Float64Var(&cfg.SecureProp, "secure", 0.25, "Initial proportion of secure agents")
 	flag.IntVar(&cfg.NumIterations, "iters", 100, "Number of iterations")
-	flag.IntVar(&cfg.NumTurns, "turns", 10, "Initial number of turns")
+	flag.IntVar(&cfg.NumTurns, "turns", 50, "Initial number of turns")
 	flag.IntVar(&cfg.NumClusters, "kappa", 3, "Number of agent clusters")
 	flag.Float64Var(&cfg.ConnectionProbability, "connectionProb", 0.35, "Probability of connections in social network")
 	flag.Float64Var(&cfg.PopulationRho, "rho", 0.2, "Proportion of population required to self-sacrifice")

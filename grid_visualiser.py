@@ -70,6 +70,20 @@ style_map = [
     for label, color in color_map.items()
 ]
 
+# Map cluster IDs to shapes
+cluster_shapes = {
+    0: "circle",
+    1: "square",
+    2: "cross",
+    3: "star",
+    4: "x",
+    5: "triangle-up",
+    6: "triangle-down",
+    7: "triangle-left",
+    8: "triangle-right",
+    9: "hexagon",
+    10: "pentagon",
+}
 
 # --- Dash App Setup ---
 app = dash.Dash(__name__)
@@ -212,13 +226,14 @@ def update_grid(prev_clicks, next_clicks, n_intervals, current_iteration, curren
         x = agent["Position"]["X"]
         y = agent["Position"]["Y"]
         cluster_id = agent.get("ClusterID", "N/A")
+        marker_shape = cluster_shapes.get(cluster_id, "circle")  # fallback to circle
         text_label = f"Agent: {agent_id}<br>Cluster: {cluster_id}"
         fig.add_trace(
             go.Scattergl(
                 x=[x],
                 y=[y],
                 mode="markers",
-                marker=dict(size=15, color=agent_colors.get(agent_id, "gray")),
+                marker=dict(size=15, color=agent_colors.get(agent_id, "gray"), symbol=marker_shape),
                 name=f"Agent {agent_id}",
                 text=[f"C{cluster_id}"],
                 textposition="top center",
