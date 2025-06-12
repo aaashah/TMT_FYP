@@ -45,10 +45,6 @@ JSON logs will be output to the `JSONlogs/` folder.
 
 ## Plotting and Visualisation
 
-Python plotting scripts are provided in the `plots/` directory:
-
-- `population_over_time.py`: Plots the total agent count over time.
-- `attachment_distribution.py`: Tracks the proportions of each attachment type per turn.
-- `volunteers_vs_required.py`: Compares voluntary self-sacrifice counts to required eliminations.
+Python plotting scripts are provided in the `plots/` directory.
 
 Visualisation of the agent simulation on the grid environment is also provided in the Python script `grid_visualiser.py`.
